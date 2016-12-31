@@ -11,15 +11,15 @@
     },
     "APP_ID": {
       "description": "A unique identifier for your app.",
-      "value": "maryhadalittlelamb"
+      "value": “myAppId”
     },
     "MASTER_KEY": {
       "description": "A key that overrides all permissions. Keep this secret.",
-      "value": "whosefleecewaswhiteassnow"
+      "value": “myMasterKey”
     },
     "SERVER_URL": {
       "description": "URL to connect to your Heroku instance (update with your app's name + PARSE_MOUNT)",
-      "value": "http://campfiremedia.herokuapp.com/parse"
+      "value": "http://yourappname.herokuapp.com/parse"
     }
   },
   "image": "heroku/nodejs",
