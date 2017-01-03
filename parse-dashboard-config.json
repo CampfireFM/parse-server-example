@@ -1,4 +1,5 @@
-{
+var config = {
+ “allowInsecureHTTP”: true,
   "apps": [
     {
       "serverURL": "https://campfiremedia.herokuapp.com/parse",
@@ -14,4 +15,6 @@
       "pass":"password"
     }
   ]
-}
+};
+
+var dashboard = new ParseDashboard(config, config.allowInsecureHTTP);
