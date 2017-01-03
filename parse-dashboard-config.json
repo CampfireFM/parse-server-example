@@ -5,7 +5,7 @@
       "appId": "maryhadalittlelamb",
       "masterKey": "whosefleecewaswhiteassnow",
       "appName": "campfiremedia",
-      "production": true
+      "production": false
     }
  ],
     "users": [
