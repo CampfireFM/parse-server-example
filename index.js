@@ -29,6 +29,20 @@ var api = new ParseServer({
 
 
 var dashboard = new ParseDashboard({
+                                   "apps": [
+                                            {
+                                            "serverURL": "https://campfiremedia.herokuapp.com/parse",
+                                            "appId": "maryhadalittlelamb",
+                                            "masterKey": "whosefleecewaswhiteassnow",
+                                            "appName": "campfiremedia"
+                                            }
+                                            ],
+                                   "users": [
+                                             {
+                                             "user":"user",
+                                             "pass":"password"
+                                             }
+                                             ]
                                    // Parse Dashboard settings
                                    }, allowInsecureHTTP);
 
