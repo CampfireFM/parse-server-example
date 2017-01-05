@@ -28,23 +28,23 @@ var api = new ParseServer({
 });
 
 
-var dashboard = new ParseDashboard({
-                                   "apps": [
-                                            {
-                                            "serverURL": "https://campfiremedia.herokuapp.com/parse",
-                                            "appId": "maryhadalittlelamb",
-                                            "masterKey": "whosefleecewaswhiteassnow",
-                                            "appName": "campfiremedia"
-                                            }
-                                            ],
-                                   "users": [
-                                             {
-                                             "user":"user",
-                                             "pass":"password"
-                                             }
-                                             ]
-                                   // Parse Dashboard settings
-                                   }, allowInsecureHTTP);
+//var dashboard = new ParseDashboard({
+//                                   "apps": [
+//                                            {
+//                                            "serverURL": "https://campfiremedia.herokuapp.com/parse",
+//                                            "appId": "maryhadalittlelamb",
+//                                            "masterKey": "whosefleecewaswhiteassnow",
+//                                            "appName": "campfiremedia"
+//                                            }
+//                                            ],
+//                                   "users": [
+//                                             {
+//                                             "user":"user",
+//                                             "pass":"password"
+//                                             }
+//                                             ]
+//                                   // Parse Dashboard settings
+//                                   }, allowInsecureHTTP);
 
 
 // Client-keys like the javascript key or the .NET key are not necessary with parse-server
@@ -61,7 +61,7 @@ var mountPath = process.env.PARSE_MOUNT || '/parse';
 app.use(mountPath, api);
 
 // make the Parse Dashboard available at /dashboard
-app.use('/dashboard', dashboard);
+//app.use('/dashboard', dashboard);
 
 //var httpServer = require('http').createServer(app);
 //httpServer.listen(4040);
