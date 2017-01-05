@@ -4,7 +4,8 @@
       "serverURL": "https://campfiremedia.herokuapp.com/parse",
       "appId": "maryhadalittlelamb",
       "masterKey": "whosefleecewaswhiteassnow",
-      "appName": "campfiremedia"
+      "appName": "campfiremedia",
+      "production": true
   }
 ],
     "users": [
