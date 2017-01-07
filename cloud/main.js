@@ -8,7 +8,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
 //                          Parse.Cloud.useMasterKey();
                          
                           console.log(request.object.id + request.object + "trying after save")
-                          var Campfire = Parse.object.extend("Campfire");
+                          var Campfire = Parse.Object.extend("Campfire");
                           var campfire = new Campfire();
 //                          campfire.answerRef = request.object;
 //                          campfire.questionRef = request.object.get("questionRef");
