@@ -14,6 +14,8 @@ Parse.Cloud.afterSave("Answer", function(request) {
                           var answer = request.object
                           var question = request.object.get("questionRef");
                       
+                          question.set("isAnswered", true)
+                      
                           newCampfire.set("answerRef", answer);
                           newCampfire.set("questionRef", question);
                           newCampfire.set("listenCount", 0);
