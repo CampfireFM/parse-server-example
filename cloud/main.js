@@ -9,10 +9,14 @@ Parse.Cloud.afterSave("Answer", function(request) {
                          
                           console.log(request.object.id + request.object + "trying after save")
                           var Campfire = Parse.Object.extend("Campfire");
-                          var campfire = new Campfire();
-//                          campfire.answerRef = request.object;
-//                          campfire.questionRef = request.object.get("questionRef");
-                          campfire.save();
+                          var newCampfire = new Campfire();
+                      
+                          newCampfire.answerRef = request.object;
+                          newCampfire.questionRef = request.object.get("questionRef");
+                          newCampfire.listenCount = 0
+                          newCampfire.likeCount   = 0
+                      
+                          newCampfire.save();
                       });
 
 /*
