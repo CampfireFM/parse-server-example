@@ -7,6 +7,7 @@ Parse.Cloud.define('hello', function(req, res) {
 Parse.Cloud.afterSave("Answer", function(request) {
 //                          Parse.Cloud.useMasterKey();
                          
+                          console.log(request.object.id + request.object + "trying after save")
                           var Campfire = Parse.object.extend("Campfire");
                           var campfire = new Campfire();
 //                          campfire.answerRef = request.object;
