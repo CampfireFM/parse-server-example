@@ -11,10 +11,13 @@ Parse.Cloud.afterSave("Answer", function(request) {
                           var Campfire = Parse.Object.extend("Campfire");
                           var newCampfire = new Campfire();
                       
-                          newCampfire.answerRef = request.object;
-                          newCampfire.questionRef = request.object.get("questionRef");
-                          newCampfire.listenCount = 0
-                          newCampfire.likeCount   = 0
+                          var answer = request.object
+                          var question = request.object.get("questionRef");
+                      
+                          newCampfire.set("answerRef", answer);
+                          newCampfire.set("questionRef", question);
+                          newCampfire.set("listenCount", 0);
+                          newCampfire.set("likeCount", 0);
                       
                           newCampfire.save();
                       });
