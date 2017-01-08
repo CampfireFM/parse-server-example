@@ -33,16 +33,31 @@ Parse.Cloud.afterSave("Question", function(request) {
                          
                       if (request.object.existed() == false) {
                           var toUser = request.object.get("userRef");
-                          var questCount = toUser.get("unansweredQuestionCount");
                       
-                          if (questCount == null) {
-                             questCount = 0;
-                          }
                       
-                          questCount++;
-                          toUser.set("unansweredQuestionCount", questCount);
+                      var query = new Parse.Query("_User");
+                      query.get(toUser["objectId"],{
+                                success: function(user) {
+                                var questCount = user.get("unansweredQuestionCount");
+                                
+                                if (questCount == null) {
+                                questCount = 0;
+                                }
+                                
+                                questCount++;
+                                user.set("unansweredQuestionCount", questCount);
+                                
+                                user.save();
+                                },
+                                error: function(error) { 
+                                console.log(error);
+                                response.error();
+                                }
+                                });
                       
-                          toUser.save();
+                      
+                      
+
                       }
                       });
 
