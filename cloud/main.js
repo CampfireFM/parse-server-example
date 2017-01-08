@@ -5,9 +5,9 @@ Parse.Cloud.define('hello', function(req, res) {
 
 
 Parse.Cloud.afterSave("Answer", function(request) {
-//                          Parse.Cloud.useMasterKey();
                          
-                          console.log(request.object.id + request.object + "trying after save")
+                      if (request.object.existed() == false) {
+                      
                           var Campfire = Parse.Object.extend("Campfire");
                           var newCampfire = new Campfire();
                       
@@ -21,8 +21,32 @@ Parse.Cloud.afterSave("Answer", function(request) {
                           newCampfire.set("listenCount", 0);
                           newCampfire.set("likeCount", 0);
                       
-                          newCampfire.save();
+                          newCampfire.save();
+                      }
+                      
+                          
                       });
+
+
+
+Parse.Cloud.afterSave("Question", function(request) {
+                         
+                      if (request.object.existed() == false) {
+                      var toUser = request.object.get("userRef");
+                      toUser.fetch({
+                                   success: function(object) {
+                                   var questCount = toUser.get("unansweredQuestionCount");
+                                   if (questCount == null) {
+                                   questCount = 0;
+                                   }
+                                   newQs++;
+                                   toUser.set("unansweredQuestionCount", questCount);
+                                   toUser.save();
+                                   },
+                                   error: function(object, error) {
+                                   throw "Got an error " + error.code + " : " + error.message;
+                                   }
+                                   });
 
 /*
 
