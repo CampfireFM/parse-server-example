@@ -36,6 +36,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                       
                       
                       var query = new Parse.Query("_User");
+//                      query.get({ useMasterKey: true}).then(......)
                       query.get(toUser["objectId"],{
                                 success: function(user) {
                                 var questCount = user.get("unansweredQuestionCount");
@@ -47,7 +48,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                                 questCount++;
                                 user.set("unansweredQuestionCount", questCount);
                                 
-                                user.save();
+                                user.save(null, { useMasterKey: true });
                                 },
                                 error: function(error) { 
                                 console.log(error);
