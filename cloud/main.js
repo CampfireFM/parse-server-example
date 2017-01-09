@@ -35,7 +35,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                           var toUser = request.object.get("userRef");
                       
                       
-                      var query = new Parse.Query("User");
+                      var query = new Parse.Query(Parse.User);
 //                      query.get({ useMasterKey: true}).then(......)
                       query.get(toUser["objectId"],{
                                 success: function(user) {
