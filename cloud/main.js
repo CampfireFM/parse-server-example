@@ -34,13 +34,14 @@ Parse.Cloud.afterSave("Question", function(request) {
                       if (request.object.existed() == false) {
                           var toUser = request.object.get("userRef");
                       
-                      
+                      console.log(toUser);
 //                      var query = new Parse.Query(Parse.User);
                       toUser.fetch({
                                    success: function(object) {
                                    
                                    console.log(object);
                                    },
+                                   useMasterKey: true,
                                    error: function(object, error) {
                                    console.log(error);
                                    throw "Got an error " + error.code + " : " + error.message;
