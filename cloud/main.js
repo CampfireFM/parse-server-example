@@ -35,8 +35,25 @@ Parse.Cloud.afterSave("Question", function(request) {
                           var toUser = request.object.get("userRef");
                       
                       
-                      var query = new Parse.Query(Parse.User);
+//                      var query = new Parse.Query(Parse.User);
+                      toUser.fetch({
+                                   success: function(object) {
+                                   
+                                   console.log(object);
+                                   },
+                                   error: function(object, error) {
+                                   console.log(error);
+                                   throw "Got an error " + error.code + " : " + error.message;
+                                   }
+                                   });
+                      }
+                      });
+                      
+                      
+                      
 //                      query.get({ useMasterKey: true}).then(......)
+                      
+                      /*
                       query.get(toUser["objectId"],{
                                 success: function(user) {
                                 var questCount = user.get("unansweredQuestionCount");
