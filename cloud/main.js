@@ -30,12 +30,23 @@ Parse.Cloud.afterSave("Answer", function(request) {
 
 
 Parse.Cloud.afterSave("Question", function(request) {
-                         
+//                      Parse.Cloud.useMasterKey();
                       if (request.object.existed() == false) {
-                          var toUser = request.object.get("userRef");
+                          var toUser = request.object.get("toUser");
                       
-                      console.log(toUser);
-//                      var query = new Parse.Query(Parse.User);
+//                      console.log(toUser);
+//                      
+//                      var query = new Parse.Query(User);
+//                      
+//                      query.get(toUser.objectId).then(function (result) {
+////                                                          result.destroy();
+//                                                          }).then(function (results) {
+//                                                                  response.success('User deleted');
+//                                                                  }, function (error) {
+//                                                                  response.error(error);
+//                                                                  })
+                      
+                      
                       toUser.fetch({
                                    success: function(object) {
                                    
