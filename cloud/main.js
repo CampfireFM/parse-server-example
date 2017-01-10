@@ -30,7 +30,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
 
 
 Parse.Cloud.afterSave("Question", function(request) {
-//                      Parse.Cloud.useMasterKey();
+
                       if (request.object.existed() == false) {
                           var toUser = request.object.get("toUser");
                       
@@ -41,7 +41,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                                        var questCount = user.get("unansweredQuestionCount");
                                        
                                        if (questCount == null) {
-                                       questCount = 0;
+                                          questCount = 0;
                                        }
                                        
                                        questCount++;
@@ -49,8 +49,6 @@ Parse.Cloud.afterSave("Question", function(request) {
                                        
                                        user.save(null, { useMasterKey: true });
                                        
-                                       
-                                       console.log(object);
                                        },
                                        useMasterKey: true,
                                        error: function(object, error) {
@@ -60,36 +58,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                                        });
                           }
                           });
-                      
-                      
-                      
-//                      query.get({ useMasterKey: true}).then(......)
-                      
-                      /*
-                      query.get(toUser["objectId"],{
-                                success: function(user) {
-                                var questCount = user.get("unansweredQuestionCount");
-                                
-                                if (questCount == null) {
-                                questCount = 0;
-                                }
-                                
-                                questCount++;
-                                user.set("unansweredQuestionCount", questCount);
-                                
-                                user.save(null, { useMasterKey: true });
-                                },
-                                error: function(error) { 
-                                console.log(error);
-                                response.error();
-                                }
-                                });
-                      
-                      
-                      
 
-                      }
-                      });
 
 /*
 
