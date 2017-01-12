@@ -49,6 +49,59 @@ Parse.Cloud.afterSave("Question", function(request) {
                                        
                                        user.save(null, { useMasterKey: true });
                                        
+                                       var currentUser = request.user
+                                       
+//                                       var Activity = Parse.Object.extend("Activity");
+//                                       var newActivity = new Activity();
+//                                       
+//                                       newActivity.set("isRead", false);
+//                                       newActivity.set("toUser", editor);
+//                                       newActivity.set("fromUser", photographer);
+//                                       newActivity.set("editedPhoto", editedPhoto);
+//                                       newActivity.set("type", "like");
+//                                       newActivity.save();
+                                       
+                                       
+                                       
+                                       
+                                       var pushQuery = new Parse.Query(Parse.Installation);
+                                       pushQuery.equalTo('deviceType', 'ios');
+                                       pushQuery.equalTo('user', user);
+                                       
+                                       var alert = "";
+                                       var firstName = currentUser.get('firstName');
+                                       var lastName = currentUser.get('lastName');
+                                       if (firstName) {
+                                       alert = firstName + " " + lastName + " asked you a question";
+                                       }
+                                       
+                                       Parse.Push.send({
+                                                       where: pushQuery,
+                                                       data: {
+                                                       alert: alert,
+                                                       questionId: request.object.id
+                                                       }
+                                                       }, {
+                                                       useMasterKey: true,
+                                                       success: function() {
+                                                       // Push was successful
+                                                       },
+                                                       error: function(error) {
+                                                       throw "PUSH: Got an error " + error.code + " : " + error.message;
+                                                       }
+                                                       });
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
                                        },
                                        useMasterKey: true,
                                        error: function(object, error) {
