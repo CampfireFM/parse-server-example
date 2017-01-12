@@ -4,6 +4,25 @@ Parse.Cloud.define('hello', function(req, res) {
 });
 
 
+
+Parse.Cloud.beforeSave(Parse.User, function(request, response) {
+//                       Parse.Cloud.useMasterKey();
+                       
+                       if (request.object.existed() == false) {
+                           let newUser = request.object;
+                       
+                           newUser.set("unansweredQuestionCount", 0);
+                           newUser.set("missedNotificationCount", 0);
+                           newUser.set("matchCount", 0);
+                           newUser.set("questionPrice", 0);
+                           newUser.set("accountBalance", "");
+                           newUser.set("bio", "");
+                           newUser.set("askAbout", "");
+                           newUser.set("tagline", "");
+                       }
+                       });
+
+
 Parse.Cloud.afterSave("Answer", function(request) {
                          
                       if (request.object.existed() == false) {
