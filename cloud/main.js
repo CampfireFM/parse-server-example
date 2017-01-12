@@ -22,6 +22,53 @@ Parse.Cloud.afterSave("Answer", function(request) {
                           newCampfire.set("likeCount", 0);
                       
                           newCampfire.save();
+                      
+                      
+                          var currentUser = request.user
+                          
+                          
+                          var questionAsker = question.get("fromUser");
+                          
+                          questionAsker.fetch({
+                                       success: function(user) {
+                      
+                              var pushQuery = new Parse.Query(Parse.Installation);
+                              pushQuery.equalTo('deviceType', 'ios');
+                              pushQuery.equalTo('user', questionAsker);
+                              
+                              var alert = "";
+                              var firstName = currentUser.get('firstName');
+                              var lastName = currentUser.get('lastName');
+                              if (firstName) {
+                              alert = firstName + " " + lastName + " just answered your question!";
+                              }
+                              
+                              Parse.Push.send({
+                                              where: pushQuery,
+                                              data: {
+                                              alert: alert,
+                                              questionId: request.object.id
+                                              }
+                                              }, {
+                                              useMasterKey: true,
+                                              success: function() {
+                                              // Push was successful
+                                              },
+                                              error: function(error) {
+                                              throw "PUSH: Got an error " + error.code + " : " + error.message;
+                                              }
+                                              });
+                                              
+                          },
+                          useMasterKey: true,
+                          error: function(object, error) {
+                          console.log(error);
+                          throw "Got an error " + error.code + " : " + error.message;
+                          }
+                          });
+                          
+                      
+                      
                       }
                       
                           
@@ -72,7 +119,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                                        var firstName = currentUser.get('firstName');
                                        var lastName = currentUser.get('lastName');
                                        if (firstName) {
-                                       alert = firstName + " " + lastName + " asked you a question";
+                                       alert = firstName + " " + lastName + " asked you a question.";
                                        }
                                        
                                        Parse.Push.send({
@@ -90,11 +137,6 @@ Parse.Cloud.afterSave("Question", function(request) {
                                                        throw "PUSH: Got an error " + error.code + " : " + error.message;
                                                        }
                                                        });
-                                       
-                                       
-                                       
-                                       
-                                       
                                        
                                        
                                        
