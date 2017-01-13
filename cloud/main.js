@@ -51,6 +51,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                           questionAsker.fetch({
                                        success: function(user) {
                       
+                              // setup a push to the question Asker
                               var pushQuery = new Parse.Query(Parse.Installation);
                               pushQuery.equalTo('deviceType', 'ios');
                               pushQuery.equalTo('user', questionAsker);
@@ -92,6 +93,53 @@ Parse.Cloud.afterSave("Answer", function(request) {
                       
                           
                       });
+
+
+
+Parse.Cloud.afterSave("Campfire", function(request) {
+                      if (request.object.existed() == false) {
+    
+                         var currentUser = request.user
+    
+                         var questionRef = request.object.get("questionRef");
+                         questionRef.fetch({
+                                   success: function(question) {
+              
+                                     var questionAsker = question.get("fromUser");
+                                     questionAsker.fetch({
+                                                success: function(user) {
+                                                
+                                                var Activity = Parse.Object.extend("Activity");
+                                                var newActivity1 = new Activity();
+                                                newActivity1.set("question", question);
+                                                newActivity1.set("isRead", false);
+                                                newActivity1.set("toUser", questionAsker);
+                                                newActivity1.set("fromUser", currentUser);
+                                                newActivity1.set("type", "youAskedTheyAnswered");
+                                                newActivity1.save();
+                                                
+                                                var newActivity2 = new Activity();
+                                                newActivity2.set("question", question);
+                                                newActivity2.set("isRead", false);
+                                                newActivity2.set("toUser", currentUser);
+                                                newActivity2.set("fromUser", questionAsker);
+                                                newActivity2.set("type", "youAnsweredTheyAsked");
+                                                newActivity2.save();                                                },
+                                                 useMasterKey: true,
+                                                 error: function(object, error) {
+                                                 console.log(error);
+                                                 throw "Got an error " + error.code + " : " + error.message;
+                                                 }
+                                                 });
+                                           },
+                                           useMasterKey: true,
+                                           error: function(object, error) {
+                                           console.log(error);
+                                           throw "Got an error " + error.code + " : " + error.message;
+                                           }
+                                           });
+                      }
+});
 
 
 
