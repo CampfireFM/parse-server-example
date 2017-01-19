@@ -92,8 +92,9 @@ Parse.Cloud.afterSave("Answer", function(request) {
                       });
 
 
-Parse.cloud.afterSave("Like", function(request) {
-    if (request.object.existed() == false) {
+Parse.Cloud.afterSave("Like", function(request) {
+
+    // if (request.object.existed() == false) {
 
     //     var currentUser = request.user;
     //
@@ -222,7 +223,7 @@ Parse.cloud.afterSave("Like", function(request) {
     //             throw "Got an error " + error.code + " : " + error.message;
     //         }
     //     });
-    }
+    // }
 });
 
 
