@@ -98,6 +98,7 @@ Parse.Cloud.afterSave("Like", function(request) {
 
     if (request.object.existed() == false) {
 
+        console.log("SUCCESS getting the FROM USER!");
         // It's a new "Like"
         var campfireRef = request.object.get("campfireRef");
         campfireRef.fetch({
@@ -110,6 +111,7 @@ Parse.Cloud.afterSave("Like", function(request) {
                         var questionAsker = question.get("fromUser");
                         questionAsker.fetch({
                             success: function(questionAskerUser) {
+
                                 console.log("SUCCESS getting the FROM USER!");
 
                                 // Create and save a new "Like" activity for the question Asker
