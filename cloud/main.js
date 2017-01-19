@@ -106,12 +106,13 @@ Parse.Cloud.afterSave("Like", function(request) {
 
                 console.log("SUCCESS getting Campfire");
 
-                var questionRef = campfire.object.get("questionRef");
+                var questionRef = campfire.get("questionRef");
                 questionRef.fetch({
                     success: function(question) {
 
                         console.log("SUCCESS getting Question");
-                        var questionAsker = question.object.get("fromUser");
+
+                        var questionAsker = question.get("fromUser");
                         questionAsker.fetch({
                             success: function(questionAskerUser) {
 
@@ -165,7 +166,7 @@ Parse.Cloud.afterSave("Like", function(request) {
                             }
                         });
 
-                        var questionAnswerer = question.object.get("toUser");
+                        var questionAnswerer = question.get("toUser");
                         questionAnswerer.fetch({
                            success: function(toUser) {
 
