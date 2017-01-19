@@ -95,7 +95,8 @@ Parse.Cloud.afterSave("Answer", function(request) {
 Parse.cloud.afterSave("Like", function(request) {
     if (request.object.existed() == false) {
 
-        var currentUser = request.user
+        var currentUser = request.user;
+
         // It's a new "Like"
         var campfireRef = request.object.get("campfireRef");
         campfireRef.fetch({
@@ -221,7 +222,6 @@ Parse.cloud.afterSave("Like", function(request) {
                 throw "Got an error " + error.code + " : " + error.message;
             }
         });
-
     }
 })
 
