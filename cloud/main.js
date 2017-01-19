@@ -245,19 +245,21 @@ Parse.Cloud.afterSave("Campfire", function(request) {
                                                  newActivity1.set("question", question);
                                                  newActivity1.set("campfire", request.object);
                                                  newActivity1.set("isRead", false);
-                                                 newActivity1.set("toUser", questionAsker);
+                                                 newActivity1.set("toUser", user);
 //                                                 newActivity1.set("fromUser", currentUser);
                                                  newActivity1.set("type", "youAskedTheyAnswered");
                                                  newActivity1.save(null, { useMasterKey: true });
 
-                                                 var newActivity2 = new Activity();
-                                                 newActivity2.set("question", question);
-                                                 newActivity2.set("campfire", request.object);
-                                                 newActivity2.set("isRead", false);
-//                                                 newActivity2.set("toUser", currentUser);
-                                                 newActivity2.set("fromUser", questionAsker);
-                                                 newActivity2.set("type", "youAnsweredTheyAsked");
-                                                 newActivity2.save(null, { useMasterKey: true });                                             },
+//                                                  var newActivity2 = new Activity();
+//                                                  newActivity2.set("question", question);
+//                                                  newActivity2.set("campfire", request.object);
+//                                                  newActivity2.set("isRead", false);
+// //                                                 newActivity2.set("toUser", currentUser);
+//                                                  newActivity2.set("fromUser", user);
+//                                                  newActivity2.set("type", "youAnsweredTheyAsked");
+//                                                  newActivity2.save(null, { useMasterKey: true });
+
+                                                 },
                                                  useMasterKey: true,
                                                  error: function(object, error) {
                                                  console.log(error);
