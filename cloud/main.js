@@ -124,33 +124,33 @@ Parse.Cloud.afterSave("Like", function(request) {
                                 newActivity.save(null, { useMasterKey: true });
 
 
-                                // setup a push to the question Answerer
-                                var pushQuery = new Parse.Query(Parse.Installation);
-                                pushQuery.equalTo('deviceType', 'ios');
-                                pushQuery.equalTo('user', questionAsker);
-
-                                var alert = "";
-                                var firstName = currentUser.get('firstName');
-                                var lastName = currentUser.get('lastName');
-                                if (firstName) {
-                                    alert = firstName + " " + lastName + " just liked the answer to your question!";
-                                }
-
-                                Parse.Push.send({
-                                    where: pushQuery,
-                                    data: {
-                                        alert: alert,
-                                        questionId: question.object.id
-                                    }
-                                }, {
-                                    useMasterKey: true,
-                                    success: function() {
-                                        // Push was successful
-                                    },
-                                    error: function(error) {
-                                        throw "PUSH: Got an error " + error.code + " : " + error.message;
-                                    }
-                                });
+                                // // setup a push to the question Answerer
+                                // var pushQuery = new Parse.Query(Parse.Installation);
+                                // pushQuery.equalTo('deviceType', 'ios');
+                                // pushQuery.equalTo('user', questionAsker);
+                                //
+                                // var alert = "";
+                                // var firstName = currentUser.get('firstName');
+                                // var lastName = currentUser.get('lastName');
+                                // if (firstName) {
+                                //     alert = firstName + " " + lastName + " just liked the answer to your question!";
+                                // }
+                                //
+                                // Parse.Push.send({
+                                //     where: pushQuery,
+                                //     data: {
+                                //         alert: alert,
+                                //         questionId: question.object.id
+                                //     }
+                                // }, {
+                                //     useMasterKey: true,
+                                //     success: function() {
+                                //         // Push was successful
+                                //     },
+                                //     error: function(error) {
+                                //         throw "PUSH: Got an error " + error.code + " : " + error.message;
+                                //     }
+                                // });
 
                             },
                             useMasterKey: true,
