@@ -94,6 +94,9 @@ Parse.Cloud.afterSave("Answer", function(request) {
 
 Parse.Cloud.afterSave("Like", function(request) {
 
+    console.log(request)
+    console.log(request.object)
+
     // if (request.object.existed() == false) {
 
     //     var currentUser = request.user;
