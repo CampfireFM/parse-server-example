@@ -121,7 +121,7 @@ Parse.Cloud.afterSave("Like", function(request) {
                                 newActivity.set("toUser", questionAskerUser);
                                 newActivity.set("fromUser", request.user);
                                 newActivity.set("type", "likeToAsker");
-                                newActivity.save(null, { useMasterKey: true });
+                                newActivity.save() // null, { useMasterKey: true });
 
 
                                 // setup a push to the question Answerer
@@ -140,7 +140,7 @@ Parse.Cloud.afterSave("Like", function(request) {
                                     where: pushQuery,
                                     data: {
                                         alert: alert,
-                                        questionId: question.object.id
+                                        questionId: question.id
                                     }
                                 }, {
                                     useMasterKey: true,
@@ -173,7 +173,7 @@ Parse.Cloud.afterSave("Like", function(request) {
                             newActivity2.set("toUser", toUser);
                             newActivity2.set("fromUser", request.user);
                             newActivity2.set("type", "likeToAnswerer");
-                            newActivity2.save(null, { useMasterKey: true });
+                            newActivity2.save() //(null, { useMasterKey: true });
 
 
                             // setup a push to the question Asker
@@ -192,7 +192,7 @@ Parse.Cloud.afterSave("Like", function(request) {
                                 where: pushQuery,
                                 data: {
                                     alert: alert,
-                                    questionId: question.object.id
+                                    questionId: question.id
                                 }
                             }, {
                                 useMasterKey: true,
