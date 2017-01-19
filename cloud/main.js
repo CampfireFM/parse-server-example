@@ -98,16 +98,19 @@ Parse.Cloud.afterSave("Like", function(request) {
 
     if (request.object.existed() == false) {
 
-        console.log("SUCCESS getting the FROM USER!");
+        console.log("SUCCESS on save");
         // It's a new "Like"
         var campfireRef = request.object.get("campfireRef");
         campfireRef.fetch({
             success: function(campfire) {
 
+                console.log("SUCCESS getting Campfire");
+
                 var questionRef = campfire.object.get("questionRef");
                 questionRef.fetch({
                     success: function(question) {
 
+                        console.log("SUCCESS getting Question");
                         var questionAsker = question.object.get("fromUser");
                         questionAsker.fetch({
                             success: function(questionAskerUser) {
