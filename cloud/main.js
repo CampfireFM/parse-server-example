@@ -98,25 +98,19 @@ Parse.Cloud.afterSave("Like", function(request) {
 
     if (request.object.existed() == false) {
 
-        console.log(request)
-        console.log(request.object)
+        // It's a new "Like"
+        var campfireRef = request.object.get("campfireRef");
+        campfireRef.fetch({
+            success: function(campfire) {
 
-    }
+                var questionRef = campfire.object.get("questionRef");
+                questionRef.fetch({
+                    success: function(question) {
 
-    //     var currentUser = request.user;
-    //
-    //     // It's a new "Like"
-    //     var campfireRef = request.object.get("campfireRef");
-    //     campfireRef.fetch({
-    //         success: function(campfire) {
-    //
-    //             var questionRef = campfire.object.get("questionRef");
-    //             questionRef.fetch({
-    //                 success: function(question) {
-    //
-    //                     var questionAsker = question.get("fromUser");
-    //                     questionAsker.fetch({
-    //                         success: function(questionAsker) {
+                        var questionAsker = question.get("fromUser");
+                        questionAsker.fetch({
+                            success: function(questionAsker) {
+                                console.log("SUCCESS getting the FROM USER!");
     //
     //                             // Create and save a new "Like" activity for the question Asker
     //                             var Activity = Parse.Object.extend("Activity");
@@ -209,28 +203,28 @@ Parse.Cloud.afterSave("Like", function(request) {
     //                                 throw "PUSH: Got an error " + error.code + " : " + error.message;
     //                             }
     //                         });
-    //                     },
-    //                     useMasterKey: true,
-    //                     error: function(object, error) {
-    //                         console.log(error);
-    //                         throw "Got an error " + error.code + " : " + error.message;
-    //                       }
-    //                    });
-    //             },
-    //             useMasterKey: true,
-    //             error: function(object, error) {
-    //                 console.log(error);
-    //                 throw "Got an error " + error.code + " : " + error.message;
-    //             }
-    //         });
-    //         },
-    //         useMasterKey: true,
-    //         error: function(object, error) {
-    //             console.log(error);
-    //             throw "Got an error " + error.code + " : " + error.message;
-    //         }
-    //     });
-    // }
+                        },
+                        useMasterKey: true,
+                        error: function(object, error) {
+                            console.log(error);
+                            throw "Got an error " + error.code + " : " + error.message;
+                          }
+                       });
+                },
+                useMasterKey: true,
+                error: function(object, error) {
+                    console.log(error);
+                    throw "Got an error " + error.code + " : " + error.message;
+                }
+            });
+            },
+            useMasterKey: true,
+            error: function(object, error) {
+                console.log(error);
+                throw "Got an error " + error.code + " : " + error.message;
+            }
+        });
+    }
 });
 
 
