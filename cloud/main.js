@@ -117,7 +117,7 @@ Parse.cloud.afterSave("Like", function(request) {
                                 newActivity.set("isRead", false);
                                 newActivity.set("toUser", questionAsker);
                                 newActivity1.set("fromUser", request.user);
-                                newActivity.set("type", "likeForAsker");
+                                newActivity.set("type", "likeToAsker");
                                 newActivity.save(null, { useMasterKey: true });
 
 
@@ -169,7 +169,7 @@ Parse.cloud.afterSave("Like", function(request) {
                             newActivity.set("isRead", false);
                             newActivity.set("toUser", toUser);
                             newActivity1.set("fromUser", request.user);
-                            newActivity.set("type", "likeAnswerer");
+                            newActivity.set("type", "likeToAnswerer");
                             newActivity.save(null, { useMasterKey: true });
 
 
