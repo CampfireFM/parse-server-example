@@ -18,6 +18,13 @@ var api = new ParseServer({
                           facebookAppIds: ["984145855062964"],
                           masterKey: process.env.MASTER_KEY || '', //Add your master key here. Keep it secret!
                           serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse',  // Don't forget to change to https if needed
+                          auth: {
+                              twitter: {
+                                  consumer_key: "sVvr3kgLVpEq9xYvkwA3BUty8", // Required
+                                  consumer_secret: "32lUjhIvlWjbmvEFN17nzkQJNNIY7kYXYFBQIeNdK64odICfEb" // Required
+                              }
+                          },
+
                           push: {
                           ios: [{
                                 pfx:        './keys/APNS-DEV.p12', // The filename of private key and certificate in PFX or PKCS12 format from disk
