@@ -154,6 +154,7 @@ Parse.Cloud.afterSave("Like", function(request) {
                                 }, {
                                     useMasterKey: true,
                                     success: function() {
+                                        console.log("Successful push to question Asker for like");
                                         // Push was successful
                                     },
                                     error: function(error) {
