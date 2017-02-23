@@ -39,6 +39,8 @@ Parse.Cloud.afterSave("Answer", function(request) {
                           newCampfire.set("questionRef", question);
                           newCampfire.set("listenCount", 0);
                           newCampfire.set("likeCount", 0);
+                          newCampfire.set("flagCount", 0);
+                          newCampfire.set("isDummyData", false);
                       
                           newCampfire.save();
                       
