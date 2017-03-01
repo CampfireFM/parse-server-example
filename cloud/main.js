@@ -30,10 +30,10 @@ Parse.Cloud.afterSave("Answer", function(request) {
                           var Campfire = Parse.Object.extend("Campfire");
                           var newCampfire = new Campfire();
                       
-                          var answer = request.object
+                          var answer = request.object;
                           var question = request.object.get("questionRef");
                       
-                          var currentUser = request.user
+                          var currentUser = request.user;
                       
                           question.set("isAnswered", true);
                       
@@ -127,17 +127,17 @@ Parse.Cloud.afterSave("Follow", function(request) {
                            Parse.Push.send({
                                            where: pushQuery,
                                            data: {
-                                           alert: alert,
-                                           questionId: question.id
+                                               alert: alert,
+                                               userId: toUser.id
                                            }
-                                           }, {
+                                           },
                                            useMasterKey: true,
                                            success: function() {
-                                           console.log("Successful push to user for new follow");
+                                               console.log("Successful push to user for new follow");
                                            // Push was successful
                                            },
                                            error: function(error) {
-                                           throw "PUSH: Got an error " + error.code + " : " + error.message;
+                                               throw "PUSH: Got an error " + error.code + " : " + error.message;
                                            }
                                            });
                                    
