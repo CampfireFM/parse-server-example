@@ -130,7 +130,7 @@ Parse.Cloud.afterSave("Follow", function(request) {
                                                alert: alert,
                                                userId: toUser.id
                                            }
-                                           },
+                                           }, {
                                            useMasterKey: true,
                                            success: function() {
                                                console.log("Successful push to user for new follow");
@@ -148,7 +148,7 @@ Parse.Cloud.afterSave("Follow", function(request) {
                        throw "Got an error " + error.code + " : " + error.message;
                        }
                        });
-                      
+                      }
 });
 
 
