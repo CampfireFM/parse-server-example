@@ -33,6 +33,8 @@ Parse.Cloud.afterSave("Answer", function(request) {
                           var answer = request.object
                           var question = request.object.get("questionRef");
                       
+                          var currentUser = request.user
+                      
                           question.set("isAnswered", true);
                       
                           newCampfire.set("answerRef", answer);
@@ -41,11 +43,9 @@ Parse.Cloud.afterSave("Answer", function(request) {
                           newCampfire.set("likeCount", 0);
                           newCampfire.set("flagCount", 0);
                           newCampfire.set("isDummyData", false);
+                          newCampfire.set("isTest", currentUser.isTestUser);
                       
                           newCampfire.save();
-                      
-                      
-                          var currentUser = request.user
                           
                           var questionAsker = question.get("fromUser");
                           
@@ -92,6 +92,64 @@ Parse.Cloud.afterSave("Answer", function(request) {
                       
                       }        
                       });
+
+
+Parse.Cloud.afterSave("Follow", function(request) {
+                      
+                      if (request.object.existed() == false) {
+                      
+                      var currentUser = request.user;
+                      
+                      var ToUser = request.object.get("toUser");
+                      ToUser.fetch({ success: function(toUser) {
+                      
+                          // Create and save a new "Follow" activity for the question Asker
+                          var Activity = Parse.Object.extend("Activity");
+                          var newActivity = new Activity();
+                          newActivity.set("isRead", false);
+                          newActivity.set("toUser", toUser);
+                          newActivity.set("fromUser", request.user);
+                          newActivity.set("type", "follow");
+                          newActivity.save(null, { useMasterKey: true });
+                      
+                           // setup a push to the question Answerer
+                           var pushQuery = new Parse.Query(Parse.Installation);
+                           pushQuery.equalTo('deviceType', 'ios');
+                           pushQuery.equalTo('user', toUser);
+                           
+                           var alert = "";
+                           var firstName = currentUser.get('firstName');
+                           var lastName = currentUser.get('lastName');
+                           if (firstName) {
+                           alert = firstName + " " + lastName + " just followed you!";
+                           }
+                           
+                           Parse.Push.send({
+                                           where: pushQuery,
+                                           data: {
+                                           alert: alert,
+                                           questionId: question.id
+                                           }
+                                           }, {
+                                           useMasterKey: true,
+                                           success: function() {
+                                           console.log("Successful push to user for new follow");
+                                           // Push was successful
+                                           },
+                                           error: function(error) {
+                                           throw "PUSH: Got an error " + error.code + " : " + error.message;
+                                           }
+                                           });
+                                   
+                       },
+                       useMasterKey: true,
+                       error: function(object, error) {
+                       console.log(error);
+                       throw "Got an error " + error.code + " : " + error.message;
+                       }
+                       });
+                      
+});
 
 
 Parse.Cloud.afterSave("Like", function(request) {
@@ -243,6 +301,33 @@ Parse.Cloud.afterSave("Campfire", function(request) {
                       if (request.object.existed() == false) {
     
                         // var currentUser = request.user
+//                      var answerRef = request.object.get("answerRef");
+//                      answerRef.fetch({
+//                                        success: function(answer) {
+//                                        
+//                                        var answerer = answer.get("userRef");
+//                                        answerer.fetch({
+//                                                            success: function(user) {
+//                                                               var Unlock = Parse.Object.extend("CampfireUnlock");
+//                                                               var newUnlock = new Unlock();
+//                                                               newUnlock.set("campfireRef", request.object);
+//                                                               newUnlock.set("user", userRef);
+//                                                               newUnlock.save(null, { useMasterKey: true });
+//                                                            },
+//                                                            useMasterKey: true,
+//                                                            error: function(object, error) {
+//                                                            console.log(error);
+//                                                            throw "Got an error " + error.code + " : " + error.message;
+//                                                            }
+//                                                            });
+//                                        },
+//                                        useMasterKey: true,
+//                                        error: function(object, error) {
+//                                        console.log(error);
+//                                        throw "Got an error " + error.code + " : " + error.message;
+//                                        }
+//                                        });
+                      
     
                          var questionRef = request.object.get("questionRef");
                          questionRef.fetch({
@@ -261,6 +346,13 @@ Parse.Cloud.afterSave("Campfire", function(request) {
 //                                                 newActivity1.set("fromUser", currentUser);
                                                  newActivity1.set("type", "youAskedTheyAnswered");
                                                  newActivity1.save(null, { useMasterKey: true });
+                                                         
+                                                         
+//                                                 var Unlock = Parse.Object.extend("CampfireUnlock");
+//                                                 var newUnlock = new Unlock();
+//                                                 newUnlock.set("campfireRef", request.object);
+//                                                 newUnlock.set("toUser", userRef);
+//                                                 newUnlock.save(null, { useMasterKey: true });
 
 //                                                  var newActivity2 = new Activity();
 //                                                  newActivity2.set("question", question);
