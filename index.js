@@ -39,7 +39,7 @@ var dashboard = new ParseDashboard({
   }],
   "users": config['dashboardusers'],
   "iconsFolder": "icons"
-});
+},true);
 
 var app = express();
 
