@@ -1,4 +1,6 @@
 
+var paymenthandler = require('../utils/paymenthandler.js');
+
 //begin of afterSave
 Parse.Cloud.afterSave("Campfire", function(request) {
       if (request.object.existed() == false) {
@@ -35,3 +37,60 @@ Parse.Cloud.afterSave("Campfire", function(request) {
       }
 });
 //end of afterSave
+
+
+/*
+@Description - This function takes the money from the user by charging his card, and split
+      the amount between campfire, answerer, and donation
+      Important - Call this function only if the question is not expired (compare against default expire time)
+      @questionRef - instace of Question object
+      @userRef - the user which represents Question Asker
+      @
+*/
+function chargeUserAndSplitPayment(params, callback){
+
+      paymenthandler.capturePayment(params.chargeID, params.question.id, function(err, payment){
+            if(err){
+                  //throw an exception here to let the Campfire team know of the charging failure
+                  return callback(err, null);
+            }else{
+
+            }
+      });
+}
+
+/*
+@Description : Function to createDeposit record
+*/
+function createDeposit(params, callback){
+
+      var Deposit = Parse.Object.extend("Deposit");
+      var deposit = new Deposit();
+
+      for(key in params){
+            deposit.set(key,params[key]);
+      }
+
+      deposit.save(null, {
+            useMasterKey: true,
+            success: function(depositrecord){
+                return callback(null,depositrecord);
+            },error : function(err){
+                return callback(err,null);
+            }
+      });
+        //end of save operation code block
+
+}
+
+/*
+@Description : Function to update the Charge object after capturing the charge
+*/
+function updateCharge(params, callback){
+
+}
+
+
+function updateUserObject(params, callback){
+
+}

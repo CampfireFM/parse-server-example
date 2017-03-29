@@ -1,5 +1,7 @@
 
 
+require("../utils/paymenthandler.js");
+
 //include the JS files which represent each classes (models), and contains their operations
 require("./models/Answer.js");
 require("./models/Campfire.js");

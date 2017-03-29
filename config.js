@@ -14,5 +14,7 @@ module.exports = {
 	        consumer_secret: "32lUjhIvlWjbmvEFN17nzkQJNNIY7kYXYFBQIeNdK64odICfEb" // Required
 	    }
 	},
-	dashboardusers: [{"user":"user","pass":"password"}]
+	dashboardusers: [{"user":"user","pass":"password"}],
+	stripe_test_key : 'sk_test_7D6yb4r&^U2?QCj/u4i}CFE+',
+	stripe_live_key : 'sk_test_7D6yb4r&^U2?QCj/u4i}CFE+'
 };

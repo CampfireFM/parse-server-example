@@ -1,4 +1,7 @@
 
+
+var answer_methods = {};
+
 //begin of afterSave function
 Parse.Cloud.afterSave("Answer", function(request) {
 
@@ -68,5 +71,3 @@ Parse.Cloud.afterSave("Answer", function(request) {
   
 });
 //end of afterSave function
-
-
