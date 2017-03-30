@@ -56,7 +56,7 @@ var dashboard = new ParseDashboard({
 var app = express();
 app.use(cors({credentials: true}));
 
-// app.set('view engine', 'ejs');
+app.set('view engine', 'ejs');
 
 // Serve static assets from the /public folder
 app.use('/public', express.static(path.join(__dirname, '/public')));
@@ -224,14 +224,10 @@ app.get('/eavesdrop/:id', function(req, res) {
               };
             }
             campfire = camfireObj
-            // return res.render('eavesdrop_meta',{
-            //   id: campfireId,
-            //   imageUrl: campfire.from.cover,
-            //   question: campfire.question
-            // });
-            return res.status(200).json({
-              success: true,
-              message: 'success'
+            return res.render('eavesdrop_meta',{
+              id: campfireId,
+              imageUrl: campfire.from.cover,
+              question: campfire.question
             });
           },
           error: function(object, error) {
