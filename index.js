@@ -54,7 +54,7 @@ var dashboard = new ParseDashboard({
 },true);
 
 var app = express();
-app.use(cors());
+app.use(cors({credentials: false}));
 
 app.set('view engine', 'ejs');
 
