@@ -67,7 +67,7 @@ app.use('/public', express.static(path.join(__dirname, '/public')));
 var mountPath = process.env.PARSE_MOUNT || '/parse';
 app.use(mountPath, cors({
   credentials: true,
-  origin: ["*","https://campfire.fm"]
+  origin: "https://campfire.fm"
 }), api);
 
 // make the Parse Dashboard available at /dashboard
