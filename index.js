@@ -15,6 +15,7 @@ var api = new ParseServer({
     facebookAppIds: config['facebookAppIds'],
     masterKey: config['masterKey'],
     serverURL: config['serverURL'],
+    publicServerURL: config['serverURL'],
     auth: config['auth'],
     push: {
       ios: [{
