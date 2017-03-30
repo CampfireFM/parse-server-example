@@ -54,7 +54,10 @@ var dashboard = new ParseDashboard({
 },true);
 
 var app = express();
-app.use(cors({credentials: false}));
+app.use(cors({
+  credentials: true,
+  origin: ["*", "https://campfire.fm"]
+}));
 
 app.set('view engine', 'ejs');
 
