@@ -65,10 +65,7 @@ app.use('/public', express.static(path.join(__dirname, '/public')));
 
 // Serve the Parse API on the /parse URL prefix
 var mountPath = process.env.PARSE_MOUNT || '/parse';
-app.use(mountPath, cors({
-  credentials: true,
-  origin: "https://campfire.fm"
-}), api);
+app.use(mountPath, api);
 
 // make the Parse Dashboard available at /dashboard
 app.use('/dashboard', dashboard);
