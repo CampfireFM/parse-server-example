@@ -55,8 +55,7 @@ var dashboard = new ParseDashboard({
 
 var app = express();
 app.use(cors({
-  credentials: true,
-  origin: "https://campfire.fm"
+  credentials: true
 }));
 
 app.set('view engine', 'ejs');
@@ -66,7 +65,10 @@ app.use('/public', express.static(path.join(__dirname, '/public')));
 
 // Serve the Parse API on the /parse URL prefix
 var mountPath = process.env.PARSE_MOUNT || '/parse';
-app.use(mountPath, api);
+app.use(mountPath, cors({
+  credentials: true,
+  origin: ["*","https://campfire.fm"]
+}), api);
 
 // make the Parse Dashboard available at /dashboard
 app.use('/dashboard', dashboard);
