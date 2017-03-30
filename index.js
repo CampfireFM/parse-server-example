@@ -53,6 +53,8 @@ var dashboard = new ParseDashboard({
 
 var app = express();
 
+app.set('view engine', 'ejs');
+
 // Serve static assets from the /public folder
 app.use('/public', express.static(path.join(__dirname, '/public')));
 
@@ -94,82 +96,153 @@ app.get('/twitter/auth', function(req, res){
 app.get("/access-token", function(req, res) {
   var requestToken = req.query.oauth_token,
   verifier = req.query.oauth_verifier;
-  twitter.getAccessToken(requestToken, _requestSecret, verifier, function(err, accessToken, accessSecret) {
-    if (err) {
-      return res.status(401).json({
-        success: false,
-        message: err.message
-      });
-    } else {
-      twitter.verifyCredentials(accessToken, accessSecret, function(err, user) {
-        var error = '';
-        var parseUser = null;
+  if(requestToken && verifier){
+    twitter.getAccessToken(requestToken, _requestSecret, verifier, function(err, accessToken, accessSecret) {
+      if (err) {
+        return res.status(401).json({
+          success: false,
+          message: err.message
+        });
+      } else {
+        twitter.verifyCredentials(accessToken, accessSecret, function(err, user) {
+          var error = '';
+          var parseUser = null;
 
-        var twitterProvider = {
-          authenticate: function (options) {
-            if (options.success) {
-              options.success(this, {});
-            }
-          },
-          restoreAuthentication: function (authData) {
-            console.log(authData);
-          },
-          getAuthType: function () {
-            return 'twitter';
-          },
-          deauthenticate: function () { }
-        };
-
-        if (err) {
-          return res.status(401).json({
-            success: false,
-            message: err.message
-          });
-        } else {
-          var authData = {
-            authData: {
-              auth_token: accessToken,
-              auth_token_secret: accessSecret,
-              id: user.id_str
-            }
+          var twitterProvider = {
+            authenticate: function (options) {
+              if (options.success) {
+                options.success(this, {});
+              }
+            },
+            restoreAuthentication: function (authData) {
+              console.log(authData);
+            },
+            getAuthType: function () {
+              return 'twitter';
+            },
+            deauthenticate: function () { }
           };
-          Parse.User.logInWith(twitterProvider, authData).then(function(twitterUser){
-            parseUser = twitterUser;
-            if (!twitterUser.existed()) {
-              twitterUser.set('firstName', user.name);
-              twitterUser.set('fullName', user.name);
-              twitterUser.set('bio', user.description);
-              twitterUser.save(null, {useMasterKey : true}).then(function() {
+
+          if (err) {
+            return res.status(401).json({
+              success: false,
+              message: err.message
+            });
+          } else {
+            var authData = {
+              authData: {
+                auth_token: accessToken,
+                auth_token_secret: accessSecret,
+                id: user.id_str
+              }
+            };
+            Parse.User.logInWith(twitterProvider, authData).then(function(twitterUser){
+              parseUser = twitterUser;
+              if (!twitterUser.existed()) {
+                twitterUser.set('firstName', user.name);
+                twitterUser.set('fullName', user.name);
+                twitterUser.set('bio', user.description);
+                twitterUser.save(null, {useMasterKey : true}).then(function() {
+                  return res.status(200).json({
+                    success: true,
+                    session_token: twitterUser.getSessionToken()
+                  });
+                }, function() {
+                  error = 'There is error while updating user detail!';
+                  return res.status(200).json({
+                    success: false,
+                    error: error
+                  });
+                });
+              }
+              else{
                 return res.status(200).json({
                   success: true,
                   session_token: twitterUser.getSessionToken()
                 });
-              }, function() {
-                error = 'There is error while updating user detail!';
-                return res.status(200).json({
-                  success: false,
-                  error: error
-                });
-              });
-            }
-            else{
+              }
+            }, function(parseError){
+              error = parseError;
               return res.status(200).json({
-                success: true,
-                session_token: twitterUser.getSessionToken()
+                success: false,
+                error: error.message
               });
-            }
-          }, function(parseError){
-            error = parseError;
-            return res.status(200).json({
-              success: false,
-              error: error.message
             });
-          });
-        }
+          }
+        });
+      }
+    });
+  }
+  else{
+    return res.status(401).json({
+      success: false,
+      error: 'Error while log in with twitter'
+    });
+  }
+});
+
+app.get('/eavesdrop/:id', function(req, res) {
+    var campfire = {};
+    var campfireId = req.params.id
+    if(campfireId){
+      var Campfire = Parse.Object.extend('Campfire');
+      var query = new Parse.Query(Campfire);
+      query.include(['questionRef', 'answerRef', 'questionRef.fromUser.fullName', 'answerRef.fromUser.fullName', 'questionRef.toUser.fullName']);
+      query.equalTo('isDummyData', false);
+      query.get(campfireId, {
+        success: function(object) {
+            var camfireObj = {};
+            var fromUser = object.get('questionRef').get('fromUser');
+            var toUser = object.get('questionRef').get('toUser');
+            var answerFile = object.get('answerRef').get('answerFile');
+            if (answerFile) {
+              camfireObj = {
+                id: object.id,
+                question: object.get('questionRef').get('text'),
+                answer: answerFile.toJSON().url,
+                to: {
+                  name: toUser.get('fullName'),
+                  firstName: toUser.get('firstName'),
+                  lastName: toUser.get('lastName'),
+                  picture: toUser.get('profilePhoto') ? (toUser.get('profilePhoto')).toJSON().url : '',
+                  cover: '',
+                  bio: toUser.get('bio'),
+                  tagline: toUser.get('tagline')
+                },
+                from: {
+                  name: fromUser.get('fullName'),
+                  firstName: fromUser.get('firstName'),
+                  lastName: fromUser.get('lastName'),
+                  picture: fromUser.get('profilePhoto') ? (fromUser.get('profilePhoto')).toJSON().url : '',
+                  cover: fromUser.get('coverPhoto') ? (fromUser.get('coverPhoto')).toJSON().url : '',
+                  bio: fromUser.get('bio'),
+                  tagline: toUser.get('tagline')
+                }
+              };
+            }
+            campfire = camfireObj
+            return res.render('eavesdrop_meta',{
+              id: campfireId,
+              imageUrl: campfire.from.cover,
+              question: campfire.question
+            });
+          },
+          error: function(object, error) {
+            return res.status(500).json({
+              success: false,
+              message: error.message
+            });
+          }
       });
     }
-  });
+    else{
+      return res.status(500).json({
+        success: false,
+        message: 'No Campfire Id found.'
+      });
+    }
 });
+
 var port = process.env.PORT || 1337;
 var httpServer = require('http').createServer(app);
 
