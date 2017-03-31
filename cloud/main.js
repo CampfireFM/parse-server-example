@@ -1,6 +1,7 @@
 
-
+var config = require('../config.js');
 var payment_methods = require("../utils/paymenthandler.js");
+var stripe = require('stripe')(config.stripe_test_key);
 
 //include the JS files which represent each classes (models), and contains their operations
 require("./models/Answer.js");
