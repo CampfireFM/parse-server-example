@@ -53,5 +53,17 @@ payment_methods.capturePayment = function(charge_id, questionId, callback){
     });
 }
 
+
+payment_methods.retrieveCustomer = function(customerId, callback){
+
+    stripe.customers.retrieve(customerId, function(err, customer) {
+      if (err) {
+        return callback(err,null);
+      } else {
+        return callback(null,customer);
+      }
+    });
+}
+
 module.exports = payment_methods;
 
