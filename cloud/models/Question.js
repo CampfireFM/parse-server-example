@@ -26,21 +26,42 @@ Parse.Cloud.afterSave("Question", function(request) {
                          if (firstName) {
                          alert = firstName + " " + lastName + " asked you a question.";
                          }
-                         Parse.Push.send({
-                             where: pushQuery,
-                             data: {
-                                alert: alert,
-                                questionId: request.object.id
-                             }
-                             }, {
-                             useMasterKey: true,
-                             success: function() {
-                             // Push was successful
-                             },
-                             error: function(error) {
-                             throw "PUSH: Got an error " + error.code + " : " + error.message;
-                             }
-                         });
+
+                        var params = {
+                            questionRef : request.object,
+                            userRef : request.user,
+                            amount : request.object.get("price"),
+                            isExpired : false,
+                            authToken : request.object.get("authToken")
+                        };
+
+                        //call the stripe api and create the Charge Object
+                        createCharge(params, function(err_charge, res_charge){
+                            if(res_charge){
+                                Parse.Push.send({
+                                    where: pushQuery,
+                                    data: {
+                                      alert: alert,
+                                      questionId: request.object.id
+                                    }
+                                    }, {
+                                    useMasterKey: true,
+                                     success: function() {
+                                     // Push was successful
+                                    },
+                                    error: function(error) {
+                                     throw "PUSH: Got an error " + error.code + " : " + error.message;
+                                    }
+                                });
+                            }else{
+                                //currently do nothing
+                            }
+                        });
+                        //end of create charge function call handling
+
+                        //removes the authToken from the question attributes
+                        request.object.unset('authToken');
+                        request.object.save(null,{useMasterKey:true});
                      },
                      error: function(object, error) {
                         console.log(error);
@@ -65,6 +86,8 @@ function createCharge(params, callback){
     //Need to store the ID from charge response for later doing the capture which does actual charging
     paymenthandler.createCharge(params.amount, params.authToken, questionRef.id, function(charge,err_charge){
 
+        var question = params['questionRef'];
+
         var Charge = Parse.Object.extend("Charge");
         var charge = new Charge();
         for(key in params){
@@ -72,12 +95,20 @@ function createCharge(params, callback){
         }
         charge.set('isExpired',false);
         if(charge){
-            charge.set('chargeID',charge.id);
+            charge.set('chargeId',charge.id);
             charge.set('status_createcharge','success');
+            //if payment success, mark question as valid
+            question.set('isPaymentValid', true);
         }else{
             charge.set('status_createcharge','failure');
             console.log(err_charge);
+            //if payment failure, mark question as invalid
+            question.set('isPaymentValid', false);
         }
+        //update the question based on charge was success or not
+        question.save(null, {useMasterKey:true});
+
+        //update the charge with the charging status
         charge.save(null, {
             useMasterKey: true,
             success: function(chargerecord){

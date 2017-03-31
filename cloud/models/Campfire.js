@@ -6,6 +6,7 @@ Parse.Cloud.afterSave("Campfire", function(request) {
       if (request.object.existed() == false) {
 
             var questionRef = request.object.get("questionRef");
+            questionRef.include(["toUser","fromUser","charity"])
             questionRef.fetch({
                   useMasterKey: true,
                   success: function(question) {
@@ -43,21 +44,96 @@ Parse.Cloud.afterSave("Campfire", function(request) {
 @Description - This function takes the money from the user by charging his card, and split
       the amount between campfire, answerer, and donation
       Important - Call this function only if the question is not expired (compare against default expire time)
-      @questionRef - instace of Question object
-      @userRef - the user which represents Question Asker
+      @question - instace of Question object
       @
 */
-function chargeUserAndSplitPayment(params, callback){
+function chargeUserAndSplitPayment(question, callback){
 
-      paymenthandler.capturePayment(params.chargeID, params.question.id, function(err, payment){
-            if(err){
-                  //throw an exception here to let the Campfire team know of the charging failure
-                  return callback(err, null);
-            }else{
+      //first find the charge details for the question
+      getChargeDetails(question,function(err_charge, charge){
+            if(charge){
+                  var chargeId = charge.get("chargeId");
+                  if(!chargeId){
+                        return callback("No ChargeId found in the charge table",null);
+                  }
+                  //if chargeId exists
+                  paymenthandler.capturePayment(chargeId, question.id, function(err, res_payment){
+                        if(err){
+                              //update the charge object
+                              //throw an exception here to let the Campfire team know of the charging failure
+                              charge.set("statusCaptureCharge","failure");
+                              charge.set("responseStripeCapture",err);
+                              return callback(err, null);
+                        }else{
+                              charge.set("statusCaptureCharge","success");
+                              charge.set("responseStripeCapture",res_payment);
+                              //calls the function to split the payment to stake holders based
+                              //on properties of the question
+                              splitAndMakePayments(question, charge, function(error, result){
 
+                              });
+                        }
+
+                        //updates the charge object with the fields set above
+                        charge.save(null, {useMasterKey: true});
+
+                  });
             }
       });
 }
+
+//This function calculates the payments for user, donation and creates payouts
+function splitAndMakePayments(question, charge, callback){
+
+      var charity = question.get("charity");
+      var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
+      var price = question.get("price") ? question.get("price") : 0;
+
+      var split_app = price * ( 20 / 100);
+      var split_charity = split_app * ( charity_percentage / 100);
+      var split_answerer = split_app - split_charity;
+
+      var payout_params = {
+            amount : split_answerer,
+            userRef : question.get("toUser"),
+            chargeRef : charge,
+            type : 'answer',
+            isPaid : false
+      };
+
+      var deposit_params = {
+            transactionPercentage: 2.9,
+            amount: price,
+            transactionFee : 0.3,
+            userRef : question.get("fromUser")
+            questionRef : question,
+      };
+
+      var charity_params = {
+            amount: split_charity,
+            charityRef: question.get("charity"),
+            questionRef: question,
+            userRef : question.get("toUser"),
+      };
+
+}
+
+//this function gets the charge details from the Charge table for the given question
+function getChargeDetails(question,callback){
+
+      var Charge = Parse.Object.extend("Charge");
+      var query = new Parse.Query(Charge);
+      query.equalTo("questionRef",question);
+      query.find({
+        success: function(charges) {
+          return callback(null,charges[0]);
+        },
+        error: function(object, error) {
+          return callback(error,null);
+        }
+      });
+}
+
 
 /*
 @Description : Function to createDeposit record
@@ -79,18 +155,56 @@ function createDeposit(params, callback){
                 return callback(err,null);
             }
       });
-        //end of save operation code block
-
+      //end of save operation code block
 }
 
 /*
-@Description : Function to update the Charge object after capturing the charge
+@Description : Function to create Charity record
 */
-function updateCharge(params, callback){
+function createCharity(params, callback){
 
+      var Charity = Parse.Object.extend("Charity");
+      var charity = new Charity();
+
+      for(key in params){
+            charity.set(key,params[key]);
+      }
+
+      charity.save(null, {
+            useMasterKey: true,
+            success: function(charityrecord){
+                return callback(null,charityrecord);
+            },error : function(err){
+                return callback(err,null);
+            }
+      });
+      //end of save operation code block
 }
 
+/*
+@Description : Function to create Payout record
+*/
+function createPayout(params, callback){
 
-function updateUserObject(params, callback){
+      var Payout = Parse.Object.extend("Payout");
+      var payout = new Payout();
 
+      for(key in params){
+            payout.set(key,params[key]);
+      }
+
+      payout.save(null, {
+            useMasterKey: true,
+            success: function(payoutrecord){
+                return callback(null,payoutrecord);
+            },error : function(err){
+                return callback(err,null);
+            }
+      });
+      //end of save operation code block
+}
+
+function updateUserObject(user, amount, callback){
+      user.increment("totalEarnings", amount);
+      user.save();
 }
