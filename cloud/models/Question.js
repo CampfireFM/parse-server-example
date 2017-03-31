@@ -1,5 +1,5 @@
 
-var paymenthandler = require('../utils/paymenthandler.js');
+var paymenthandler = require('../../utils/paymenthandler.js');
 
 Parse.Cloud.afterSave("Question", function(request) {
 

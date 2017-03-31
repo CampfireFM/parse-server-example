@@ -1,5 +1,5 @@
 
-var paymenthandler = require('../utils/paymenthandler.js');
+var paymenthandler = require('../../utils/paymenthandler.js');
 
 //begin of afterSave
 Parse.Cloud.afterSave("Campfire", function(request) {
@@ -105,8 +105,8 @@ function splitAndMakePayments(question, charge, callback){
             transactionPercentage: 2.9,
             amount: price,
             transactionFee : 0.3,
-            userRef : question.get("fromUser")
-            questionRef : question,
+            userRef : question.get("fromUser"),
+            questionRef : question
       };
 
       var charity_params = {
