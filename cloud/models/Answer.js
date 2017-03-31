@@ -15,6 +15,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
         var question = request.object.get("questionRef");
 
         var currentUser = request.user;
+        var isTestUser = request.user.get("isTestUser");
 
         question.set("isAnswered", true);
 
@@ -24,7 +25,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
         newCampfire.set("likeCount", 0);
         newCampfire.set("flagCount", 0);
         newCampfire.set("isDummyData", false);
-        newCampfire.set("isTest", currentUser.isTestUser);
+        newCampfire.set("isTest", isTestUser);
 
         newCampfire.save();
 
