@@ -98,7 +98,7 @@ Parse.Cloud.define('updateCustomer', function(req, res) {
                    }else{
                    
                    
-                   stripe.customers.updateCustomer(customerId, {
+                   stripe.customers.update(customerId, {
                                                  source: sourceToken
                                                  }, function(err, source) {
                                                  if (err) {
