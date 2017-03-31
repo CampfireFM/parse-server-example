@@ -61,14 +61,13 @@ Parse.Cloud.define('chargeWithToken', function(req, res) {
     var customerId = req.params.customerId;
 	var amount = req.params.amount;
                    
-  	if(!authToken || !amount){
+  	if(!customerId || !amount){
   		return res.error('authToken and amount are mandatory');
   	}else{
   		stripe.charges.create({
 	      amount: amount,
 	      currency: "usd",
 	      customer: customerId,
-          source: sourceToken,
           captured: false,
 	      description: 'Campire - test charging for amount '+amount
 	    }, function(err, charge) {
