@@ -51,6 +51,34 @@ Parse.Cloud.define('createStripeSourceForCustomer', function(req, res) {
 });
 
 
+Parse.Cloud.define('chargeWithToken', function(req, res) {
+	if(!req.user){
+		return res.error("User not logged in");
+	}
+	var authToken = req.params.authToken;
+  	if(!authToken || !amount){
+  		return res.error('authToken and amount are mandatory');
+  	}else{
+  		stripe.charges.create({
+	      amount: amount,
+	      currency: "usd",
+	      source: authToken,
+	      description: 'Campire - test charging for amount '+amount
+	    }, function(err, charge) {
+	        if(err){
+	          console.log("It was an error");
+	          console.log(err);
+	          return res.error(err);
+	        }else{
+	          console.log("It was success");
+	          console.log(charge);
+	          return res.success(charge);
+	        }
+	    });
+  	}
+});
+
+
 Parse.Cloud.define('getFeaturedCampfire', function(req, res){
   var campfires = [];
   var limit = req.params.limit || 6;
