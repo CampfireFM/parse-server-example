@@ -68,6 +68,7 @@ Parse.Cloud.define('chargeWithToken', function(req, res) {
 	      currency: "usd",
 	      customer: customerId,
           source: sourceToken,
+          capture: false,
 	      description: 'Campire - test charging for amount '+amount
 	    }, function(err, charge) {
 	        if(err){
