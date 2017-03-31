@@ -97,25 +97,25 @@ Parse.Cloud.define('updateCustomer', function(req, res) {
                    return res.error('sourceToken and customerId are mandatory');
                    }else{
                    
-                   stripe.customers.update(customerId, {
-                                           source: sourceToken
-                                           }, function(err, customer) {
-                                           if(err){
-                                               console.log("It was an error");
-                                               console.log(err);
-                                               return res.error(err);
-                                           
-                                           }else{
-
-//                                               customer.source = sourceToken;
-//                                               customer.save;
-
-                                               console.log("It was success");
-                                               console.log(customer);
-                                               
-                                               return res.success(nil);
-                                               }
-                                           });
+//                   stripe.customers.update(customerId, {
+//                                           source: sourceToken
+//                                           }, function(err, customer) {
+//                                           if(err){
+//                                               console.log("It was an error");
+//                                               console.log(err);
+//                                               return res.error(err);
+//                                           
+//                                           }else{
+//
+////                                               customer.source = sourceToken;
+////                                               customer.save;
+//
+//                                               console.log("It was success");
+//                                               console.log(customer);
+//                                               
+//                                               return res.success(nil);
+//                                               }
+//                                           });
                    }
                    });
 
