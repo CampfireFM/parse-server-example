@@ -64,7 +64,7 @@ Parse.Cloud.define('chargeWithToken', function(req, res) {
   		stripe.charges.create({
 	      amount: amount,
 	      currency: "usd",
-	      source: authToken,
+	      customer: authToken,
 	      description: 'Campire - test charging for amount '+amount
 	    }, function(err, charge) {
 	        if(err){
