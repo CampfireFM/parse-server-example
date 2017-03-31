@@ -29,7 +29,7 @@ payment_methods.createCharge = function(amount, token, questionId, callback){
           // return res.status(500).send({ result: 'error' : response : err});
         }
     });
-}
+};
 
 payment_methods.capturePayment = function(charge_id, questionId, callback){
 
@@ -51,7 +51,7 @@ payment_methods.capturePayment = function(charge_id, questionId, callback){
           // return res.status(500).send({ result: 'error' : response : err});
         }
     });
-}
+};
 
 
 payment_methods.retrieveCustomer = function(customerId, callback){
@@ -63,7 +63,20 @@ payment_methods.retrieveCustomer = function(customerId, callback){
         return callback(null,customer);
       }
     });
-}
+};
+
+payment_methods.createSource = function(customerId, sourceToken, callback){
+
+    stripe.customers.createSource(customerId, {
+      source: sourceToken
+    }, function(err, source) {
+      if (err) {
+        return callback(err, null);
+      } else {
+        return callback(null, source);
+      }
+    });
+};
 
 module.exports = payment_methods;
 

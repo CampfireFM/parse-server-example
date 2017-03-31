@@ -31,6 +31,21 @@ Parse.Cloud.define('getStripeCustomer', function(req, res) {
   	}
 });
 
+Parse.Cloud.define('createStripeSourceForCustomer', function(req, res) {
+	var customerId = req.params.customerId;
+  	if(!customerId || !sourceToken){
+  		return res.error('customerId and SourceToken is mandatory');
+  	}else{
+  		payment_methods.createSource(customerId, sourceToken,function(err, result){
+  			if(err){
+  				return res.error(err);
+  			}else{
+  				return res.success(result);
+  			}
+  		})
+  	}
+});
+
 
 Parse.Cloud.define('getFeaturedCampfire', function(req, res){
   var campfires = [];
