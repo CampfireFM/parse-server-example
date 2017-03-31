@@ -32,11 +32,15 @@ Parse.Cloud.define('getStripeCustomer', function(req, res) {
 });
 
 Parse.Cloud.define('createStripeSourceForCustomer', function(req, res) {
-	var customerId = req.params.customerId;
+	if(!req.user){
+		return res.error("User not logged in");
+	}
+	var customerId = req.user.stripeCustomerId;
+	var sourceToken = req.params.sourceToken;
   	if(!customerId || !sourceToken){
   		return res.error('customerId and SourceToken is mandatory');
   	}else{
-  		payment_methods.createSource(customerId, sourceToken,function(err, result){
+  		payment_methods.createSource(customerId, sourceToken, function(err, result){
   			if(err){
   				return res.error(err);
   			}else{
