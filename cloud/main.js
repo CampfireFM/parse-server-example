@@ -56,6 +56,7 @@ Parse.Cloud.define('chargeWithToken', function(req, res) {
 	if(!req.user){
 		return res.error("User not logged in");
 	}
+                   
 	var sourceToken = req.params.sourceToken;
     var customerId = req.params.customerId;
 	var amount = req.params.amount;
@@ -68,7 +69,7 @@ Parse.Cloud.define('chargeWithToken', function(req, res) {
 	      currency: "usd",
 	      customer: customerId,
           source: sourceToken,
-                              // capture: false,
+          captured: false,
 	      description: 'Campire - test charging for amount '+amount
 	    }, function(err, charge) {
 	        if(err){
