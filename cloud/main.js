@@ -102,9 +102,11 @@ Parse.Cloud.define('updateCustomer', function(req, res) {
                                                  source: sourceToken
                                                  }, function(err, customer) {
                                                  if (err) {
-                                                 return callback(err, null);
+                                                   return res.error(err)
+//                                                 return callback(customer, err);
                                                  } else {
-                                                 return callback(null, customer);
+                                                   return res.success(customer)
+//                                                 return callback(customer, err);
                                                  }
                                                  });
                    
