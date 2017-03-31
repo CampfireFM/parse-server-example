@@ -100,11 +100,11 @@ Parse.Cloud.define('updateCustomer', function(req, res) {
                    
                    stripe.customers.update(customerId, {
                                                  source: sourceToken
-                                                 }, function(err, source) {
+                                                 }, function(err, customer) {
                                                  if (err) {
                                                  return callback(err, null);
                                                  } else {
-                                                 return callback(null, source);
+                                                 return callback(null, customer);
                                                  }
                                                  });
                    
