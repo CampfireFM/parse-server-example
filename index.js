@@ -6,6 +6,7 @@ var ParseServer = require('parse-server').ParseServer;
 var path = require('path');
 var ParseDashboard = require('parse-dashboard');
 var config = require('./config.js');
+var cors = require('cors')
 
 var api = new ParseServer({
     databaseURI: config['databaseURI'],
@@ -42,6 +43,7 @@ var dashboard = new ParseDashboard({
 },true);
 
 var app = express();
+app.use(cors({credentials: true}));
 
 // Serve static assets from the /public folder
 app.use('/public', express.static(path.join(__dirname, '/public')));
