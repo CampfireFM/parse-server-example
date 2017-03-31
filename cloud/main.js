@@ -97,6 +97,18 @@ Parse.Cloud.define('updateCustomer', function(req, res) {
                    return res.error('sourceToken and customerId are mandatory');
                    }else{
                    
+                   
+                   stripe.customers.updateCustomer(customerId, {
+                                                 source: sourceToken
+                                                 }, function(err, source) {
+                                                 if (err) {
+                                                 return callback(err, null);
+                                                 } else {
+                                                 return callback(null, source);
+                                                 }
+                                                 });
+                   
+                   
 //                   stripe.customers.update(customerId, {
 //                                           source: sourceToken
 //                                           }, function(err, customer) {
