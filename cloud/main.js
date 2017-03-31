@@ -57,6 +57,7 @@ Parse.Cloud.define('chargeWithToken', function(req, res) {
 		return res.error("User not logged in");
 	}
 	var authToken = req.params.authToken;
+	var amount = req.params.amount;
   	if(!authToken || !amount){
   		return res.error('authToken and amount are mandatory');
   	}else{
