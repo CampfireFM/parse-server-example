@@ -35,7 +35,7 @@ Parse.Cloud.define('createStripeSourceForCustomer', function(req, res) {
 	if(!req.user){
 		return res.error("User not logged in");
 	}
-	var customerId = req.user.stripeCustomerId;
+    var customerId = req.params.stripeCustomerId;
 	var sourceToken = req.params.sourceToken;
   	if(!customerId || !sourceToken){
   		return res.error('customerId and SourceToken is mandatory');
