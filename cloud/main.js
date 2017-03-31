@@ -103,33 +103,10 @@ Parse.Cloud.define('updateCustomer', function(req, res) {
                                                  }, function(err, customer) {
                                                  if (err) {
                                                    return res.error(err)
-//                                                 return callback(customer, err);
                                                  } else {
                                                    return res.success(customer)
-//                                                 return callback(customer, err);
                                                  }
                                                  });
-                   
-                   
-//                   stripe.customers.update(customerId, {
-//                                           source: sourceToken
-//                                           }, function(err, customer) {
-//                                           if(err){
-//                                               console.log("It was an error");
-//                                               console.log(err);
-//                                               return res.error(err);
-//                                           
-//                                           }else{
-//
-////                                               customer.source = sourceToken;
-////                                               customer.save;
-//
-//                                               console.log("It was success");
-//                                               console.log(customer);
-//                                               
-//                                               return res.success(nil);
-//                                               }
-//                                           });
                    }
                    });
 
