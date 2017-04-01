@@ -10,6 +10,12 @@ Parse.Cloud.afterSave("Campfire", function(request) {
             questionRef.fetch({
                   useMasterKey: true,
                   success: function(question) {
+
+                        chargeUserAndSplitPayment(question, function(e,r){
+                              console.log(e);
+                              console.log(r);
+                        });
+
                         var questionAsker = question.get("fromUser");
                         questionAsker.fetch({
                               useMasterKey: true,
@@ -96,10 +102,16 @@ function splitAndMakePayments(question, charge, callback){
       var payout_params = {
             amount : split_answerer,
             userRef : question.get("toUser"),
+            questionRef : question,
             chargeRef : charge,
             type : 'answer',
             isPaid : false
       };
+
+      createPayout(payout_params, function(e,r){
+            console.log(e);
+            console.log();
+        });
 
       var deposit_params = {
             transactionPercentage: 2.9,
@@ -109,13 +121,27 @@ function splitAndMakePayments(question, charge, callback){
             questionRef : question
       };
 
+      createDeposit(deposit_params, function(e,r){
+            console.log(e);
+            console.log();
+        });
+
       var charity_params = {
             amount: split_charity,
             charityRef: question.get("charity"),
             questionRef: question,
             userRef : question.get("toUser"),
+            isPaid: false
       };
 
+      createCharity(charity_params, function(e,r){
+            console.log(e);
+            console.log();
+        });
+
+      var user_earning_increment = split_charity + split_answerer;
+      user.increment("totalEarnings", user_earning_increment);
+      user.save(null, {useMasterKey: true});
 }
 
 //this function gets the charge details from the Charge table for the given question
@@ -202,9 +228,4 @@ function createPayout(params, callback){
             }
       });
       //end of save operation code block
-}
-
-function updateUserObject(user, amount, callback){
-      user.increment("totalEarnings", amount);
-      user.save();
 }

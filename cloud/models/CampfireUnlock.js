@@ -12,10 +12,21 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
             success: function (campfire) {
                 console.log("SUCCESS getting Campfire");
                 var questionRef = campfire.get("questionRef");
+                questionRef.include(['fromUser','fromUser.charityRef','toUser','toUser.charityRef']);
                 questionRef.fetch({
                     success: function (question) {
                         console.log("SUCCESS getting Question");
                         var questionAsker = question.get("fromUser");
+
+                        var params = {
+                            question: question,
+                            campfireunlock: request.object,
+                            campfire : campfire
+                        };
+
+                        splitUnlockEarnings(params);
+
+
                         questionAsker.fetch({
                             success: function (questionAskerUser) {
                                 console.log("SUCCESS getting the FROM USER!");
@@ -130,3 +141,131 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
     }
 });
 
+
+/*
+The below function calculates all the splits of money for asker and answerer
+and their charity
+*/
+function splitUnlockEarnings(params){
+
+      var question = params.question;
+      var total_unlock_earnings = 0.12;
+
+      var split_asker = total_unlock_earnings / 2;
+      var split_answerer = total_unlock_earnings / 2;
+
+      var answerer_charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
+      var split_answerer_charity = split_answerer * ( answerer_charity_percentage / 100);
+
+      var asker_charity_percentage = question.get("fromUser").get("donationPercentage") ? question.get("fromUser").get("donationPercentage") : 0;
+      var split_asker_charity = split_asker * ( asker_charity_percentage / 100);
+
+      var asker_charity = question.get("fromUser").get("charityRef");
+
+      var split_asker_final = split_asker - split_asker_charity;
+      var split_answerer_final = split_answerer - split_answerer_charity;
+
+      var payout_asker_params = {
+            amount : split_asker_final,
+            userRef : question.get("fromUser"),
+            unlockRef : params.campfireunlock,
+            type : 'unlock',
+            isPaid : false
+      };
+
+        createPayoutForUnlock(payout_asker_params, function(e,r){
+            console.log(e);
+            console.log();
+        });
+
+      var payout_answerer_params = {
+            amount : split_answerer_final,
+            userRef : question.get("toUser"),
+            unlockRef : params.campfireunlock,
+            type : 'answer',
+            isPaid : false
+      };
+
+        createPayoutForUnlock(payout_answerer_params, function(e,r){
+            console.log(e);
+            console.log();
+        });
+
+      var charity_asker_params = {
+            amount: split_answerer_charity,
+            charityRef: question.get("charity"),
+            questionRef: question,
+            userRef : question.get("toUser"),
+            isPaid: false
+      };
+
+      createCharityForUnlock(charity_asker_params, function(e,r){
+            console.log(e);
+            console.log();
+        });
+
+      var charity_answerer_params = {
+            amount: split_asker_charity,
+            charityRef: asker_charity,
+            questionRef: question,
+            userRef : question.get("fromUser"),
+            isPaid: false
+      };
+
+      createCharityForUnlock(charity_asker_params, function(e,r){
+            console.log(e);
+            console.log();
+        });
+
+      question.get("fromUser").increment("totalEarnings", split_asker);
+      question.get("fromUser").save(null, {useMasterKey: true});
+
+      question.get("toUser").increment("totalEarnings", split_answerer);
+      question.get("toUser").save(null, {useMasterKey: true});
+}
+
+/*
+@Description : Function to create Charity record
+*/
+function createCharityForUnlock(params, callback){
+
+      var Charity = Parse.Object.extend("Charity");
+      var charity = new Charity();
+
+      for(key in params){
+            charity.set(key,params[key]);
+      }
+
+      charity.save(null, {
+            useMasterKey: true,
+            success: function(charityrecord){
+                return callback(null,charityrecord);
+            },error : function(err){
+                return callback(err,null);
+            }
+      });
+      //end of save operation code block
+}
+
+/*
+@Description : Function to create Payout record
+*/
+function createPayoutForUnlock(params, callback){
+
+      var Payout = Parse.Object.extend("Payout");
+      var payout = new Payout();
+
+      for(key in params){
+            payout.set(key,params[key]);
+      }
+
+      payout.save(null, {
+            useMasterKey: true,
+            success: function(payoutrecord){
+                return callback(null,payoutrecord);
+            },error : function(err){
+                return callback(err,null);
+            }
+      });
+      //end of save operation code block
+}
