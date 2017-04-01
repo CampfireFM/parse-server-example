@@ -36,6 +36,11 @@ Parse.Cloud.afterSave("Question", function(request) {
                             customerId : request.object.get("customerId")
                         };
 
+                        if(!params.customerId){
+                            params.customerId = request.user.get("customerId");
+                            console.log("got customerId from request.user");
+                        }
+
                         //call the stripe api and create the Charge Object
                         createCharge(params, function(err_charge, res_charge){
                             if(res_charge){
