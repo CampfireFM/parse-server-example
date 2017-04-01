@@ -6,7 +6,7 @@ Parse.Cloud.afterSave("Campfire", function(request) {
       if (request.object.existed() == false) {
 
             var questionRef = request.object.get("questionRef");
-            questionRef.include(["toUser","fromUser","charity"])
+            // questionRef.include(["toUser","fromUser","charity"])
             questionRef.fetch({
                   useMasterKey: true,
                   success: function(question) {

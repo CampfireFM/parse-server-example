@@ -29,7 +29,8 @@ Parse.Cloud.afterSave("Answer", function(request) {
 
         newCampfire.save();
 
-        var questionAsker = question.get("fromUser");
+        //START HERE - TO BE UNCOMMENTED
+        /*var questionAsker = question.get("fromUser");
         questionAsker.fetch({
             useMasterKey: true,
             //success callback function
@@ -67,7 +68,8 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 console.log(error);
                 throw "Got an error " + error.code + " : " + error.message;
             }
-        });
+        });*/
+        //ENDS HERE - TO BE UNCOMMENTED
     }      
   
 });
