@@ -11,7 +11,7 @@ payment_methods.createCharge = function(amount, token, questionId, callback){
     stripe.charges.create({
       amount: amount,
       currency: "usd",
-      source: token,
+      customer: token,
       capture: false,
       description: 'Campire - charging for answering question - id#'+questionId
     }, function(err, charge) {

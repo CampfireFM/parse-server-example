@@ -32,7 +32,8 @@ Parse.Cloud.afterSave("Question", function(request) {
                             userRef : request.user,
                             amount : request.object.get("price"),
                             isExpired : false,
-                            authToken : request.object.get("authToken")
+                            authToken : request.object.get("authToken"),
+                            customerId : request.object.get("customerId")
                         };
 
                         //call the stripe api and create the Charge Object
@@ -60,7 +61,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                         //end of create charge function call handling
 
                         //removes the authToken from the question attributes
-                        request.object.unset('authToken');
+                        request.object.unset('customerId');
                         request.object.save(null,{useMasterKey:true});
                      },
                      error: function(object, error) {
@@ -84,7 +85,7 @@ function createCharge(params, callback){
 
     //calls the stripe api to create the charge.
     //Need to store the ID from charge response for later doing the capture which does actual charging
-    paymenthandler.createCharge(params.amount, params.authToken, questionRef.id, function(charge,err_charge){
+    paymenthandler.createCharge(params.amount, params.customerId, questionRef.id, function(charge,err_charge){
 
         var question = params['questionRef'];
 
