@@ -11,6 +11,8 @@ Parse.Cloud.afterSave("Campfire", function(request) {
                   useMasterKey: true,
                   success: function(question) {
 
+                              
+                              
                         chargeUserAndSplitPayment(question, function(e,r){
                               console.log(e);
                               console.log(r);
