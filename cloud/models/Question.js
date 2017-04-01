@@ -33,7 +33,8 @@ Parse.Cloud.afterSave("Question", function(request) {
                             amount : request.object.get("price"),
                             isExpired : false,
                             authToken : request.object.get("authToken"),
-                            customerId : request.object.get("customerId")
+                            customerId : request.object.get("customerId"),
+                            chargeId : request.object.get("chargeId")
                         };
 
                         if(!params.customerId){
@@ -66,7 +67,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                         //end of create charge function call handling
 
                         //removes the authToken from the question attributes
-                        request.object.unset('customerId');
+                        request.object.unset('chargeId');
                         request.object.save(null,{useMasterKey:true});
                      },
                      error: function(object, error) {
@@ -88,43 +89,23 @@ Parse.Cloud.afterSave("Question", function(request) {
 */
 function createCharge(params, callback){
 
-    //calls the stripe api to create the charge.
-    //Need to store the ID from charge response for later doing the capture which does actual charging
-    paymenthandler.createCharge(params.amount, params.customerId, questionRef.id, function(charge,err_charge){
-
-        var question = params['questionRef'];
-
-        var Charge = Parse.Object.extend("Charge");
-        var charge = new Charge();
-        for(key in params){
-            charge.set(key,params[key]);
+    var question = params['questionRef'];
+    var Charge = Parse.Object.extend("Charge");
+    var charge = new Charge();
+    for(key in params){
+        charge.set(key,params[key]);
+    }
+    charge.set('status_createcharge','success');
+    charge.set('isExpired',false);
+    //update the charge with the charging status
+    charge.save(null, {
+        useMasterKey: true,
+        success: function(chargerecord){
+            return callback(null,chargerecord);
+        },error : function(err){
+            return callback(err,null);
         }
-        charge.set('isExpired',false);
-        if(charge){
-            charge.set('chargeId',charge.id);
-            charge.set('status_createcharge','success');
-            //if payment success, mark question as valid
-            question.set('isPaymentValid', true);
-        }else{
-            charge.set('status_createcharge','failure');
-            console.log(err_charge);
-            //if payment failure, mark question as invalid
-            question.set('isPaymentValid', false);
-        }
-        //update the question based on charge was success or not
-        question.save(null, {useMasterKey:true});
-
-        //update the charge with the charging status
-        charge.save(null, {
-            useMasterKey: true,
-            success: function(chargerecord){
-                return callback(null,chargerecord);
-            },error : function(err){
-                return callback(err,null);
-            }
-        });
-        //end of save operation code block
     });
-    //end of function call and callback for createCharge
+    //end of save operation code block
 }
 
