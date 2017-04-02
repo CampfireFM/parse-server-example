@@ -11,9 +11,11 @@ Parse.Cloud.afterSave("Campfire", function(request) {
                   useMasterKey: true,
                   success: function(question) {
 
-                              
-                              
-                        chargeUserAndSplitPayment(question, function(e,r){
+                        request.log.info("REACHED IN QUESTION POINT");
+                        request.log.info(question);
+                        request.log.info(JSON.stringify(question));
+
+                        chargeUserAndSplitPayment(request, question, function(e,r){
                               console.log(e);
                               console.log(r);
                         });
@@ -55,12 +57,15 @@ Parse.Cloud.afterSave("Campfire", function(request) {
       @question - instace of Question object
       @
 */
-function chargeUserAndSplitPayment(question, callback){
+function chargeUserAndSplitPayment(request, question, callback){
 
       //first find the charge details for the question
       getChargeDetails(question,function(err_charge, charge){
             if(charge){
                   var chargeId = charge.get("chargeId");
+                  request.log.info("The charge ID that we are sending is "+chargeId);
+                  request.log.info("The question ID that we are sending is "+question.id);
+
                   if(!chargeId){
                         return callback("No ChargeId found in the charge table",null);
                   }
