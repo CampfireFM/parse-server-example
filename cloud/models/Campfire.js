@@ -32,7 +32,7 @@ Parse.Cloud.afterSave("Campfire", function(request) {
                                     newActivity1.set("toUser", user);
                                             
                                             var currentUser = request.user;
-                                            var userId = request.object.get("toUser").id; //request.params.userId;
+                                            var userId = currentUser.id; //request.params.userId;
                                             console.log("userID")
                                             console.log(userId)
                                             var userB = new Parse.User.createWithoutData(userId);
