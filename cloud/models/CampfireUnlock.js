@@ -178,8 +178,8 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 
 function sendUnlockPushToAsker(campfire, question, currentUser) {
     
-    var toUser = question.get("toUser")
-    var fromUser = currentUser
+    var toUser = question.get("toUser");
+    var fromUser = currentUser;
     
     // Create and save a new "Unlock" activity for the question Asker
     var Activity = Parse.Object.extend("Activity");
@@ -225,8 +225,8 @@ function sendUnlockPushToAsker(campfire, question, currentUser) {
 
 function sendUnlockPushToAnswerer(campfire, question, currentUser) {
     
-    var toUser = question.get("toUser")
-    var fromUser = currentUser
+    var toUser = question.get("toUser");
+    var fromUser = currentUser;
     
     var Activity = Parse.Object.extend("Activity");
     var newActivity2 = new Activity();
