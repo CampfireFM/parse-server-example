@@ -44,22 +44,38 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 });
 
 
-
-function sendUnlockPushToAsker(campfire, question, currentUser) {
+func saveUnlockActivity(campfire, question, currentUser, toUser, type) {
     
-    var toUser = question.get("toUser");
-    var fromUser = currentUser;
-    
-    // Create and save a new "Unlock" activity for the question Asker
+        // Create and save a new "Unlock" activity for the question Asker
     var Activity = Parse.Object.extend("Activity");
     var newActivity = new Activity();
     newActivity.set("question", question);
     newActivity.set("campfire", campfire);
     newActivity.set("isRead", false);
-    newActivity.set("toUser", question.get("fromUser"));
+    newActivity.set("toUser", toUser);
     newActivity.set("fromUser", currentUser);
-    newActivity.set("type", "unlockToAsker");
+    newActivity.set("type", type);
     newActivity.save(null, {useMasterKey: true});
+    
+}
+
+function sendUnlockPushToAsker(campfire, question, currentUser) {
+    
+//    var toUser = question.get("toUser");
+//    var fromUser = currentUser;
+    
+    // Create and save a new "Unlock" activity for the question Asker
+//    var Activity = Parse.Object.extend("Activity");
+//    var newActivity = new Activity();
+//    newActivity.set("question", question);
+//    newActivity.set("campfire", campfire);
+//    newActivity.set("isRead", false);
+//    newActivity.set("toUser", question.get("fromUser"));
+//    newActivity.set("fromUser", currentUser);
+//    newActivity.set("type", "unlockToAsker");
+//    newActivity.save(null, {useMasterKey: true});
+    
+    saveUnlockActivity(campfire, question, currentUser, question.get("fromUser"), "unlockToAsker")
     
     
     // setup a push to the question Asker
@@ -94,24 +110,26 @@ function sendUnlockPushToAsker(campfire, question, currentUser) {
 
 function sendUnlockPushToAnswerer(campfire, question, currentUser) {
     
-    console.log("Beginning push to Answerer")
+//    console.log("Beginning push to Answerer")
     
-    var toUser = question.get("toUser");
+    saveUnlockActivity(campfire, question, currentUser, question.get("toUser"), "unlockToAnswerer")
     
-    var Activity = Parse.Object.extend("Activity");
-    var newActivity2 = new Activity();
-    newActivity2.set("question", question);
-    newActivity2.set("campfire", campfire);
-    newActivity2.set("isRead", false);
-    newActivity2.set("toUser", toUser);
-    newActivity2.set("fromUser", currentUser);
-    newActivity2.set("type", "unlockToAnswerer");
-    newActivity2.save(null, {useMasterKey: true});
+//    var toUser = question.get("toUser");
+//    
+//    var Activity = Parse.Object.extend("Activity");
+//    var newActivity2 = new Activity();
+//    newActivity2.set("question", question);
+//    newActivity2.set("campfire", campfire);
+//    newActivity2.set("isRead", false);
+//    newActivity2.set("toUser", toUser);
+//    newActivity2.set("fromUser", currentUser);
+//    newActivity2.set("type", "unlockToAnswerer");
+//    newActivity2.save(null, {useMasterKey: true});
     
         // setup a push to the question Answerer
     var pushQuery = new Parse.Query(Parse.Installation);
     pushQuery.equalTo('deviceType', 'ios');
-    pushQuery.equalTo('user', toUser);
+    pushQuery.equalTo('user', question.get("toUser"));
     
     var alert = "";
     var firstName = currentUser.get('firstName');
@@ -135,8 +153,6 @@ function sendUnlockPushToAnswerer(campfire, question, currentUser) {
                     throw "PUSH: Got an error " + error.code + " : " + error.message;
                     }
                     });
-    
-    
 }
 
 
