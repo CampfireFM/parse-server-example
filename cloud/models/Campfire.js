@@ -113,6 +113,13 @@ function splitAndMakePayments(question, charge, callback){
       var split_charity = split_app * ( charity_percentage / 100);
       var split_answerer = split_app - split_charity;
 
+    
+    var toUser = question.get("toUser");
+    var fromUser = question.get("fromUser");
+    
+    console.log(toUser);
+    console.log(fromUser);
+    
       var payout_params = {
             amount : split_answerer,
             userRef : question.get("toUser"),
