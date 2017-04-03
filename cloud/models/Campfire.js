@@ -7,6 +7,8 @@ Parse.Cloud.afterSave("Campfire", function(request) {
 
             var questionRef = request.object.get("questionRef");
             // questionRef.include(["toUser","fromUser","charity"])
+                      
+                      /*
             questionRef.fetch({
                   useMasterKey: true,
                   success: function(question) {
@@ -15,7 +17,9 @@ Parse.Cloud.afterSave("Campfire", function(request) {
                         request.log.info(question);
                         request.log.info(JSON.stringify(question));
 
-                        getQuestionAndItsPointers(question.id,function(err_question, complete_question){
+                       */
+                      
+                        getQuestionAndItsPointers(questionRef.id,function(err_question, complete_question){
                               if(err_question){
                                     request.log.error("FAILED IN QUESTION DETAILS FETCH");
                                     request.log.error(JSON.stringify(err_question));
@@ -31,7 +35,7 @@ Parse.Cloud.afterSave("Campfire", function(request) {
                                           success: function(user) {
                                                 var Activity = Parse.Object.extend("Activity");
                                                 var newActivity1 = new Activity();
-                                                newActivity1.set("question", question);
+                                                newActivity1.set("question", complete_question);
                                                 newActivity1.set("campfire", request.object);
                                                 newActivity1.set("isRead", false);
                                                 newActivity1.set("toUser", user);
@@ -108,19 +112,24 @@ function chargeUserAndSplitPayment(request, question, callback){
 //This function calculates the payments for user, donation and creates payouts
 function splitAndMakePayments(question, charge, callback){
 
-    var asker = question.get("fromUser");
-    asker.fetch({
-                        useMasterKey: true,
-                        success: function(qAsker) {
-                        var answerer = question.get("toUser");
-                        answerer.fetch({
-                                useMasterKey: true,
-                                success: function(qAnswerer) {
-                                       var theCharity = question.get("charity");
-                                       theCharity.fetch({
-                                                      useMasterKey: true,
-                                                      success: function(charity) {
+//    var asker = question.get("fromUser");
+//    asker.fetch({
+//                        useMasterKey: true,
+//                        success: function(qAsker) {
+//                        var answerer = question.get("toUser");
+//                        answerer.fetch({
+//                                useMasterKey: true,
+//                                success: function(qAnswerer) {
+//                                       var theCharity = question.get("charity");
+//                                       theCharity.fetch({
+//                                                      useMasterKey: true,
+//                                                      success: function(charity) {
 
+    
+    var qAsker = question.get("fromUser");
+    var qAnswerer = question.get("toUser");
+    var charity = question.get("charity");
+    
                                                        var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
                                                        var price = question.get("price") ? question.get("price") : 0;
 
@@ -176,24 +185,24 @@ function splitAndMakePayments(question, charge, callback){
                                                        qAnswerer.increment("totalEarnings", user_earning_increment);
                                                        qAnswerer.save(null, {useMasterKey: true});
 
-                                                        },
-                                                        error: function(object, error) {
-                                                        console.log(error);
-                                                        throw "Got an error " + error.code + " : " + error.message;
-                                                        }
-                                                        });
-                                       },
-                                       error: function(object, error) {
-                                       console.log(error);
-                                       throw "Got an error " + error.code + " : " + error.message;
-                                       }
-                                       });
-                },
-                error: function(object, error) {
-                console.log(error);
-                throw "Got an error " + error.code + " : " + error.message;
-                }
-                });
+//                                                        },
+//                                                        error: function(object, error) {
+//                                                        console.log(error);
+//                                                        throw "Got an error " + error.code + " : " + error.message;
+//                                                        }
+//                                                        });
+//                                       },
+//                                       error: function(object, error) {
+//                                       console.log(error);
+//                                       throw "Got an error " + error.code + " : " + error.message;
+//                                       }
+//                                       });
+//                },
+//                error: function(object, error) {
+//                console.log(error);
+//                throw "Got an error " + error.code + " : " + error.message;
+//                }
+//                });
 
  }
 
