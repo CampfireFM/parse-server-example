@@ -11,28 +11,28 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
             success: function (campfire) {
                           
                 var questionRef = campfire.get("questionRef");
+                getQuestionObjAndItsPointers(questionRef.id, function(err_question, complete_question){
+                        if(err_question){
 
-                        getQuestionObjAndItsPointers(questionRef.id, function(err_question, complete_question){
-                                if(err_question){
+                            request.log.error(err_question);
+                            console.log(err_question);
 
-                                    request.log.error(err_question);
-                                    console.log(err_question);
+                        }else{
 
-                                }else{
+                            var params = {
+                                question: complete_question,
+                                campfireunlock: request.object,
+                                campfire : campfire
+                            };
 
-                                    var params = {
-                                        question: complete_question,
-                                        campfireunlock: request.object,
-                                        campfire : campfire
-                                    };
+                                             
+                            splitUnlockEarnings(params);
+                                             
+                            sendUnlockPushToAsker(campfire, complete_question, currentUser);
+                            sendUnlockPushToAnswerer(campfire, complete_question, currentUser);
 
-                                    splitUnlockEarnings(params);
-                                                     
-                                    sendUnlockPushToAsker(campfire, complete_question, currentUser);
-                                    sendUnlockPushToAnswerer(campfire, complete_question, currentUser);
-
-                                }
-                        });
+                        }
+                });
             },
             useMasterKey: true,
             error: function (object, error) {
@@ -60,20 +60,6 @@ function saveUnlockActivity(campfire, question, currentUser, toUser, type) {
 }
 
 function sendUnlockPushToAsker(campfire, question, currentUser) {
-    
-//    var toUser = question.get("toUser");
-//    var fromUser = currentUser;
-    
-    // Create and save a new "Unlock" activity for the question Asker
-//    var Activity = Parse.Object.extend("Activity");
-//    var newActivity = new Activity();
-//    newActivity.set("question", question);
-//    newActivity.set("campfire", campfire);
-//    newActivity.set("isRead", false);
-//    newActivity.set("toUser", question.get("fromUser"));
-//    newActivity.set("fromUser", currentUser);
-//    newActivity.set("type", "unlockToAsker");
-//    newActivity.save(null, {useMasterKey: true});
     
     saveUnlockActivity(campfire, question, currentUser, question.get("fromUser"), "unlockToAsker");
     
@@ -110,23 +96,9 @@ function sendUnlockPushToAsker(campfire, question, currentUser) {
 
 function sendUnlockPushToAnswerer(campfire, question, currentUser) {
     
-//    console.log("Beginning push to Answerer")
-    
     saveUnlockActivity(campfire, question, currentUser, question.get("toUser"), "unlockToAnswerer");
     
-//    var toUser = question.get("toUser");
-//    
-//    var Activity = Parse.Object.extend("Activity");
-//    var newActivity2 = new Activity();
-//    newActivity2.set("question", question);
-//    newActivity2.set("campfire", campfire);
-//    newActivity2.set("isRead", false);
-//    newActivity2.set("toUser", toUser);
-//    newActivity2.set("fromUser", currentUser);
-//    newActivity2.set("type", "unlockToAnswerer");
-//    newActivity2.save(null, {useMasterKey: true});
-    
-        // setup a push to the question Answerer
+    // setup a push to the question Answerer
     var pushQuery = new Parse.Query(Parse.Installation);
     pushQuery.equalTo('deviceType', 'ios');
     pushQuery.equalTo('user', question.get("toUser"));
