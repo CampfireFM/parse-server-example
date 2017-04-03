@@ -216,7 +216,7 @@ function splitAndMakePayments(question, charge, callback){
     
       var payout_params = {
             amount : split_answerer,
-          userRef : toUser,   //question.get("toUser"),
+//          userRef : toUser,   //question.get("toUser"),
             questionRef : question,
             chargeRef : charge,
             type : 'answer',
@@ -232,7 +232,7 @@ function splitAndMakePayments(question, charge, callback){
             transactionPercentage: 2.9,
             amount: price,
             transactionFee : 0.3,
-          userRef : fromUser,  //question.get("fromUser"),
+//          userRef : fromUser,  //question.get("fromUser"),
             questionRef : question
       };
 
@@ -243,9 +243,9 @@ function splitAndMakePayments(question, charge, callback){
 
       var charity_params = {
             amount: split_charity,
-      charityRef: pointerTo(question.get("charity").id, "Charity"), //question.get("charity"),
+//      charityRef: pointerTo(question.get("charity").id, "Charity"), //question.get("charity"),
             questionRef: question,
-          userRef : toUser, //question.get("toUser"),
+//          userRef : toUser, //question.get("toUser"),
             isPaid: false
       };
 
