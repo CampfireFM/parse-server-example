@@ -30,7 +30,7 @@ Parse.Cloud.afterSave("Campfire", function(request) {
                                     newActivity1.set("campfire", request.object);
                                     newActivity1.set("isRead", false);
                                     newActivity1.set("toUser", user);
-                                    //newActivity1.set("fromUser", currentUser);
+                                    newActivity1.set("fromUser", User.createWithoutData(request.object.get(toUser)));
                                     newActivity1.set("type", "youAskedTheyAnswered");
                                     newActivity1.save(null, { useMasterKey: true });
                               },
