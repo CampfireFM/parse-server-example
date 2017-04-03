@@ -1,9 +1,12 @@
 
 Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 
+    console.log("IAMHEERE");
     if (request.object.existed() == false) {
 
-        var currentUser = request.user
+        console.log("HERE TOOOOO");
+
+        var currentUser = request.user;
 
         console.log("SUCCESS on save");
         // It's a new "Like"
@@ -16,21 +19,32 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
                 questionRef.fetch({
                     success: function (question) {
                         console.log("SUCCESS getting Question");
+
                         var questionAsker = question.get("fromUser");
+
+                        console.log("I AM JUST BEFORE FUNCTION CALL");
 
                         getQuestionObjAndItsPointers(question.id, function(err_question, complete_question){
                                 if(err_question){
+
                                     request.log.error("FAILED IN QUESTION DETAILS FETCH");
                                     request.log.error(err_question);
+                                    console.log("FAILED IN QUESTION DETAILS FETCH");
+                                    console.log(err_question);
+
                                 }else{
+
                                     var params = {
                                         question: complete_question,
                                         campfireunlock: request.object,
                                         campfire : campfire
                                     };
 
+                                    console.log("JUST BEFORE CALLING SPLITUNLOCK EARNINGS");
+                                    console.log(params);
+
                                     splitUnlockEarnings(params);
-                                    
+
                                 }
                         });
 
@@ -157,6 +171,7 @@ and their charity
 */
 function splitUnlockEarnings(params){
 
+      console.log("reached here11");
       var question = params.question;
       var total_unlock_earnings = 0.12;
 
@@ -181,6 +196,8 @@ function splitUnlockEarnings(params){
             type : 'unlock',
             isPaid : false
       };
+
+      console.log(payout_asker_params);
 
         createPayoutForUnlock(payout_asker_params, function(e,r){
             console.log(e);
@@ -283,18 +300,21 @@ function createPayoutForUnlock(params, callback){
 
 function getQuestionObjAndItsPointers(questionId,callback){
 
+      console.log("inside getQuestionObjAndItsPointers");
       var Question = Parse.Object.extend("Question");
       var query = new Parse.Query(Question);
-      questionRef.include(['fromUser','fromUser.charityRef','toUser','toUser.charityRef']);
+      query.include(['fromUser','fromUser.charityRef','toUser','toUser.charityRef']);
       query.equalTo("objectId",questionId);
       query.find({
         success: function(questions) {
+          console.log("in the SUCCESS of getQuestionObjAndItsPointers");
           console.log(questions.length);
           console.log(questions[0]);
           // return res.success(questions[0]);
           return callback(null,questions[0]);
         },
         error: function(object, error) {
+          console.log("in the FAILURE of getQuestionObjAndItsPointers");
           console.log(error);
           return callback(error,null);
           // return res.error(error);

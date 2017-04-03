@@ -19,7 +19,7 @@ var twitter = new Twitter({
 var _requestSecret;
 
 var api = new ParseServer({
-    verbose: false,
+    verbose: true,
     databaseURI: config['databaseURI'],
     cloud: process.env.CLOUD_CODE_MAIN || __dirname + '/cloud/main.js',
     appId: config['appId'],
