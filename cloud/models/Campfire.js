@@ -103,7 +103,101 @@ function chargeUserAndSplitPayment(request, question, callback){
 function splitAndMakePayments(question, charge, callback){
 
       console.log("split & make pmts started");
+   /*
     
+    var asker = question.get("fromUser");
+    asker.fetch({
+                        useMasterKey: true,
+                        success: function(qAsker) {
+                        
+                        var answerer = question.get("fromUser");
+                        answerer.fetch({
+                                useMasterKey: true,
+                                success: function(qAnswerer) {
+                                       
+                                       var charity = question.get("charity");
+                                       var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
+                                       var price = question.get("price") ? question.get("price") : 0;
+                                       
+                                       var split_app = price * ( 20 / 100);
+                                       var split_charity = split_app * ( charity_percentage / 100);
+                                       var split_answerer = split_app - split_charity;
+                                       
+                                       
+                                       var toUser = qAnswerer; // question.get("toUser");
+                                       var fromUser = qAsker;   //question.get("fromUser");
+                                       
+                                       console.log(toUser);
+                                       console.log(fromUser);
+                                       
+                                       var payout_params = {
+                                       amount : split_answerer,
+                                       userRef : toUser, //question.get("toUser"),
+                                       questionRef : question,
+                                       chargeRef : charge,
+                                       type : 'answer',
+                                       isPaid : false
+                                       };
+                                       
+                                       createPayout(payout_params, function(e,r){
+                                                    console.log(e);
+                                                    console.log();
+                                                    });
+                                       
+                                       var deposit_params = {
+                                       transactionPercentage: 2.9,
+                                       amount: price,
+                                       transactionFee : 0.3,
+                                       userRef : fromUser,    //question.get("fromUser"),
+                                       questionRef : question
+                                       };
+                                       
+                                       createDeposit(deposit_params, function(e,r){
+                                                     console.log(e);
+                                                     console.log();
+                                                     });
+                                       
+                                       var charity_params = {
+                                       amount: split_charity,
+                                       charityRef: question.get("charity"),
+                                       questionRef: question,
+                                       userRef : toUser,   // question.get("toUser"),
+                                       isPaid: false
+                                       };
+                                       
+                                       createCharity(charity_params, function(e,r){
+                                                     console.log(e);
+                                                     console.log();
+                                                     });
+                                       
+                                       console.log("split & make pmts finished");
+                                       
+                                       var user_earning_increment = split_charity + split_answerer;
+                                       user.increment("totalEarnings", user_earning_increment);
+                                       user.save(null, {useMasterKey: true});
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       
+                                       },
+                                       error: function(object, error) {
+                                       console.log(error);
+                                       throw "Got an error " + error.code + " : " + error.message;
+                                       }
+                                       });
+                },
+                error: function(object, error) {
+                console.log(error);
+                throw "Got an error " + error.code + " : " + error.message;
+                }
+                });
+    
+    
+    */
+
     
       var charity = question.get("charity");
       var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
@@ -114,15 +208,15 @@ function splitAndMakePayments(question, charge, callback){
       var split_answerer = split_app - split_charity;
 
     
-    var toUser = question.get("toUser");
-    var fromUser = question.get("fromUser");
+    var toUser = pointerTo(question.get("toUser").id, "User");
+    var fromUser = pointerTo(question.get("fromUser").id, "User");
     
     console.log(toUser);
     console.log(fromUser);
     
       var payout_params = {
             amount : split_answerer,
-            userRef : question.get("toUser"),
+          userRef : toUser,   //question.get("toUser"),
             questionRef : question,
             chargeRef : charge,
             type : 'answer',
@@ -138,7 +232,7 @@ function splitAndMakePayments(question, charge, callback){
             transactionPercentage: 2.9,
             amount: price,
             transactionFee : 0.3,
-            userRef : question.get("fromUser"),
+          userRef : fromUser,  //question.get("fromUser"),
             questionRef : question
       };
 
@@ -149,9 +243,9 @@ function splitAndMakePayments(question, charge, callback){
 
       var charity_params = {
             amount: split_charity,
-            charityRef: question.get("charity"),
+      charityRef: pointerTo(question.get("charity").id, "Charity") //question.get("charity"),
             questionRef: question,
-            userRef : question.get("toUser"),
+          userRef : toUser, //question.get("toUser"),
             isPaid: false
       };
 
@@ -165,6 +259,8 @@ function splitAndMakePayments(question, charge, callback){
       var user_earning_increment = split_charity + split_answerer;
       user.increment("totalEarnings", user_earning_increment);
       user.save(null, {useMasterKey: true});
+    
+    
 }
 
 //this function gets the charge details from the Charge table for the given question
@@ -183,6 +279,10 @@ function getChargeDetails(question,callback){
       });
 }
 
+
+function pointerTo(objectId, klass) {
+    return { __type:"Pointer", className:klass, objectId:objectId };
+}
 
 /*
 @Description : Function to createDeposit record
