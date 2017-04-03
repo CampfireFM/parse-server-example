@@ -174,7 +174,7 @@ function splitAndMakePayments(question, charge, callback){
                                                                      console.log();
                                                                      });
                                                        
-                                                       var charity_params = {
+                                                       var donation_params = {
                                                        amount: split_charity,
                                                        charityRef: charity,
                                                        questionRef: question,
@@ -182,7 +182,7 @@ function splitAndMakePayments(question, charge, callback){
                                                        isPaid: false
                                                        };
                                                        
-                                                       createCharity(charity_params, function(e,r){
+                                                       createDonation(donation_params, function(e,r){
                                                                      console.log(e);
                                                                      console.log();
                                                                      });
@@ -265,21 +265,21 @@ function createDeposit(params, callback){
 }
 
 /*
-@Description : Function to create Charity record
+@Description : Function to create charitable Donation record
 */
-function createCharity(params, callback){
+function createDonation(params, callback){
 
-      var Charity = Parse.Object.extend("Charity");
-      var charity = new Charity();
+      var Donation = Parse.Object.extend("Donation");
+      var donation = new Donation();
 
       for(key in params){
-            charity.set(key,params[key]);
+            donation.set(key,params[key]);
       }
 
-      charity.save(null, {
+      donation.save(null, {
             useMasterKey: true,
-            success: function(charityrecord){
-                return callback(null,charityrecord);
+            success: function(donationrecord){
+                return callback(null,donationrecord);
             },error : function(err){
 //                   console.log("charity error");
                 return callback(err,null);

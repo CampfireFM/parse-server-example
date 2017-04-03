@@ -191,7 +191,7 @@ function splitUnlockEarnings(params){
             console.log();
         });
 
-      var charity_asker_params = {
+      var donation_answerer_params = {
             amount: split_answerer_charity,
             charityRef: question.get("charity"),
             questionRef: question,
@@ -199,12 +199,12 @@ function splitUnlockEarnings(params){
             isPaid: false
       };
 
-      createCharityForUnlock(charity_asker_params, function(e,r){
+      createDonationForUnlock(donation_answerer_params, function(e,r){
             console.log(e);
             console.log();
         });
 
-      var charity_answerer_params = {
+      var donation_asker_params = {
             amount: split_asker_charity,
             charityRef: asker_charity,
             questionRef: question,
@@ -212,7 +212,7 @@ function splitUnlockEarnings(params){
             isPaid: false
       };
 
-      createCharityForUnlock(charity_asker_params, function(e,r){
+      createDonationForUnlock(donation_asker_params, function(e,r){
             console.log(e);
             console.log();
         });
@@ -227,19 +227,19 @@ function splitUnlockEarnings(params){
 /*
 @Description : Function to create Charity record
 */
-function createCharityForUnlock(params, callback){
+function createDonationForUnlock(params, callback){
 
-      var Charity = Parse.Object.extend("Charity");
-      var charity = new Charity();
+      var Donation = Parse.Object.extend("Donation");
+      var donation = new Donation();
 
       for(key in params){
-            charity.set(key,params[key]);
+            donation.set(key,params[key]);
       }
 
-      charity.save(null, {
+      donation.save(null, {
             useMasterKey: true,
-            success: function(charityrecord){
-                return callback(null,charityrecord);
+            success: function(donationrecord){
+                return callback(null,donationrecord);
             },error : function(err){
                 return callback(err,null);
             }
