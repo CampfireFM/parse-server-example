@@ -32,7 +32,7 @@ payment_methods.createCharge = function(amount, token, questionId, callback){
 };
 
 payment_methods.capturePayment = function(charge_id, questionId, callback){
-    
+
     stripe.charges.capture(charge_id, function(err, charge) {
         if(err){
           console.log("It was an error");

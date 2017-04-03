@@ -76,13 +76,13 @@ function chargeUserAndSplitPayment(request, question, callback){
                               //throw an exception here to let the Campfire team know of the charging failure
                               charge.set("statusCaptureCharge","failure");
                               charge.set("responseStripeCapture",err);
-                                                
-                                                console.log("returned Error on capture!!");
-                                                
+                              charge.save(null, {useMasterKey: true});
+                              console.log("returned Error on capture!!");
                               return callback(err, null);
                         }else{
                               charge.set("statusCaptureCharge","success");
                               charge.set("responseStripeCapture",res_payment);
+                              charge.save(null, {useMasterKey: true});
                               console.log("returned success on capture!!");
                               //calls the function to split the payment to stake holders based
                               //on properties of the question
@@ -90,10 +90,7 @@ function chargeUserAndSplitPayment(request, question, callback){
 
                               });
                         }
-
                         //updates the charge object with the fields set above
-                        charge.save(null, {useMasterKey: true});
-
                   });
             }
       });
@@ -103,50 +100,44 @@ function chargeUserAndSplitPayment(request, question, callback){
 function splitAndMakePayments(question, charge, callback){
 
       console.log("split & make pmts started");
-   
-    
+
     var asker = question.get("fromUser");
     asker.fetch({
                         useMasterKey: true,
                         success: function(qAsker) {
-                        
                         var answerer = question.get("fromUser");
                         answerer.fetch({
                                 useMasterKey: true,
                                 success: function(qAnswerer) {
-                                       
                                        var theCharity = question.get("charity");
                                        theCharity.fetch({
                                                       useMasterKey: true,
                                                       success: function(charity) {
-    
 //    var charityId = question.get("charity").id;
 //    var Charity = Parse.Object.extend("Charity");
 //    var charity = Charity.createWithoutData(charityId);
-                                       
+
 //   var toUserId = question.get("toUser").id;
 //   var ToUser = Parse.Object.extend("User");
 //   var toUser = ToUser.createWithoutData(toUserId);
-//   
+
 //   var fromUserId = question.get("fromUser").id;
 //   var FromUser = Parse.Object.extend("User");
 //   var fromUser = FromUser.createWithoutData(toUserId);
-    
-    
+
                                                        var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
                                                        var price = question.get("price") ? question.get("price") : 0;
-                                                       
+
                                                        var split_app = price * ( 20 / 100);
                                                        var split_charity = split_app * ( charity_percentage / 100);
                                                        var split_answerer = split_app - split_charity;
-                    
-                    
+
                                                        var toUser = qAnswerer;
                                                        var fromUser = qAsker;
-                    
+
                                                        console.log(toUser);
                                                        console.log(fromUser);
-                                                       
+
                                                        var payout_params = {
                                                        amount : split_answerer,
                                                        userRef : toUser,
@@ -155,12 +146,12 @@ function splitAndMakePayments(question, charge, callback){
                                                        type : 'answer',
                                                        isPaid : false
                                                        };
-                                                       
+
                                                        createPayout(payout_params, function(e,r){
                                                                     console.log(e);
                                                                     console.log();
                                                                     });
-                                                       
+
                                                        var deposit_params = {
                                                        transactionPercentage: 2.9,
                                                        amount: price,
@@ -168,12 +159,12 @@ function splitAndMakePayments(question, charge, callback){
                                                        userRef : fromUser,
                                                        questionRef : question
                                                        };
-                                                       
+
                                                        createDeposit(deposit_params, function(e,r){
                                                                      console.log(e);
                                                                      console.log();
                                                                      });
-                                                       
+
                                                        var donation_params = {
                                                        amount: split_charity,
                                                        charityRef: charity,
@@ -181,18 +172,17 @@ function splitAndMakePayments(question, charge, callback){
                                                        userRef : toUser,
                                                        isPaid: false
                                                        };
-                                                       
+
                                                        createDonation(donation_params, function(e,r){
                                                                      console.log(e);
                                                                      console.log();
                                                                      });
-                                                       
+
                                                        console.log("split & make pmts finished");
-                                                       
+
                                                        var user_earning_increment = split_charity + split_answerer;
                                                        user.increment("totalEarnings", user_earning_increment);
                                                        user.save(null, {useMasterKey: true});
-                                       
 
                                                         },
                                                         error: function(object, error) {
