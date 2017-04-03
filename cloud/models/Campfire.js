@@ -77,13 +77,11 @@ function chargeUserAndSplitPayment(request, question, callback){
                               charge.set("statusCaptureCharge","failure");
                               charge.set("responseStripeCapture",err);
                               charge.save(null, {useMasterKey: true});
-                              console.log("returned Error on capture!!");
                               return callback(err, null);
                         }else{
                               charge.set("statusCaptureCharge","success");
                               charge.set("responseStripeCapture",res_payment);
                               charge.save(null, {useMasterKey: true});
-                              console.log("returned success on capture!!");
                               //calls the function to split the payment to stake holders based
                               //on properties of the question
                               splitAndMakePayments(question, charge, function(error, result){
@@ -98,8 +96,6 @@ function chargeUserAndSplitPayment(request, question, callback){
 
 //This function calculates the payments for user, donation and creates payouts
 function splitAndMakePayments(question, charge, callback){
-
-      console.log("split & make pmts started");
 
     var asker = question.get("fromUser");
     asker.fetch({
@@ -134,9 +130,6 @@ function splitAndMakePayments(question, charge, callback){
 
                                                        var toUser = qAnswerer;
                                                        var fromUser = qAsker;
-
-                                                       console.log(toUser);
-                                                       console.log(fromUser);
 
                                                        var payout_params = {
                                                        amount : split_answerer,
@@ -178,8 +171,6 @@ function splitAndMakePayments(question, charge, callback){
                                                                      console.log(e);
                                                                      console.log();
                                                                      });
-
-                                                       console.log("split & make pmts finished");
 
                                                        var user_earning_increment = split_charity + split_answerer;
                                                        user.increment("totalEarnings", user_earning_increment);
@@ -224,9 +215,6 @@ function getChargeDetails(question,callback){
 
 
 function pointerTo(objectId, klass) {
-    
-    console.log(objectId)
-    console.log(klass)
     
     return { __type:"Pointer", className:klass, objectId:objectId };
 }
