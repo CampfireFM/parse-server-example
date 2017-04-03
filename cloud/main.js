@@ -70,3 +70,92 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
   })
 });
 
+
+
+Parse.Cloud.define("updateNewUser", function(request, response) {
+  var profilePicFile = null;
+  var coverPicFile = null;
+  var params = request.params
+  var firstname = params.firstName || '';
+  var lastname = params.lastName || '';
+  var bio = params.bio || '';
+  var initial_match_count = 0;
+  var Defaults = Parse.Object.extend('Defaults');
+  var query = new Parse.Query(Defaults);
+  query.limit(1);
+
+  query.find().then(function(defaults){
+    initial_match_count = defaults[0].get('initialMatchCount');
+    if(request.user){
+      setUserValues(request.user);
+    }
+    else{
+      var id = request.params.id;
+      var User = Parse.Object.extend('User');
+      var query = new Parse.Query(User);
+      query.get(id, {
+        success: function(user){
+          setUserValues(user);
+        },
+        error: function(error){
+          response.error(error.message);
+        }
+      })
+    }
+  },function(error){
+    response.error(error.message);
+  })
+
+  var setUserValues = function(user){
+    user.set('firstName', firstname);
+    user.set('lastName', lastname);
+    user.set('fullName', firstname + ' ' + lastname)
+    user.set('gender', params.gender);
+    user.set('email', params.email);
+    user.set('bio', params.bio);
+
+    //default values
+
+    user.set('unansweredQuestionCount', 0);
+    user.set('missedNotificationCount', 0);
+    user.set('matchCount', initial_match_count);
+    user.set('questionPrice', 5);
+    user.set('accountBalance', '');
+    user.set('askAbout', '');
+    user.set('tagline', '');
+    user.set('donationPercentage', 0);
+    user.set('totalEarnings', 0);
+    user.set('isTestUser', false);
+    user.set('isDummyUser', false);
+
+    Parse.Cloud.httpRequest({ url: params.profilePicUrl }).then(function(response) {
+      var base64_profile_image = response.buffer.toString('base64');
+      profilePicFile = new Parse.File("profile.jpeg", { base64: base64_profile_image });
+      profilePicFile.save().then(function() {
+        Parse.Cloud.httpRequest({ url: params.coverPicUrl }).then(function(response) {
+          var base64_cover_image = response.buffer.toString('base64');
+          coverPicFile = new Parse.File("cover.jpeg", { base64: base64_cover_image });
+          coverPicFile.save().then(function() {
+            user.set('coverPhoto', coverPicFile);
+            user.set('profilePhoto', profilePicFile);
+            saveUser();
+          }, function(error) {
+            console.log(error.message);
+          });
+        });
+      }, function(error) {
+        console.log(error.message);
+      });
+    });
+    
+
+    var saveUser = function(){
+      user.save(null, {useMasterKey : true}).then(function(user) {
+        response.success(user);
+      }, function(error) {
+        response.error(error.message);
+      });
+    }
+  }
+});
+

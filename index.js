@@ -111,7 +111,6 @@ app.get("/access-token", function(req, res) {
       } else {
         twitter.verifyCredentials(accessToken, accessSecret, function(err, user) {
           var error = '';
-          var parseUser = null;
 
           var twitterProvider = {
             authenticate: function (options) {
@@ -142,12 +141,25 @@ app.get("/access-token", function(req, res) {
               }
             };
             Parse.User.logInWith(twitterProvider, authData).then(function(twitterUser){
-              parseUser = twitterUser;
+              // 'twitterUser' is an empty object created after login
+              // for twitter provided data, use 'user' variable
               if (!twitterUser.existed()) {
-                twitterUser.set('firstName', user.name);
-                twitterUser.set('fullName', user.name);
-                twitterUser.set('bio', user.description);
-                twitterUser.save(null, {useMasterKey : true}).then(function() {
+                var first_name = '';
+                var last_name = ''
+                var name_array = user.name.split(' ');
+
+                first_name = name_array[0];
+                if(name_array.length > 1){
+                  last_name = name_array.slice(-1)[0]
+                }
+                Parse.Cloud.run('updateNewUser', {
+                  firstName: first_name,
+                  lastname: last_name,
+                  bio: user.description,
+                  id: twitterUser.id,
+                  profilePicUrl: user.profile_image_url_https,
+                  coverPicUrl: user.profile_banner_url
+                }).then(function(updatedUser) {
                   return res.status(200).json({
                     success: true,
                     session_token: twitterUser.getSessionToken()
