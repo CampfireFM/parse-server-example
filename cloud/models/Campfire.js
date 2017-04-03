@@ -214,6 +214,10 @@ function splitAndMakePayments(question, charge, callback){
     console.log(toUser);
     console.log(fromUser);
     
+    
+    
+    
+    /*
       var payout_params = {
             amount : split_answerer,
 //          userRef : toUser,   //question.get("toUser"),
@@ -227,6 +231,7 @@ function splitAndMakePayments(question, charge, callback){
             console.log(e);
             console.log();
         });
+     */
 
       var deposit_params = {
             transactionPercentage: 2.9,
@@ -281,6 +286,9 @@ function getChargeDetails(question,callback){
 
 
 function pointerTo(objectId, klass) {
+    
+    console.log(objectId)
+    console.log(klass)
     return { __type:"Pointer", className:klass, objectId:objectId };
 }
 
