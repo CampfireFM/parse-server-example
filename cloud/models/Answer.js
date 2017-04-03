@@ -35,26 +35,20 @@ Parse.Cloud.afterSave("Answer", function(request) {
             useMasterKey: true,
             //success callback function
             success: function(user) {
-                            
-                            
                 newCampfire.set("answerRef", answer);
                 newCampfire.set("questionRef", question);
                 newCampfire.set("listenCount", 0);
                 newCampfire.set("likeCount", 0);
                 newCampfire.set("flagCount", 0);
                 newCampfire.set("isDummyData", false);
-                            
-                if answererIsTestUser === true || user.get("isTestUser") === true {
+                if(answererIsTestUser == true || user.get("isTestUser") == true) {
                     newCampfire.set("isTest", true);
                 } else {
                     newCampfire.set("isTest", false);
                 }
-                
-                
+
                 newCampfire.save();
-                            
-                            
-                            
+
                 // setup a push to the question Asker
                 var pushQuery = new Parse.Query(Parse.Installation);
                 pushQuery.equalTo('deviceType', 'ios');
