@@ -103,7 +103,7 @@ function chargeUserAndSplitPayment(request, question, callback){
 function splitAndMakePayments(question, charge, callback){
 
       console.log("split & make pmts started");
-   /*
+   
     
     var asker = question.get("fromUser");
     asker.fetch({
@@ -196,7 +196,7 @@ function splitAndMakePayments(question, charge, callback){
                 });
     
     
-    */
+    /*
 
     
       var charity = question.get("charity");
@@ -217,7 +217,7 @@ function splitAndMakePayments(question, charge, callback){
     
     
     
-    /*
+    
       var payout_params = {
             amount : split_answerer,
 //          userRef : toUser,   //question.get("toUser"),
@@ -231,7 +231,7 @@ function splitAndMakePayments(question, charge, callback){
             console.log(e);
             console.log();
         });
-     */
+
 
       var deposit_params = {
             transactionPercentage: 2.9,
@@ -265,7 +265,7 @@ function splitAndMakePayments(question, charge, callback){
       user.increment("totalEarnings", user_earning_increment);
       user.save(null, {useMasterKey: true});
     
-    
+    */
 }
 
 //this function gets the charge details from the Charge table for the given question
@@ -289,6 +289,7 @@ function pointerTo(objectId, klass) {
     
     console.log(objectId)
     console.log(klass)
+    
     return { __type:"Pointer", className:klass, objectId:objectId };
 }
 
