@@ -105,17 +105,21 @@ function splitAndMakePayments(question, charge, callback){
       console.log("split & make pmts started");
    
     
-    var asker = question.get("fromUser");
-    asker.fetch({
-                        useMasterKey: true,
-                        success: function(qAsker) {
-                        
-                        var answerer = question.get("fromUser");
-                        answerer.fetch({
-                                useMasterKey: true,
-                                success: function(qAnswerer) {
-                                       
-                                       var charity = question.get("charity");
+//    var asker = question.get("fromUser");
+//    asker.fetch({
+//                        useMasterKey: true,
+//                        success: function(qAsker) {
+//                        
+//                        var answerer = question.get("fromUser");
+//                        answerer.fetch({
+//                                useMasterKey: true,
+//                                success: function(qAnswerer) {
+    
+    var charityId = question.get("charity").id;
+    var Charity = Parse.Object.extend("Charity");
+    var charity = Charity.createWithoutData(charityId);
+    
+    
                                        var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
                                        var price = question.get("price") ? question.get("price") : 0;
                                        
@@ -123,10 +127,20 @@ function splitAndMakePayments(question, charge, callback){
                                        var split_charity = split_app * ( charity_percentage / 100);
                                        var split_answerer = split_app - split_charity;
                                        
-                                       
-                                       var toUser = qAnswerer; // question.get("toUser");
-                                       var fromUser = qAsker;   //question.get("fromUser");
-                                       
+    
+    
+    var toUserId = question.get("toUser").id;
+    var ToUser = Parse.Object.extend("User");
+    var toUser = ToUser.createWithoutData(toUserId);
+    
+    var fromUserId = question.get("fromUser").id;
+    var FromUser = Parse.Object.extend("User");
+    var fromUser = FromUser.createWithoutData(toUserId);
+    
+    
+//                                       var toUser = qAnswerer; // question.get("toUser");
+//                                       var fromUser = qAsker;   //question.get("fromUser");
+    
                                        console.log(toUser);
                                        console.log(fromUser);
                                        
@@ -159,7 +173,7 @@ function splitAndMakePayments(question, charge, callback){
                                        
                                        var charity_params = {
                                        amount: split_charity,
-                                       charityRef: question.get("charity"),
+                                       charityRef: charity, //question.get("charity"),
                                        questionRef: question,
                                        userRef : toUser,   // question.get("toUser"),
                                        isPaid: false
@@ -182,18 +196,18 @@ function splitAndMakePayments(question, charge, callback){
                                        
                                        
                                        
-                                       },
-                                       error: function(object, error) {
-                                       console.log(error);
-                                       throw "Got an error " + error.code + " : " + error.message;
-                                       }
-                                       });
-                },
-                error: function(object, error) {
-                console.log(error);
-                throw "Got an error " + error.code + " : " + error.message;
-                }
-                });
+//                                       },
+//                                       error: function(object, error) {
+//                                       console.log(error);
+//                                       throw "Got an error " + error.code + " : " + error.message;
+//                                       }
+//                                       });
+//                },
+//                error: function(object, error) {
+//                console.log(error);
+//                throw "Got an error " + error.code + " : " + error.message;
+//                }
+//                });
     
     
     /*
