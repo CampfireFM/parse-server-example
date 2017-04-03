@@ -129,8 +129,8 @@ function splitAndMakePayments(question, charge, callback){
                                                        var price = question.get("price") ? question.get("price") : 0;
 
                                                        var split_app = price * ( 20 / 100);
-                                                       var split_charity = split_app * ( charity_percentage / 100);
-                                                       var split_answerer = split_app - split_charity;
+                                                       var split_charity = price * ( charity_percentage / 100);
+                                                       var split_answerer = price - (split_app + split_charity);
 
                                                        var toUser = qAnswerer;
                                                        var fromUser = qAsker;
