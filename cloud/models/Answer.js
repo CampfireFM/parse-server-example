@@ -15,6 +15,10 @@ Parse.Cloud.afterSave("Answer", function(request) {
         var question = request.object.get("questionRef");
 
         var currentUser = request.user;
+                      
+        console.log("checking testUser values");
+        console.log(request.user.get("isTestUser"));
+                      
         var answererIsTestUser = request.user.get("isTestUser");
 
         question.set("isAnswered", true);
