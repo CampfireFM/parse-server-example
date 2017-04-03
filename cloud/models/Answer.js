@@ -51,16 +51,16 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 newCampfire.set("isDummyData", false);
                             
                             var isTestUser = false;
-                            console.log("starting check")
+                            console.log("starting check");
                             if (typeof request.user.get("isTestUser") !== 'undefined') {
-                                isTestUser = request.user.get("isTestUser")
-                                console.log(isTestUser)
+                            isTestUser = request.user.get("isTestUser");
+                            console.log(isTestUser);
                             }
                             
-                            console.log("second check")
-                            console.log(isTestUser)
-                            if (typeof user.get("isTestUser") !== 'undefined') && isTestUser == false {
-                                isTestUser = user.get("isTestUser")
+                            console.log("second check");
+                            console.log(isTestUser);
+                            if (typeof user.get("isTestUser") !== 'undefined' && isTestUser == false) {
+                            isTestUser = user.get("isTestUser");
                             }
                             
                             newCampfire.set("isTest", isTestUser);
