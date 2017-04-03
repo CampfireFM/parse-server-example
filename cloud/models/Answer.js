@@ -15,26 +15,46 @@ Parse.Cloud.afterSave("Answer", function(request) {
         var question = request.object.get("questionRef");
 
         var currentUser = request.user;
-        var isTestUser = request.user.get("isTestUser");
+        var answererIsTestUser = request.user.get("isTestUser");
 
         question.set("isAnswered", true);
 
-        newCampfire.set("answerRef", answer);
-        newCampfire.set("questionRef", question);
-        newCampfire.set("listenCount", 0);
-        newCampfire.set("likeCount", 0);
-        newCampfire.set("flagCount", 0);
-        newCampfire.set("isDummyData", false);
-        newCampfire.set("isTest", isTestUser);
-
-        newCampfire.save();
+//        newCampfire.set("answerRef", answer);
+//        newCampfire.set("questionRef", question);
+//        newCampfire.set("listenCount", 0);
+//        newCampfire.set("likeCount", 0);
+//        newCampfire.set("flagCount", 0);
+//        newCampfire.set("isDummyData", false);
+//        newCampfire.set("isTest", isTestUser);
+//
+//        newCampfire.save();
 
         //START HERE - TO BE UNCOMMENTED
-        /*var questionAsker = question.get("fromUser");
+        var questionAsker = question.get("fromUser");
         questionAsker.fetch({
             useMasterKey: true,
             //success callback function
             success: function(user) {
+                            
+                            
+                newCampfire.set("answerRef", answer);
+                newCampfire.set("questionRef", question);
+                newCampfire.set("listenCount", 0);
+                newCampfire.set("likeCount", 0);
+                newCampfire.set("flagCount", 0);
+                newCampfire.set("isDummyData", false);
+                            
+                if answererIsTestUser === true || user.get("isTestUser") === true {
+                    newCampfire.set("isTest", true);
+                } else {
+                    newCampfire.set("isTest", false);
+                }
+                
+                
+                newCampfire.save();
+                            
+                            
+                            
                 // setup a push to the question Asker
                 var pushQuery = new Parse.Query(Parse.Installation);
                 pushQuery.equalTo('deviceType', 'ios');
@@ -68,7 +88,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 console.log(error);
                 throw "Got an error " + error.code + " : " + error.message;
             }
-        });*/
+        });
         //ENDS HERE - TO BE UNCOMMENTED
     }      
   
