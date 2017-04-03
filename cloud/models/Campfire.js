@@ -76,10 +76,14 @@ function chargeUserAndSplitPayment(request, question, callback){
                               //throw an exception here to let the Campfire team know of the charging failure
                               charge.set("statusCaptureCharge","failure");
                               charge.set("responseStripeCapture",err);
+                                                
+                                                console.log("returned Error on capture!!");
+                                                
                               return callback(err, null);
                         }else{
                               charge.set("statusCaptureCharge","success");
                               charge.set("responseStripeCapture",res_payment);
+                              console.log("returned success on capture!!");
                               //calls the function to split the payment to stake holders based
                               //on properties of the question
                               splitAndMakePayments(question, charge, function(error, result){
