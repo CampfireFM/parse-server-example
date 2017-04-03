@@ -44,7 +44,7 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 });
 
 
-func saveUnlockActivity(campfire, question, currentUser, toUser, type) {
+function saveUnlockActivity(campfire, question, currentUser, toUser, type) {
     
         // Create and save a new "Unlock" activity for the question Asker
     var Activity = Parse.Object.extend("Activity");
