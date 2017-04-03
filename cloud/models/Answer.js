@@ -16,10 +16,10 @@ Parse.Cloud.afterSave("Answer", function(request) {
 
         var currentUser = request.user;
                       
-        console.log("checking testUser values");
-        console.log(request.user.get("isTestUser"));
-                      
-        var answererIsTestUser = request.user.get("isTestUser");
+//        console.log("checking testUser values");
+//        console.log(request.user.get("isTestUser"));
+//                      
+//        var answererIsTestUser = request.user.get("isTestUser");
 
         question.set("isAnswered", true);
 
@@ -49,6 +49,21 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 newCampfire.set("likeCount", 0);
                 newCampfire.set("flagCount", 0);
                 newCampfire.set("isDummyData", false);
+                            
+                            var isTestUser = false
+                            if (typeof request.user.get("isTestUser") === 'undefined') {
+                            // variable is undefined
+                            } else if ( request.user.get("isTestUser") == true ) {
+                                isTestUser = true
+                            }
+                            
+                            if (typeof user.get("isTestUser") === 'undefined') {
+                            // variable is undefined
+                            } else if ( user.get("isTestUser") == true ) {
+                                isTestUser = true
+                            }
+                            
+                            newCampfire.set("isTest", isTestUser);
                             
                             console.log("checking testUser values");
                             console.log(answererIsTestUser);
