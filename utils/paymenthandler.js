@@ -39,7 +39,7 @@ payment_methods.capturePayment = function(charge_id, questionId, callback){
     
     
     stripe.charges.capture({
-        charge : "ch_1A3eFqINpUhRRtfd3iLYwIpT"  //charge_id
+        charge : "ch_1A4KcRINpUhRRtfdhECcdWRk"  //charge_id
 //      statement_descriptor: 'Campire - charging for answering question - id#'+questionId
     }, function(err, charge) {
         if(err){
