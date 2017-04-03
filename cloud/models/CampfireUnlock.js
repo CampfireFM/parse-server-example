@@ -75,7 +75,7 @@ function sendUnlockPushToAsker(campfire, question, currentUser) {
 //    newActivity.set("type", "unlockToAsker");
 //    newActivity.save(null, {useMasterKey: true});
     
-    saveUnlockActivity(campfire, question, currentUser, question.get("fromUser"), "unlockToAsker")
+    saveUnlockActivity(campfire, question, currentUser, question.get("fromUser"), "unlockToAsker");
     
     
     // setup a push to the question Asker
@@ -112,7 +112,7 @@ function sendUnlockPushToAnswerer(campfire, question, currentUser) {
     
 //    console.log("Beginning push to Answerer")
     
-    saveUnlockActivity(campfire, question, currentUser, question.get("toUser"), "unlockToAnswerer")
+    saveUnlockActivity(campfire, question, currentUser, question.get("toUser"), "unlockToAnswerer");
     
 //    var toUser = question.get("toUser");
 //    
