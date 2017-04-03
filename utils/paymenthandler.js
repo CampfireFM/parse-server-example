@@ -33,12 +33,7 @@ payment_methods.createCharge = function(amount, token, questionId, callback){
 
 payment_methods.capturePayment = function(charge_id, questionId, callback){
     
-        //      statement_descriptor: 'Campire - charging for answering question - id#'+questionId
-//charge_id
-    
-    stripe.charges.capture("ch_1A4KcRINpUhRRtfdhECcdWRk"
-//        charge : "ch_1A4KcRINpUhRRtfdhECcdWRk"
-    , function(err, charge) {
+    stripe.charges.capture(charge_id, function(err, charge) {
         if(err){
           console.log("It was an error");
           console.log(err);
