@@ -201,6 +201,7 @@ function createDeposit(params, callback){
             success: function(depositrecord){
                 return callback(null,depositrecord);
             },error : function(err){
+                   console.log("deposit error");
                 return callback(err,null);
             }
       });
@@ -224,6 +225,7 @@ function createCharity(params, callback){
             success: function(charityrecord){
                 return callback(null,charityrecord);
             },error : function(err){
+                   console.log("charity error");
                 return callback(err,null);
             }
       });
@@ -247,6 +249,7 @@ function createPayout(params, callback){
             success: function(payoutrecord){
                 return callback(null,payoutrecord);
             },error : function(err){
+                  console.log("payout error");
                 return callback(err,null);
             }
       });
