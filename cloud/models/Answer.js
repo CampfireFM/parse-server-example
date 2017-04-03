@@ -8,8 +8,8 @@ Parse.Cloud.afterSave("Answer", function(request) {
     //check if its a new record.                     
     if (request.object.existed() == false) {
 
-        var Campfire = Parse.Object.extend("Campfire");
-        var newCampfire = new Campfire();
+//        var Campfire = Parse.Object.extend("Campfire");
+//        var newCampfire = new Campfire();
 
         var answer = request.object;
         var question = request.object.get("questionRef");
@@ -35,7 +35,10 @@ Parse.Cloud.afterSave("Answer", function(request) {
             useMasterKey: true,
             //success callback function
             success: function(user) {
-
+                            
+                var Campfire = Parse.Object.extend("Campfire");
+                var newCampfire = new Campfire();
+                            
                 newCampfire.set("answerRef", answer);
                 newCampfire.set("questionRef", question);
                 newCampfire.set("listenCount", 0);
@@ -46,6 +49,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                             console.log("checking testUser values");
                             console.log(answererIsTestUser);
                             console.log(user.get("isTestUser"));
+                            
                 /*if(answererIsTestUser == true || user.get("isTestUser") == true) {
                     newCampfire.set("isTest", true);
                 } else {
