@@ -105,183 +105,115 @@ function splitAndMakePayments(question, charge, callback){
       console.log("split & make pmts started");
    
     
-//    var asker = question.get("fromUser");
-//    asker.fetch({
-//                        useMasterKey: true,
-//                        success: function(qAsker) {
-//                        
-//                        var answerer = question.get("fromUser");
-//                        answerer.fetch({
-//                                useMasterKey: true,
-//                                success: function(qAnswerer) {
+    var asker = question.get("fromUser");
+    asker.fetch({
+                        useMasterKey: true,
+                        success: function(qAsker) {
+                        
+                        var answerer = question.get("fromUser");
+                        answerer.fetch({
+                                useMasterKey: true,
+                                success: function(qAnswerer) {
+                                       
+                                       var theCharity = question.get("charity");
+                                       theCharity.fetch({
+                                                      useMasterKey: true,
+                                                      success: function(charity) {
     
-    var charityId = question.get("charity").id;
-    var Charity = Parse.Object.extend("Charity");
-    var charity = Charity.createWithoutData(charityId);
-    
-    
-                                       var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
-                                       var price = question.get("price") ? question.get("price") : 0;
+//    var charityId = question.get("charity").id;
+//    var Charity = Parse.Object.extend("Charity");
+//    var charity = Charity.createWithoutData(charityId);
                                        
-                                       var split_app = price * ( 20 / 100);
-                                       var split_charity = split_app * ( charity_percentage / 100);
-                                       var split_answerer = split_app - split_charity;
-                                       
-    
-    
-    var toUserId = question.get("toUser").id;
-    var ToUser = Parse.Object.extend("User");
-    var toUser = ToUser.createWithoutData(toUserId);
-    
-    var fromUserId = question.get("fromUser").id;
-    var FromUser = Parse.Object.extend("User");
-    var fromUser = FromUser.createWithoutData(toUserId);
-    
-    console.log(toUserId);
-    
-//                                       var toUser = qAnswerer; // question.get("toUser");
-//                                       var fromUser = qAsker;   //question.get("fromUser");
-    
-                                       console.log(toUser);
-                                       console.log(fromUser);
-                                       
-                                       var payout_params = {
-                                       amount : split_answerer,
-                                       userRef : toUser, //question.get("toUser"),
-                                       questionRef : question,
-                                       chargeRef : charge,
-                                       type : 'answer',
-                                       isPaid : false
-                                       };
-                                       
-                                       createPayout(payout_params, function(e,r){
-                                                    console.log(e);
-                                                    console.log();
-                                                    });
-                                       
-                                       var deposit_params = {
-                                       transactionPercentage: 2.9,
-                                       amount: price,
-                                       transactionFee : 0.3,
-                                       userRef : fromUser,    //question.get("fromUser"),
-                                       questionRef : question
-                                       };
-                                       
-                                       createDeposit(deposit_params, function(e,r){
-                                                     console.log(e);
-                                                     console.log();
-                                                     });
-                                       
-                                       var charity_params = {
-                                       amount: split_charity,
-                                       charityRef: charity, //question.get("charity"),
-                                       questionRef: question,
-                                       userRef : toUser,   // question.get("toUser"),
-                                       isPaid: false
-                                       };
-                                       
-                                       createCharity(charity_params, function(e,r){
-                                                     console.log(e);
-                                                     console.log();
-                                                     });
-                                       
-                                       console.log("split & make pmts finished");
-                                       
-                                       var user_earning_increment = split_charity + split_answerer;
-                                       user.increment("totalEarnings", user_earning_increment);
-                                       user.save(null, {useMasterKey: true});
-                                       
-                                       
-                                       
-                                       
-                                       
-                                       
-                                       
-//                                       },
-//                                       error: function(object, error) {
-//                                       console.log(error);
-//                                       throw "Got an error " + error.code + " : " + error.message;
-//                                       }
-//                                       });
-//                },
-//                error: function(object, error) {
-//                console.log(error);
-//                throw "Got an error " + error.code + " : " + error.message;
-//                }
-//                });
+//   var toUserId = question.get("toUser").id;
+//   var ToUser = Parse.Object.extend("User");
+//   var toUser = ToUser.createWithoutData(toUserId);
+//   
+//   var fromUserId = question.get("fromUser").id;
+//   var FromUser = Parse.Object.extend("User");
+//   var fromUser = FromUser.createWithoutData(toUserId);
     
     
-    /*
+                                                       var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
+                                                       var price = question.get("price") ? question.get("price") : 0;
+                                                       
+                                                       var split_app = price * ( 20 / 100);
+                                                       var split_charity = split_app * ( charity_percentage / 100);
+                                                       var split_answerer = split_app - split_charity;
+                    
+                    
+                                                       var toUser = qAnswerer;
+                                                       var fromUser = qAsker;
+                    
+                                                       console.log(toUser);
+                                                       console.log(fromUser);
+                                                       
+                                                       var payout_params = {
+                                                       amount : split_answerer,
+                                                       userRef : toUser,
+                                                       questionRef : question,
+                                                       chargeRef : charge,
+                                                       type : 'answer',
+                                                       isPaid : false
+                                                       };
+                                                       
+                                                       createPayout(payout_params, function(e,r){
+                                                                    console.log(e);
+                                                                    console.log();
+                                                                    });
+                                                       
+                                                       var deposit_params = {
+                                                       transactionPercentage: 2.9,
+                                                       amount: price,
+                                                       transactionFee : 0.3,
+                                                       userRef : fromUser,
+                                                       questionRef : question
+                                                       };
+                                                       
+                                                       createDeposit(deposit_params, function(e,r){
+                                                                     console.log(e);
+                                                                     console.log();
+                                                                     });
+                                                       
+                                                       var charity_params = {
+                                                       amount: split_charity,
+                                                       charityRef: charity,
+                                                       questionRef: question,
+                                                       userRef : toUser,
+                                                       isPaid: false
+                                                       };
+                                                       
+                                                       createCharity(charity_params, function(e,r){
+                                                                     console.log(e);
+                                                                     console.log();
+                                                                     });
+                                                       
+                                                       console.log("split & make pmts finished");
+                                                       
+                                                       var user_earning_increment = split_charity + split_answerer;
+                                                       user.increment("totalEarnings", user_earning_increment);
+                                                       user.save(null, {useMasterKey: true});
+                                       
 
-    
-      var charity = question.get("charity");
-      var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
-      var price = question.get("price") ? question.get("price") : 0;
+                                                        },
+                                                        error: function(object, error) {
+                                                        console.log(error);
+                                                        throw "Got an error " + error.code + " : " + error.message;
+                                                        }
+                                                        });
+                                       },
+                                       error: function(object, error) {
+                                       console.log(error);
+                                       throw "Got an error " + error.code + " : " + error.message;
+                                       }
+                                       });
+                },
+                error: function(object, error) {
+                console.log(error);
+                throw "Got an error " + error.code + " : " + error.message;
+                }
+                });
 
-      var split_app = price * ( 20 / 100);
-      var split_charity = split_app * ( charity_percentage / 100);
-      var split_answerer = split_app - split_charity;
-
-    
-    var toUser = pointerTo(question.get("toUser").id, "User");
-    var fromUser = pointerTo(question.get("fromUser").id, "User");
-    
-    console.log(toUser);
-    console.log(fromUser);
-    
-    
-    
-    
-    
-      var payout_params = {
-            amount : split_answerer,
-//          userRef : toUser,   //question.get("toUser"),
-            questionRef : question,
-            chargeRef : charge,
-            type : 'answer',
-            isPaid : false
-      };
-
-      createPayout(payout_params, function(e,r){
-            console.log(e);
-            console.log();
-        });
-
-
-      var deposit_params = {
-            transactionPercentage: 2.9,
-            amount: price,
-            transactionFee : 0.3,
-//          userRef : fromUser,  //question.get("fromUser"),
-            questionRef : question
-      };
-
-      createDeposit(deposit_params, function(e,r){
-            console.log(e);
-            console.log();
-        });
-
-      var charity_params = {
-            amount: split_charity,
-//      charityRef: pointerTo(question.get("charity").id, "Charity"), //question.get("charity"),
-            questionRef: question,
-//          userRef : toUser, //question.get("toUser"),
-            isPaid: false
-      };
-
-      createCharity(charity_params, function(e,r){
-            console.log(e);
-            console.log();
-        });
-    
-    console.log("split & make pmts finished");
-
-      var user_earning_increment = split_charity + split_answerer;
-      user.increment("totalEarnings", user_earning_increment);
-      user.save(null, {useMasterKey: true});
-    
-    */
-}
+ }
 
 //this function gets the charge details from the Charge table for the given question
 function getChargeDetails(question,callback){
