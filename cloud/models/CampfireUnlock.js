@@ -97,7 +97,7 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
                                 newActivity2.set("toUser", toUser);
                                 newActivity2.set("fromUser", currentUser);
                                 newActivity2.set("type", "unlockToAnswerer");
-                                newActivity2.save() //(null, { useMasterKey: true });
+                                newActivity2.save()
 
                                 // setup a push to the question Asker
                                 var pushQuery = new Parse.Query(Parse.Installation);
@@ -178,7 +178,7 @@ function splitUnlockEarnings(params){
             amount : split_asker_final,
             userRef : question.get("fromUser"),
             unlockRef : params.campfireunlock,
-            type : 'unlock',
+            type : 'unlockAsker',
             isPaid : false
       };
 
@@ -191,7 +191,7 @@ function splitUnlockEarnings(params){
             amount : split_answerer_final,
             userRef : question.get("toUser"),
             unlockRef : params.campfireunlock,
-            type : 'answer',
+            type : 'unlockAnswerer',
             isPaid : false
       };
 
