@@ -137,6 +137,7 @@ function splitAndMakePayments(question, charge, callback){
     var FromUser = Parse.Object.extend("User");
     var fromUser = FromUser.createWithoutData(toUserId);
     
+    console.log(toUserId);
     
 //                                       var toUser = qAnswerer; // question.get("toUser");
 //                                       var fromUser = qAsker;   //question.get("fromUser");
