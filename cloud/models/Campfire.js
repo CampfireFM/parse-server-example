@@ -157,7 +157,8 @@ function splitAndMakePayments(question, charge, callback){
                                                        amount: price,
                                                        transactionFee : 0.3,
                                                        userRef : fromUser,
-                                                       questionRef : question
+                                                       questionRef : question,
+                                                       chargeRef : charge
                                                        };
 
                                                        createDeposit(deposit_params, function(e,r){
