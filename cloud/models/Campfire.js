@@ -3,63 +3,43 @@ var paymenthandler = require('../../utils/paymenthandler.js');
 
 //begin of afterSave
 Parse.Cloud.afterSave("Campfire", function(request) {
+                      
       if (request.object.existed() == false) {
 
             var questionRef = request.object.get("questionRef");
-            // questionRef.include(["toUser","fromUser","charity"])
                       
-                      /*
-            questionRef.fetch({
-                  useMasterKey: true,
-                  success: function(question) {
+            getQuestionAndItsPointers(questionRef.id,function(err_question, complete_question){
+                  if(err_question){
+                        request.log.error("FAILED IN QUESTION DETAILS FETCH");
+                        request.log.error(JSON.stringify(err_question));
+                  }else{
+                        chargeUserAndSplitPayment(request, complete_question, function(e,r){
+                              console.log(e);
+                              console.log(r);
+                        });
 
-                        request.log.info("REACHED IN QUESTION POINT");
-                        request.log.info(question);
-                        request.log.info(JSON.stringify(question));
-
-                       */
-                      
-                        getQuestionAndItsPointers(questionRef.id,function(err_question, complete_question){
-                              if(err_question){
-                                    request.log.error("FAILED IN QUESTION DETAILS FETCH");
-                                    request.log.error(JSON.stringify(err_question));
-                              }else{
-                                    chargeUserAndSplitPayment(request, complete_question, function(e,r){
-                                          console.log(e);
-                                          console.log(r);
-                                    });
-
-                                    var questionAsker = question.get("fromUser");
-                                    questionAsker.fetch({
-                                          useMasterKey: true,
-                                          success: function(user) {
-                                                var Activity = Parse.Object.extend("Activity");
-                                                var newActivity1 = new Activity();
-                                                newActivity1.set("question", complete_question);
-                                                newActivity1.set("campfire", request.object);
-                                                newActivity1.set("isRead", false);
-                                                newActivity1.set("toUser", user);
-                                                newActivity1.set("fromUser", complete_question.get("fromUser"));
-                                                        
-                                                        
-                                                        
-//                                                newActivity1.set("fromUser", {__type: "Pointer",className: "_User",objectId:request.object.get("toUser").id});
-                                                newActivity1.set("type", "youAskedTheyAnswered");
-                                                newActivity1.save(null, { useMasterKey: true });
-                                          },
-                                          error: function(object, error) {
-                                                console.log(error);
-                                                throw "Got an error " + error.code + " : " + error.message;
-                                          }
-                                    });
+                        var questionAsker = question.get("fromUser");
+                        questionAsker.fetch({
+                              useMasterKey: true,
+                              success: function(user) {
+                                    var Activity = Parse.Object.extend("Activity");
+                                    var newActivity1 = new Activity();
+                                    newActivity1.set("question", complete_question);
+                                    newActivity1.set("campfire", request.object);
+                                    newActivity1.set("isRead", false);
+                                    newActivity1.set("toUser", user);
+                                    newActivity1.set("fromUser", complete_question.get("fromUser"));
+                                            
+                                    newActivity1.set("type", "youAskedTheyAnswered");
+                                    newActivity1.save(null, { useMasterKey: true });
+                              },
+                              error: function(object, error) {
+                                    console.log(error);
+                                    throw "Got an error " + error.code + " : " + error.message;
                               }
                         });
-//                  },
-//                  error: function(object, error) {
-//                        console.log(error);
-//                        throw "Got an error " + error.code + " : " + error.message;
-//                  }
-//            });
+                  }
+            });
       }
 });
 //end of afterSave
@@ -84,6 +64,7 @@ function chargeUserAndSplitPayment(request, question, callback){
                   if(!chargeId){
                         return callback("No ChargeId found in the charge table",null);
                   }
+                       
                   //if chargeId exists
                   paymenthandler.capturePayment(chargeId, question.id, function(err, res_payment){
                         if(err){
@@ -112,97 +93,64 @@ function chargeUserAndSplitPayment(request, question, callback){
 //This function calculates the payments for user, donation and creates payouts
 function splitAndMakePayments(question, charge, callback){
 
-//    var asker = question.get("fromUser");
-//    asker.fetch({
-//                        useMasterKey: true,
-//                        success: function(qAsker) {
-//                        var answerer = question.get("toUser");
-//                        answerer.fetch({
-//                                useMasterKey: true,
-//                                success: function(qAnswerer) {
-//                                       var theCharity = question.get("charity");
-//                                       theCharity.fetch({
-//                                                      useMasterKey: true,
-//                                                      success: function(charity) {
+       var qAsker = question.get("fromUser");
+       var qAnswerer = question.get("toUser");
+       var charity = question.get("charity");
+        
+       var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
+       var price = question.get("price") ? question.get("price") : 0;
 
-    
-    var qAsker = question.get("fromUser");
-    var qAnswerer = question.get("toUser");
-    var charity = question.get("charity");
-    
-                                                       var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
-                                                       var price = question.get("price") ? question.get("price") : 0;
+       var split_app = price * ( 20 / 100);
+       var split_charity = price * ( charity_percentage / 100);
+       var split_answerer = price - (split_app + split_charity);
 
-                                                       var split_app = price * ( 20 / 100);
-                                                       var split_charity = price * ( charity_percentage / 100);
-                                                       var split_answerer = price - (split_app + split_charity);
+       var toUser = qAnswerer;
+       var fromUser = qAsker;
 
-                                                       var toUser = qAnswerer;
-                                                       var fromUser = qAsker;
+       var payout_params = {
+       amount : split_answerer,
+       userRef : toUser,
+       questionRef : question,
+       chargeRef : charge,
+       type : 'answer',
+       isPaid : false
+       };
 
-                                                       var payout_params = {
-                                                       amount : split_answerer,
-                                                       userRef : toUser,
-                                                       questionRef : question,
-                                                       chargeRef : charge,
-                                                       type : 'answer',
-                                                       isPaid : false
-                                                       };
+       createPayout(payout_params, function(e,r){
+                    console.log(e);
+                    console.log();
+                    });
 
-                                                       createPayout(payout_params, function(e,r){
-                                                                    console.log(e);
-                                                                    console.log();
-                                                                    });
+       var deposit_params = {
+       transactionPercentage: 2.9,
+       amount: price,
+       transactionFee : 0.3,
+       userRef : fromUser,
+       questionRef : question,
+       chargeRef : charge
+       };
 
-                                                       var deposit_params = {
-                                                       transactionPercentage: 2.9,
-                                                       amount: price,
-                                                       transactionFee : 0.3,
-                                                       userRef : fromUser,
-                                                       questionRef : question,
-                                                       chargeRef : charge
-                                                       };
+       createDeposit(deposit_params, function(e,r){
+                     console.log(e);
+                     console.log();
+                     });
 
-                                                       createDeposit(deposit_params, function(e,r){
-                                                                     console.log(e);
-                                                                     console.log();
-                                                                     });
+       var donation_params = {
+       amount: split_charity,
+       charityRef: charity,
+       questionRef: question,
+       userRef : toUser,
+       isPaid: false
+       };
 
-                                                       var donation_params = {
-                                                       amount: split_charity,
-                                                       charityRef: charity,
-                                                       questionRef: question,
-                                                       userRef : toUser,
-                                                       isPaid: false
-                                                       };
+       createDonation(donation_params, function(e,r){
+                     console.log(e);
+                     console.log();
+                     });
 
-                                                       createDonation(donation_params, function(e,r){
-                                                                     console.log(e);
-                                                                     console.log();
-                                                                     });
-
-                                                       var user_earning_increment = split_charity + split_answerer;
-                                                       qAnswerer.increment("totalEarnings", user_earning_increment);
-                                                       qAnswerer.save(null, {useMasterKey: true});
-
-//                                                        },
-//                                                        error: function(object, error) {
-//                                                        console.log(error);
-//                                                        throw "Got an error " + error.code + " : " + error.message;
-//                                                        }
-//                                                        });
-//                                       },
-//                                       error: function(object, error) {
-//                                       console.log(error);
-//                                       throw "Got an error " + error.code + " : " + error.message;
-//                                       }
-//                                       });
-//                },
-//                error: function(object, error) {
-//                console.log(error);
-//                throw "Got an error " + error.code + " : " + error.message;
-//                }
-//                });
+       var user_earning_increment = split_charity + split_answerer;
+       qAnswerer.increment("totalEarnings", user_earning_increment);
+       qAnswerer.save(null, {useMasterKey: true});
 
  }
 
@@ -269,7 +217,6 @@ function createDonation(params, callback){
             success: function(donationrecord){
                 return callback(null,donationrecord);
             },error : function(err){
-//                   console.log("charity error");
                 return callback(err,null);
             }
       });
@@ -293,7 +240,6 @@ function createPayout(params, callback){
             success: function(payoutrecord){
                 return callback(null,payoutrecord);
             },error : function(err){
-//                  console.log("payout error");
                 return callback(err,null);
             }
       });
@@ -311,13 +257,11 @@ function getQuestionAndItsPointers(questionId,callback){
         success: function(questions) {
           console.log(questions.length);
           console.log(questions[0]);
-          // return res.success(questions[0]);
           return callback(null,questions[0]);
         },
         error: function(object, error) {
           console.log(error);
           return callback(error,null);
-          // return res.error(error);
         }
       });
 }
