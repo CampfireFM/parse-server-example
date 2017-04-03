@@ -30,6 +30,14 @@ Parse.Cloud.afterSave("Campfire", function(request) {
                                     newActivity1.set("campfire", request.object);
                                     newActivity1.set("isRead", false);
                                     newActivity1.set("toUser", user);
+                                            
+                                            var currentUser = request.user;
+                                            var userId = request.object.get("toUser").id; //request.params.userId;
+                                            console.log("userID")
+                                            console.log(userId)
+                                            var userB = new Parse.User.createWithoutData(userId);
+                                            
+                                            newActivity1.set("fromUser", userB)
                                     // newActivity1.set("fromUser", User.createWithoutData(request.object.get("toUser").id));
 //                                    newActivity1.set("fromUser", {__type: "Pointer",className: "_User",objectId:request.object.get("toUser").id});
                                     newActivity1.set("type", "youAskedTheyAnswered");
