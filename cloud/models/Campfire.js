@@ -102,6 +102,9 @@ function chargeUserAndSplitPayment(request, question, callback){
 //This function calculates the payments for user, donation and creates payouts
 function splitAndMakePayments(question, charge, callback){
 
+      console.log("split & make pmts started");
+    
+    
       var charity = question.get("charity");
       var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
       var price = question.get("price") ? question.get("price") : 0;
@@ -149,6 +152,8 @@ function splitAndMakePayments(question, charge, callback){
             console.log(e);
             console.log();
         });
+    
+    console.log("split & make pmts finished");
 
       var user_earning_increment = split_charity + split_answerer;
       user.increment("totalEarnings", user_earning_increment);
