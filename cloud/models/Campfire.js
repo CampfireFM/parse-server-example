@@ -174,8 +174,8 @@ function splitAndMakePayments(question, charge, callback){
                                                                      });
 
                                                        var user_earning_increment = split_charity + split_answerer;
-                                                       user.increment("totalEarnings", user_earning_increment);
-                                                       user.save(null, {useMasterKey: true});
+                                                       qAnswerer.increment("totalEarnings", user_earning_increment);
+                                                       qAnswerer.save(null, {useMasterKey: true});
 
                                                         },
                                                         error: function(object, error) {
