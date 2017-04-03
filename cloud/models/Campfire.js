@@ -54,12 +54,12 @@ Parse.Cloud.afterSave("Campfire", function(request) {
                                     });
                               }
                         });
-                  },
-                  error: function(object, error) {
-                        console.log(error);
-                        throw "Got an error " + error.code + " : " + error.message;
-                  }
-            });
+//                  },
+//                  error: function(object, error) {
+//                        console.log(error);
+//                        throw "Got an error " + error.code + " : " + error.message;
+//                  }
+//            });
       }
 });
 //end of afterSave
