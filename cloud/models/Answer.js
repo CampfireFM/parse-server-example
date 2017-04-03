@@ -48,7 +48,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                     newCampfire.set("isTest", false);
                 }*/
 
-                newCampfire.save() //null, {useMasterKey: true});
+                newCampfire.save(null, {useMasterKey: true});
 
                 // setup a push to the question Asker
                 var pushQuery = new Parse.Query(Parse.Installation);
