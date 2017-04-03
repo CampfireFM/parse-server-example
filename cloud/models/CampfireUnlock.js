@@ -12,19 +12,28 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
             success: function (campfire) {
                 console.log("SUCCESS getting Campfire");
                 var questionRef = campfire.get("questionRef");
-                questionRef.include(['fromUser','fromUser.charityRef','toUser','toUser.charityRef']);
+                // questionRef.include(['fromUser','fromUser.charityRef','toUser','toUser.charityRef']);
                 questionRef.fetch({
                     success: function (question) {
                         console.log("SUCCESS getting Question");
                         var questionAsker = question.get("fromUser");
 
-                        var params = {
-                            question: question,
-                            campfireunlock: request.object,
-                            campfire : campfire
-                        };
+                        getQuestionObjAndItsPointers(question.id, function(err_question, complete_question){
+                                if(err_question){
+                                    request.log.error("FAILED IN QUESTION DETAILS FETCH");
+                                    request.log.error(err_question);
+                                }else{
+                                    var params = {
+                                        question: complete_question,
+                                        campfireunlock: request.object,
+                                        campfire : campfire
+                                    };
 
-                        splitUnlockEarnings(params);
+                                    splitUnlockEarnings(params);
+                                    
+                                }
+                        });
+
 
 
                         questionAsker.fetch({
@@ -268,4 +277,27 @@ function createPayoutForUnlock(params, callback){
             }
       });
       //end of save operation code block
+}
+
+
+
+function getQuestionObjAndItsPointers(questionId,callback){
+
+      var Question = Parse.Object.extend("Question");
+      var query = new Parse.Query(Question);
+      questionRef.include(['fromUser','fromUser.charityRef','toUser','toUser.charityRef']);
+      query.equalTo("objectId",questionId);
+      query.find({
+        success: function(questions) {
+          console.log(questions.length);
+          console.log(questions[0]);
+          // return res.success(questions[0]);
+          return callback(null,questions[0]);
+        },
+        error: function(object, error) {
+          console.log(error);
+          return callback(error,null);
+          // return res.error(error);
+        }
+      });
 }

@@ -168,3 +168,26 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
   })
 });
 
+
+Parse.Cloud.define('getQuestionDetails', function(req, res) {
+
+      var Question = Parse.Object.extend("Question");
+      var query = new Parse.Query(Question);
+      // query.equalTo("objectId",question.id);
+      query.include(['fromUser','fromUser.charityRef','toUser','toUser.charityRef']);
+      query.equalTo("objectId",req.params.questionId);
+      query.find({
+        success: function(questions) {
+          console.log(questions.length);
+          console.log(questions[0]);
+          return res.success(questions[0]);
+          // return callback(null,questions[0]);
+        },
+        error: function(object, error) {
+          console.log(error);
+          // return callback(error,null);
+          return res.error(error);
+        }
+      });
+});
+

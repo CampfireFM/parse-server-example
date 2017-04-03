@@ -15,29 +15,36 @@ Parse.Cloud.afterSave("Campfire", function(request) {
                         request.log.info(question);
                         request.log.info(JSON.stringify(question));
 
-                        chargeUserAndSplitPayment(request, question, function(e,r){
-                              console.log(e);
-                              console.log(r);
-                        });
+                        getQuestionAndItsPointers(question.id,function(err_question, complete_question){
+                              if(err_question){
+                                    request.log.error("FAILED IN QUESTION DETAILS FETCH");
+                                    request.log.error(JSON.stringify(err_question));
+                              }else{
+                                    chargeUserAndSplitPayment(request, complete_question, function(e,r){
+                                          console.log(e);
+                                          console.log(r);
+                                    });
 
-                        var questionAsker = question.get("fromUser");
-                        questionAsker.fetch({
-                              useMasterKey: true,
-                              success: function(user) {
-                                    var Activity = Parse.Object.extend("Activity");
-                                    var newActivity1 = new Activity();
-                                    newActivity1.set("question", question);
-                                    newActivity1.set("campfire", request.object);
-                                    newActivity1.set("isRead", false);
-                                    newActivity1.set("toUser", user);
-                                    // newActivity1.set("fromUser", User.createWithoutData(request.object.get("toUser").id));
-                                    newActivity1.set("fromUser", {__type: "Pointer",className: "_User",objectId:request.object.get("toUser").id});
-                                    newActivity1.set("type", "youAskedTheyAnswered");
-                                    newActivity1.save(null, { useMasterKey: true });
-                              },
-                              error: function(object, error) {
-                                    console.log(error);
-                                    throw "Got an error " + error.code + " : " + error.message;
+                                    var questionAsker = question.get("fromUser");
+                                    questionAsker.fetch({
+                                          useMasterKey: true,
+                                          success: function(user) {
+                                                var Activity = Parse.Object.extend("Activity");
+                                                var newActivity1 = new Activity();
+                                                newActivity1.set("question", question);
+                                                newActivity1.set("campfire", request.object);
+                                                newActivity1.set("isRead", false);
+                                                newActivity1.set("toUser", user);
+                                                newActivity1.set("fromUser", complete_question.get("fromUser"));
+                                                // newActivity1.set("fromUser", {__type: "Pointer",className: "_User",objectId:request.object.get("toUser").id});
+                                                newActivity1.set("type", "youAskedTheyAnswered");
+                                                newActivity1.save(null, { useMasterKey: true });
+                                          },
+                                          error: function(object, error) {
+                                                console.log(error);
+                                                throw "Got an error " + error.code + " : " + error.message;
+                                          }
+                                    });
                               }
                         });
                   },
@@ -110,17 +117,6 @@ function splitAndMakePayments(question, charge, callback){
                                        theCharity.fetch({
                                                       useMasterKey: true,
                                                       success: function(charity) {
-//    var charityId = question.get("charity").id;
-//    var Charity = Parse.Object.extend("Charity");
-//    var charity = Charity.createWithoutData(charityId);
-
-//   var toUserId = question.get("toUser").id;
-//   var ToUser = Parse.Object.extend("User");
-//   var toUser = ToUser.createWithoutData(toUserId);
-
-//   var fromUserId = question.get("fromUser").id;
-//   var FromUser = Parse.Object.extend("User");
-//   var fromUser = FromUser.createWithoutData(toUserId);
 
                                                        var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
                                                        var price = question.get("price") ? question.get("price") : 0;
@@ -290,4 +286,26 @@ function createPayout(params, callback){
             }
       });
       //end of save operation code block
+}
+
+
+function getQuestionAndItsPointers(questionId,callback){
+
+      var Question = Parse.Object.extend("Question");
+      var query = new Parse.Query(Question);
+      query.include(["toUser","fromUser","charity"]);
+      query.equalTo("objectId",questionId);
+      query.find({
+        success: function(questions) {
+          console.log(questions.length);
+          console.log(questions[0]);
+          // return res.success(questions[0]);
+          return callback(null,questions[0]);
+        },
+        error: function(object, error) {
+          console.log(error);
+          return callback(error,null);
+          // return res.error(error);
+        }
+      });
 }
