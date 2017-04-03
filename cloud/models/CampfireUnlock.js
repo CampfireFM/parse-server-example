@@ -44,6 +44,7 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 });
 
 
+
 function sendUnlockPushToAsker(campfire, question, currentUser) {
     
     var toUser = question.get("toUser");
@@ -61,7 +62,7 @@ function sendUnlockPushToAsker(campfire, question, currentUser) {
     newActivity.save(null, {useMasterKey: true});
     
     
-    // setup a push to the question Answerer
+    // setup a push to the question Asker
     var pushQuery = new Parse.Query(Parse.Installation);
     pushQuery.equalTo('deviceType', 'ios');
     pushQuery.equalTo('user', question.get("fromUser"));
@@ -93,6 +94,8 @@ function sendUnlockPushToAsker(campfire, question, currentUser) {
 
 function sendUnlockPushToAnswerer(campfire, question, currentUser) {
     
+    console.log("Beginning push to Answerer")
+    
     var toUser = question.get("toUser");
     
     var Activity = Parse.Object.extend("Activity");
@@ -103,9 +106,9 @@ function sendUnlockPushToAnswerer(campfire, question, currentUser) {
     newActivity2.set("toUser", toUser);
     newActivity2.set("fromUser", currentUser);
     newActivity2.set("type", "unlockToAnswerer");
-    newActivity2.save()
+    newActivity2.save(null, {useMasterKey: true});
     
-        // setup a push to the question Asker
+        // setup a push to the question Answerer
     var pushQuery = new Parse.Query(Parse.Installation);
     pushQuery.equalTo('deviceType', 'ios');
     pushQuery.equalTo('user', toUser);
