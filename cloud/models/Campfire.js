@@ -243,7 +243,7 @@ function splitAndMakePayments(question, charge, callback){
 
       var charity_params = {
             amount: split_charity,
-      charityRef: pointerTo(question.get("charity").id, "Charity") //question.get("charity"),
+      charityRef: pointerTo(question.get("charity").id, "Charity"), //question.get("charity"),
             questionRef: question,
           userRef : toUser, //question.get("toUser"),
             isPaid: false
