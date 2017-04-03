@@ -102,7 +102,7 @@ function splitAndMakePayments(question, charge, callback){
     asker.fetch({
                         useMasterKey: true,
                         success: function(qAsker) {
-                        var answerer = question.get("fromUser");
+                        var answerer = question.get("toUser");
                         answerer.fetch({
                                 useMasterKey: true,
                                 success: function(qAnswerer) {
