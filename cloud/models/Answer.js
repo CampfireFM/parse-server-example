@@ -25,7 +25,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                                 question.save(null, { useMasterKey: true });
                                 
                                 // create and save a new Campfire
-//                                saveCampfire(question, answer);
+                                saveCampfire(question, answer);
                                   
                                       
                                 // setup a push to the question Asker
@@ -64,40 +64,40 @@ Parse.Cloud.afterSave("Answer", function(request) {
 //end of afterSave function
 
 
-func saveCampfire(question, answer) {
-//    var Campfire = Parse.Object.extend("Campfire");
-//    var newCampfire = new Campfire();
-//    
-//    newCampfire.set("answerRef", answer);
-//    newCampfire.set("questionRef", question);
-//    newCampfire.set("listenCount", 0);
-//    newCampfire.set("likeCount", 0);
-//    newCampfire.set("flagCount", 0);
-//    newCampfire.set("isDummyData", false);
+function saveCampfire(question, answer) {
+    var Campfire = Parse.Object.extend("Campfire");
+    var newCampfire = new Campfire();
+    
+    newCampfire.set("answerRef", answer);
+    newCampfire.set("questionRef", question);
+    newCampfire.set("listenCount", 0);
+    newCampfire.set("likeCount", 0);
+    newCampfire.set("flagCount", 0);
+    newCampfire.set("isDummyData", false);
     
     
-//    var questionAnswerer = question.get("toUser");
-//    // see if either question user is a test user
-//    var isTestUser = false;
-//    
-//    if (typeof questionAnswerer.get("isTestUser") !== 'undefined') {
-//        isTestUser = questionAnswerer.get("isTestUser");
-//        console.log(isTestUser);
-//    }
-//    
-//    let fromUser = question.get("fromUser");
-//    
-//    if (isTestUser == false) {
-//        if (!fromUser.get("isTestUser")) {
-//                // isTestUser is Undefined")
-//        } else {
-//            isTestUser = fromUser.get("isTestUser");
-//        }
-//    }
+    var questionAnswerer = question.get("toUser");
+    // see if either question user is a test user
+    var isTestUser = false;
     
-//    newCampfire.set("isTest", isTestUser);
-//    
-//    newCampfire.save(null, { useMasterKey: true });
+    if (typeof questionAnswerer.get("isTestUser") !== 'undefined') {
+        isTestUser = questionAnswerer.get("isTestUser");
+        console.log(isTestUser);
+    }
+    
+    let fromUser = question.get("fromUser");
+    
+    if (isTestUser == false) {
+        if (!fromUser.get("isTestUser")) {
+                // isTestUser is Undefined")
+        } else {
+            isTestUser = fromUser.get("isTestUser");
+        }
+    }
+    
+    newCampfire.set("isTest", isTestUser);
+    
+    newCampfire.save(null, { useMasterKey: true });
 }
 
 
