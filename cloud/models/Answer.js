@@ -12,8 +12,8 @@ Parse.Cloud.afterSave("Answer", function(request) {
                       
                       console.log("it's new");
 
-//        var Campfire = Parse.Object.extend("Campfire");
-//        var newCampfire = new Campfire();
+        var Campfire = Parse.Object.extend("Campfire");
+        var newCampfire = new Campfire();
 
         var answer = request.object;
         var question = answer.get("questionRef");
@@ -29,15 +29,15 @@ Parse.Cloud.afterSave("Answer", function(request) {
                       
         console.log("starting question asker fetch");
 
-//        newCampfire.set("answerRef", answer);
-//        newCampfire.set("questionRef", question);
-//        newCampfire.set("listenCount", 0);
-//        newCampfire.set("likeCount", 0);
-//        newCampfire.set("flagCount", 0);
-//        newCampfire.set("isDummyData", false);
-//        newCampfire.set("isTest", answererIsTestUser);
-//
-//        newCampfire.save();
+        newCampfire.set("answerRef", answer);
+        newCampfire.set("questionRef", question);
+        newCampfire.set("listenCount", 0);
+        newCampfire.set("likeCount", 0);
+        newCampfire.set("flagCount", 0);
+        newCampfire.set("isDummyData", false);
+        newCampfire.set("isTest", answererIsTestUser);
+
+        newCampfire.save();
 
         //START HERE - TO BE UNCOMMENTED
         
@@ -50,32 +50,32 @@ Parse.Cloud.afterSave("Answer", function(request) {
                             
                console.log("new campfire started");
                             
-                var Campfire = Parse.Object.extend("Campfire");
-                var newCampfire = new Campfire();
-                            
-                newCampfire.set("answerRef", answer);
-                newCampfire.set("questionRef", question);
-                newCampfire.set("listenCount", 0);
-                newCampfire.set("likeCount", 0);
-                newCampfire.set("flagCount", 0);
-                newCampfire.set("isDummyData", false);
-                            
-                            var isTestUser = false;
-                            console.log("starting check");
-                            
-                            if (typeof request.user.get("isTestUser") !== 'undefined') {
-                                isTestUser = request.user.get("isTestUser");
-                                console.log(isTestUser);
-                            };
-                            
-                            console.log("second check");
-                            console.log(isTestUser);
-                            
-                            if (typeof user.get("isTestUser") !== 'undefined' && isTestUser == false) {
-                                isTestUser = user.get("isTestUser");
-                            };
-                            
-                            newCampfire.set("isTest", isTestUser);
+//                var Campfire = Parse.Object.extend("Campfire");
+//                var newCampfire = new Campfire();
+//                            
+//                newCampfire.set("answerRef", answer);
+//                newCampfire.set("questionRef", question);
+//                newCampfire.set("listenCount", 0);
+//                newCampfire.set("likeCount", 0);
+//                newCampfire.set("flagCount", 0);
+//                newCampfire.set("isDummyData", false);
+//                            
+//                            var isTestUser = false;
+//                            console.log("starting check");
+//                            
+//                            if (typeof request.user.get("isTestUser") !== 'undefined') {
+//                                isTestUser = request.user.get("isTestUser");
+//                                console.log(isTestUser);
+//                            };
+//                            
+//                            console.log("second check");
+//                            console.log(isTestUser);
+//                            
+//                            if (typeof user.get("isTestUser") !== 'undefined' && isTestUser == false) {
+//                                isTestUser = user.get("isTestUser");
+//                            };
+//                            
+//                            newCampfire.set("isTest", isTestUser);
                             
                             
                             
@@ -85,7 +85,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                     newCampfire.set("isTest", false);
                 }*/
 
-                newCampfire.save(null, {useMasterKey: true});
+//                newCampfire.save(null, {useMasterKey: true});
 
                 // setup a push to the question Asker
                 var pushQuery = new Parse.Query(Parse.Installation);
