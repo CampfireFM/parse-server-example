@@ -16,7 +16,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
 //        var newCampfire = new Campfire();
 
         var answer = request.object;
-        var question = request.object.get("questionRef");
+        var question = answer.get("questionRef");
 
         var currentUser = request.user;
                       
@@ -27,7 +27,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
 
         question.set("isAnswered", true);
                       
-                      console.log("starting question akser fetch");
+        console.log("starting question asker fetch");
 
 //        newCampfire.set("answerRef", answer);
 //        newCampfire.set("questionRef", question);
@@ -40,6 +40,9 @@ Parse.Cloud.afterSave("Answer", function(request) {
 //        newCampfire.save();
 
         //START HERE - TO BE UNCOMMENTED
+        
+        console.log(question.get("fromUser"));
+                      
         var questionAsker = question.get("fromUser");
         questionAsker.fetch({
             useMasterKey: true,
