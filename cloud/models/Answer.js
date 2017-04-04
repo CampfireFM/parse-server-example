@@ -46,7 +46,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                             console.log("second check");
                             console.log(isTestUser);
                             
-                            let fromUser = question["fromUser"];
+                            let fromUser = question.get("fromUser");
                             if (isTestUser != true) {
                                   if (!fromUser.get("isTestUser")) {
                                   } else {
