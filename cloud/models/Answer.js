@@ -47,10 +47,22 @@ Parse.Cloud.afterSave("Answer", function(request) {
                             console.log(isTestUser);
                             
                             let fromUser = question["fromUser"];
-                            if (typeof fromUser.get("isTestUser") !== 'undefined' && isTestUser == false) {
-                                isTestUser = user.get("isTestUser");
-                            };
+                            if (isTestUser != true) {
+                                  if (!fromUser.get("isTestUser")) {
+                                  } else {
+                                  isTestUser = fromUser.get("isTestUser");
+                                  };
+                                  };
+                                  
+                                  
+//                            if (typeof fromUser.get("isTestUser") !== 'undefined' && isTestUser == false) {
+//                                isTestUser = user.get("isTestUser");
+//                            };
                             
+                                  
+                            console.log("test user final")
+                            console.log(isTestUser)
+                                  
                             newCampfire.set("isTest", isTestUser);
                             
                             newCampfire.save(null, {useMasterKey: true});
