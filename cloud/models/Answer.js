@@ -65,15 +65,15 @@ Parse.Cloud.afterSave("Answer", function(request) {
 
 
 func saveCampfire(question, answer) {
-    var Campfire = Parse.Object.extend("Campfire");
-    var newCampfire = new Campfire();
-    
-    newCampfire.set("answerRef", answer);
-    newCampfire.set("questionRef", question);
-    newCampfire.set("listenCount", 0);
-    newCampfire.set("likeCount", 0);
-    newCampfire.set("flagCount", 0);
-    newCampfire.set("isDummyData", false);
+//    var Campfire = Parse.Object.extend("Campfire");
+//    var newCampfire = new Campfire();
+//    
+//    newCampfire.set("answerRef", answer);
+//    newCampfire.set("questionRef", question);
+//    newCampfire.set("listenCount", 0);
+//    newCampfire.set("likeCount", 0);
+//    newCampfire.set("flagCount", 0);
+//    newCampfire.set("isDummyData", false);
     
     
 //    var questionAnswerer = question.get("toUser");
@@ -95,9 +95,9 @@ func saveCampfire(question, answer) {
 //        }
 //    }
     
-    newCampfire.set("isTest", isTestUser);
-    
-    newCampfire.save(null, { useMasterKey: true });
+//    newCampfire.set("isTest", isTestUser);
+//    
+//    newCampfire.save(null, { useMasterKey: true });
 }
 
 
