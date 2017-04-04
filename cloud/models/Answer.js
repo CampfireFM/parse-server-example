@@ -21,44 +21,44 @@ Parse.Cloud.afterSave("Answer", function(request) {
                                 request.log.error(JSON.stringify(err_question));
                                 }else{
                                   
-                            question.set("isAnswered", true);
-                            question.save();
-                            
-                            // create and save a new Campfire
-                            saveNewCampfire(question, answer);
-                                  
-                                  
-                            // setup a push to the question Asker
-                            var pushQuery = new Parse.Query(Parse.Installation);
-                            pushQuery.equalTo('deviceType', 'ios');
-                            pushQuery.equalTo('user', fromUser);
+                                question.set("isAnswered", true);
+                                question.save();
+                                
+                                // create and save a new Campfire
+                                saveNewCampfire(question, answer);
+                                      
+                                      
+                                // setup a push to the question Asker
+                                var pushQuery = new Parse.Query(Parse.Installation);
+                                pushQuery.equalTo('deviceType', 'ios');
+                                pushQuery.equalTo('user', fromUser);
 
-                            var alert = "";
-                            var firstName = currentUser.get('firstName');
-                            var lastName = currentUser.get('lastName');
-                            if (firstName) {
-                            alert = firstName + " " + lastName + " just answered your question!";
-                            }
+                                var alert = "";
+                                var firstName = currentUser.get('firstName');
+                                var lastName = currentUser.get('lastName');
+                                if (firstName) {
+                                    alert = firstName + " " + lastName + " just answered your question!";
+                                  };
 
-                            Parse.Push.send({
-                                            where: pushQuery,
-                                            data: {
-                                            alert: alert,
-                                            questionId: question.id
-                                            }
-                                            }, {
-                                            useMasterKey: true,
-                                            success: function() {
-                                            // Push was successful
-                                            },
-                                            error: function(error) {
-                                            throw "PUSH: Got an error " + error.code + " : " + error.message;
-                                            }
-                                            });
-          }
+                                Parse.Push.send({
+                                                where: pushQuery,
+                                                data: {
+                                                alert: alert,
+                                                questionId: question.id
+                                                }
+                                                }, {
+                                                useMasterKey: true,
+                                                success: function() {
+                                                // Push was successful
+                                                },
+                                                error: function(error) {
+                                                throw "PUSH: Got an error " + error.code + " : " + error.message;
+                                                }
+                                                });
+                              };
           });
         //ENDS HERE - TO BE UNCOMMENTED
-    }      
+        };
   
 });
 //end of afterSave function
@@ -86,10 +86,10 @@ func saveNewCampfire(question, answer) {
     };
     
     let fromUser = question.get("fromUser");
-    console.log(fromUser);
+    
     if (isTestUser == false) {
         if (!fromUser.get("isTestUser")) {
-            console.log("isTestUser is Undefined");
+                // isTestUser is Undefined")
         } else {
             isTestUser = fromUser.get("isTestUser");
         };
