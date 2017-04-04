@@ -5,8 +5,12 @@ var answer_methods = {};
 //begin of afterSave function
 Parse.Cloud.afterSave("Answer", function(request) {
 
+    console.log("starting afterSave");
+                      
     //check if its a new record.                     
     if (request.object.existed() == false) {
+                      
+                      console.log("it's new");
 
 //        var Campfire = Parse.Object.extend("Campfire");
 //        var newCampfire = new Campfire();
@@ -22,6 +26,8 @@ Parse.Cloud.afterSave("Answer", function(request) {
 //        var answererIsTestUser = request.user.get("isTestUser");
 
         question.set("isAnswered", true);
+                      
+                      console.log("starting question akser fetch");
 
 //        newCampfire.set("answerRef", answer);
 //        newCampfire.set("questionRef", question);
@@ -37,8 +43,9 @@ Parse.Cloud.afterSave("Answer", function(request) {
         var questionAsker = question.get("fromUser");
         questionAsker.fetch({
             useMasterKey: true,
-            //success callback function
             success: function(user) {
+                            
+               console.log("new campfire started");
                             
                 var Campfire = Parse.Object.extend("Campfire");
                 var newCampfire = new Campfire();
