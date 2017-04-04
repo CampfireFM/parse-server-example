@@ -47,12 +47,15 @@ Parse.Cloud.afterSave("Answer", function(request) {
                             console.log(isTestUser);
                             
                             let fromUser = question.get("fromUser");
-                            if (isTestUser != true) {
+                                  console.log(fromUser);
+                            if (isTestUser == false) {
                                   if (!fromUser.get("isTestUser")) {
+                                  // isTestUser is undefined
+                                      console.log("isTestUser is Undefined")
                                   } else {
-                                  isTestUser = fromUser.get("isTestUser");
+                                      isTestUser = fromUser.get("isTestUser");
                                   };
-                                  };
+                            };
                                   
                                   
 //                            if (typeof fromUser.get("isTestUser") !== 'undefined' && isTestUser == false) {
@@ -65,7 +68,8 @@ Parse.Cloud.afterSave("Answer", function(request) {
                                   
                             newCampfire.set("isTest", isTestUser);
                             
-                            newCampfire.save(null, {useMasterKey: true});
+                            newCampfire.save()
+//                            newCampfire.save(null, {useMasterKey: true});
                                   
 
                             // setup a push to the question Asker
