@@ -22,11 +22,11 @@ Parse.Cloud.afterSave("Answer", function(request) {
                                 } else {
                                   
                                 question.set("isAnswered", true);
-                                question.save(null, { useMasterKey: true });
+//                                question.save(null, { useMasterKey: true });
                                 
                                 // create and save a new Campfire
-                                saveNewCampfire(question, answer);
-                                      
+//                                saveNewCampfire(question, answer);
+                                  
                                       
                                 // setup a push to the question Asker
                                 var pushQuery = new Parse.Query(Parse.Installation);
@@ -63,7 +63,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
 });
 //end of afterSave function
 
-
+/*
 func saveNewCampfire(question, answer) {
     var Campfire = Parse.Object.extend("Campfire");
     var newCampfire = new Campfire();
@@ -99,6 +99,7 @@ func saveNewCampfire(question, answer) {
     
     newCampfire.save();
 }
+ */
 
 
 function getQuestionAndItsPointers(questionId,callback){
