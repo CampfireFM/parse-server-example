@@ -22,7 +22,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                                 } else {
                                   
                                 question.set("isAnswered", true);
-                                question.save();
+                                question.save(null, { useMasterKey: true });
                                 
                                 // create and save a new Campfire
                                 saveNewCampfire(question, answer);
