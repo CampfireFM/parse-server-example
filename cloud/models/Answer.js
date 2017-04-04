@@ -97,7 +97,7 @@ function getQuestionAndItsPointers(questionId,callback){
     
     var Question = Parse.Object.extend("Question");
     var query = new Parse.Query(Question);
-    query.include(["toUser", "fromUser"]);
+    query.include(["toUser", "fromUser", "charity"]);
     query.equalTo("objectId",questionId);
     query.find({
                success: function(questions) {
