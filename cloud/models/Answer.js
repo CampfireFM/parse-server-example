@@ -19,7 +19,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                                 if(err_question){
                                 request.log.error("FAILED IN QUESTION DETAILS FETCH");
                                 request.log.error(JSON.stringify(err_question));
-                                }else{
+                                } else {
                                   
                                 question.set("isAnswered", true);
                                 question.save();
@@ -38,7 +38,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                                 var lastName = currentUser.get('lastName');
                                 if (firstName) {
                                     alert = firstName + " " + lastName + " just answered your question!";
-                                  };
+                                  }
 
                                 Parse.Push.send({
                                                 where: pushQuery,
@@ -55,10 +55,10 @@ Parse.Cloud.afterSave("Answer", function(request) {
                                                 throw "PUSH: Got an error " + error.code + " : " + error.message;
                                                 }
                                                 });
-                              };
+                              }
           });
         //ENDS HERE - TO BE UNCOMMENTED
-        };
+        }
   
 });
 //end of afterSave function
@@ -83,7 +83,7 @@ func saveNewCampfire(question, answer) {
     if (typeof questionAnswerer.get("isTestUser") !== 'undefined') {
         isTestUser = questionAnswerer.get("isTestUser");
         console.log(isTestUser);
-    };
+    }
     
     let fromUser = question.get("fromUser");
     
@@ -92,8 +92,8 @@ func saveNewCampfire(question, answer) {
                 // isTestUser is Undefined")
         } else {
             isTestUser = fromUser.get("isTestUser");
-        };
-    };
+        }
+    }
     
     newCampfire.set("isTest", isTestUser);
     
