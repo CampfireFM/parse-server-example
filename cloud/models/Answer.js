@@ -20,58 +20,14 @@ Parse.Cloud.afterSave("Answer", function(request) {
                                 request.log.error("FAILED IN QUESTION DETAILS FETCH");
                                 request.log.error(JSON.stringify(err_question));
                                 }else{
-                            
-                            console.log("new campfire started");
                                   
                             question.set("isAnswered", true);
-                                  
-                            var Campfire = Parse.Object.extend("Campfire");
-                            var newCampfire = new Campfire();
-                                        
-                            newCampfire.set("answerRef", answer);
-                            newCampfire.set("questionRef", question);
-                            newCampfire.set("listenCount", 0);
-                            newCampfire.set("likeCount", 0);
-                            newCampfire.set("flagCount", 0);
-                            newCampfire.set("isDummyData", false);
+                            question.save();
                             
-                            var isTestUser = false;
-                            console.log("starting check");
-                            
-                            if (typeof currentUser.get("isTestUser") !== 'undefined') {
-                                isTestUser = request.user.get("isTestUser");
-                                console.log(isTestUser);
-                            };
-                            
-                            console.log("second check");
-                            console.log(isTestUser);
-                            
-                            let fromUser = question.get("fromUser");
-                                  console.log(fromUser);
-                            if (isTestUser == false) {
-                                  if (!fromUser.get("isTestUser")) {
-                                  // isTestUser is undefined
-                                      console.log("isTestUser is Undefined")
-                                  } else {
-                                      isTestUser = fromUser.get("isTestUser");
-                                  };
-                            };
+                            // create and save a new Campfire
+                            saveNewCampfire(question, answer);
                                   
                                   
-//                            if (typeof fromUser.get("isTestUser") !== 'undefined' && isTestUser == false) {
-//                                isTestUser = user.get("isTestUser");
-//                            };
-                            
-                                  
-                            console.log("test user final")
-                            console.log(isTestUser)
-                                  
-                            newCampfire.set("isTest", isTestUser);
-                            
-                            newCampfire.save()
-//                            newCampfire.save(null, {useMasterKey: true});
-                                  
-
                             // setup a push to the question Asker
                             var pushQuery = new Parse.Query(Parse.Installation);
                             pushQuery.equalTo('deviceType', 'ios');
@@ -88,7 +44,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                                             where: pushQuery,
                                             data: {
                                             alert: alert,
-                                            questionId: request.object.id
+                                            questionId: question.id
                                             }
                                             }, {
                                             useMasterKey: true,
@@ -107,6 +63,40 @@ Parse.Cloud.afterSave("Answer", function(request) {
 });
 //end of afterSave function
 
+
+func saveNewCampfire(question, answer) {
+    var Campfire = Parse.Object.extend("Campfire");
+    var newCampfire = new Campfire();
+    
+    newCampfire.set("answerRef", answer);
+    newCampfire.set("questionRef", question);
+    newCampfire.set("listenCount", 0);
+    newCampfire.set("likeCount", 0);
+    newCampfire.set("flagCount", 0);
+    newCampfire.set("isDummyData", false);
+    
+    // see if either question user is a test user
+    var isTestUser = false;
+    
+    if (typeof currentUser.get("isTestUser") !== 'undefined') {
+        isTestUser = request.user.get("isTestUser");
+        console.log(isTestUser);
+    };
+    
+    let fromUser = question.get("fromUser");
+    console.log(fromUser);
+    if (isTestUser == false) {
+        if (!fromUser.get("isTestUser")) {
+            console.log("isTestUser is Undefined")
+        } else {
+            isTestUser = fromUser.get("isTestUser");
+        };
+    };
+    
+    newCampfire.set("isTest", isTestUser);
+    
+    newCampfire.save()
+}
 
 
 function getQuestionAndItsPointers(questionId,callback){
