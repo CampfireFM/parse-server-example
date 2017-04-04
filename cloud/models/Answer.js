@@ -63,7 +63,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
 });
 //end of afterSave function
 
-/*
+
 func saveNewCampfire(question, answer) {
     var Campfire = Parse.Object.extend("Campfire");
     var newCampfire = new Campfire();
@@ -97,9 +97,9 @@ func saveNewCampfire(question, answer) {
     
     newCampfire.set("isTest", isTestUser);
     
-    newCampfire.save();
+    newCampfire.save(null, { useMasterKey: true });
 }
- */
+
 
 
 function getQuestionAndItsPointers(questionId,callback){
