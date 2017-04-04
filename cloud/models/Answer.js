@@ -75,11 +75,13 @@ func saveNewCampfire(question, answer) {
     newCampfire.set("flagCount", 0);
     newCampfire.set("isDummyData", false);
     
+    
+    var questionAnswerer = question.get("toUser");
     // see if either question user is a test user
     var isTestUser = false;
     
-    if (typeof currentUser.get("isTestUser") !== 'undefined') {
-        isTestUser = request.user.get("isTestUser");
+    if (typeof questionAnswerer.get("isTestUser") !== 'undefined') {
+        isTestUser = questionAnswerer.get("isTestUser");
         console.log(isTestUser);
     };
     
