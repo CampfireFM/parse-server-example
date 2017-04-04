@@ -89,7 +89,7 @@ func saveNewCampfire(question, answer) {
     console.log(fromUser);
     if (isTestUser == false) {
         if (!fromUser.get("isTestUser")) {
-            console.log("isTestUser is Undefined")
+            console.log("isTestUser is Undefined");
         } else {
             isTestUser = fromUser.get("isTestUser");
         };
@@ -97,7 +97,7 @@ func saveNewCampfire(question, answer) {
     
     newCampfire.set("isTest", isTestUser);
     
-    newCampfire.save()
+    newCampfire.save();
 }
 
 
