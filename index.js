@@ -241,9 +241,10 @@ app.get('/eavesdrop/:id', function(req, res) {
             return res.render('eavesdrop_meta',{
               id: campfireId,
               imageUrl: campfire.from.cover,
-              question: campfire.question,
+              question: '"' + campfire.question + '"',
               to_name: campfire.to.name,
-              from_first_name: campfire.from.firstName
+              from_first_name: campfire.from.firstName,
+              fb_app_id: config.facebookAppIds[0]
             });
           },
           error: function(object, error) {
