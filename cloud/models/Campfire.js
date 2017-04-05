@@ -149,7 +149,12 @@ function splitAndMakePayments(question, charge, callback){
                      });
 
        var user_earning_increment = split_charity + split_answerer;
-       qAnswerer.increment("totalEarnings", user_earning_increment);
+    
+       // should probably go in a success block
+    
+       qAnswerer.increment("earningsTotal", user_earning_increment);
+       qAnswerer.increment("earningsBalance", split_answerer);
+       qAnswerer.increment("earningsDonated", split_charity);
        qAnswerer.save(null, {useMasterKey: true});
 
  }

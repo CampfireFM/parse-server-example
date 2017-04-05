@@ -137,6 +137,9 @@ function splitUnlockEarnings(params){
       console.log("reached here11");
       var question = params.question;
       var total_unlock_earnings = 0.12;
+    
+      var fromUser = question.get("fromUser");
+      var toUser   = question.get("toUser");
 
       var split_asker = total_unlock_earnings / 2;
       var split_answerer = total_unlock_earnings / 2;
@@ -144,17 +147,17 @@ function splitUnlockEarnings(params){
       var answerer_charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
       var split_answerer_charity = split_answerer * ( answerer_charity_percentage / 100);
 
-      var asker_charity_percentage = question.get("fromUser").get("donationPercentage") ? question.get("fromUser").get("donationPercentage") : 0;
+      var asker_charity_percentage = fromUser.get("donationPercentage") ? fromUser.get("donationPercentage") : 0;
       var split_asker_charity = split_asker * ( asker_charity_percentage / 100);
 
-      var asker_charity = question.get("fromUser").get("charityRef");
+      var asker_charity = fromUser.get("charityRef");
 
       var split_asker_final = split_asker - split_asker_charity;
       var split_answerer_final = split_answerer - split_answerer_charity;
 
       var payout_asker_params = {
             amount : split_asker_final,
-            userRef : question.get("fromUser"),
+            userRef : fromUser,
             unlockRef : params.campfireunlock,
             type : 'unlockAsker',
             isPaid : false
@@ -169,7 +172,7 @@ function splitUnlockEarnings(params){
 
       var payout_answerer_params = {
             amount : split_answerer_final,
-            userRef : question.get("toUser"),
+            userRef : toUser,
             unlockRef : params.campfireunlock,
             type : 'unlockAnswerer',
             isPaid : false
@@ -184,7 +187,7 @@ function splitUnlockEarnings(params){
             amount: split_answerer_charity,
             charityRef: question.get("charity"),
             questionRef: question,
-            userRef : question.get("toUser"),
+            userRef : toUser,
             isPaid: false
       };
 
@@ -197,7 +200,7 @@ function splitUnlockEarnings(params){
             amount: split_asker_charity,
             charityRef: asker_charity,
             questionRef: question,
-            userRef : question.get("fromUser"),
+            userRef : fromUser,
             isPaid: false
       };
 
@@ -206,11 +209,18 @@ function splitUnlockEarnings(params){
             console.log();
         });
 
-      question.get("fromUser").increment("totalEarnings", split_asker);
-      question.get("fromUser").save(null, {useMasterKey: true});
+    
+      // The following should probably go inside a payout or donation success block
+    
+      fromUser.increment("earningsTotal", split_asker);
+      fromUser.increment("earningsBalance", split_asker);
+      fromUser.increment("earningsDonated", donation_asker_params["amount"]);
+      fromUser.save(null, {useMasterKey: true});
 
-      question.get("toUser").increment("totalEarnings", split_answerer);
-      question.get("toUser").save(null, {useMasterKey: true});
+      toUser.increment("earningsTotal", split_answerer);
+      toUser.increment("earningsBalance", split_answerer);
+      toUser.increment("earningsDonated", donation_answerer_params["amount"]);
+      toUser.save(null, {useMasterKey: true});
 }
 
 /*
