@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta property="og:title" content="<%= question %>" />
+        <title>Campfire Media</title>
+        <meta property="og:title" content="Eavesdrop on <%= to_name %> - Campfire" />
+        <meta property="og:description" content="<%= to_name %> responds to <%= from_first_name %>'s question: \"<%= question %>\" on Campfire." />
+        
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="<%= 'https://campfire.fm/eavesdrop/'+id %>" />
+        <meta http-equiv="refresh" content="0;url=<%= 'https://campfire.fm/eavesdrop/'+id %>" />
         <meta property="og:image" content="<%= imageUrl %>" />
     </head>
     <body>
