@@ -62,7 +62,7 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
           }
         }
       }
-      res.success(campfires);      
+      res.success(campfires);
     },
     error: function(error) {
       response.error(error);
@@ -70,7 +70,42 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
   })
 });
 
+Parse.Cloud.define('getTopics', function(req, res){
+  var topics = [];
+  var limit = req.params.limit || 10;
+  var skip =  req.params.skip || 0;
 
+  var List = Parse.Object.extend('List');
+  var query = new Parse.Query(List);
+
+  for (var key in req.params.filter) {
+    query.equalTo(key, req.params.filter[key]);
+  }
+
+  query.descending('createdAt');
+  query.limit(limit);
+  query.skip(skip);
+
+  query.find({
+    success: function(objects) {
+      console.log(objects);
+      if (objects.length) {
+        for (var i = 0; i < objects.length; i++) {
+          topics.push({
+            id: object.id,
+            name: object.get('name'),
+            type: object.get('type'),
+            image: object.get('image') ? (object.get('image')).toJSON().url : ''
+          });
+        }
+      }
+      res.success(topics);
+    },
+    error: function(error) {
+      response.error(error);
+    }
+  })
+});
 
 Parse.Cloud.define("updateNewUser", function(request, response) {
   var profilePicFile = null;
@@ -85,7 +120,7 @@ Parse.Cloud.define("updateNewUser", function(request, response) {
   var default_values = null;
   var query = new Parse.Query(Defaults);
   query.limit(1);
- 
+
   query.find().then(function(defaults){
     default_values = defaults;
     initial_match_count = defaults[0].get('initialMatchCount');
@@ -131,7 +166,7 @@ Parse.Cloud.define("updateNewUser", function(request, response) {
     user.set('totalEarnings', 0);
     user.set('isTestUser', false);
     user.set('isDummyUser', false);
-    
+
     // setting both image to default image
     user.set('coverPhoto', default_image);
     user.set('profilePhoto', default_image);
