@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta property="og:title" content="<%= question %>" />
+        <title>Campfire Media</title>
+        <meta property="og:title" content="Eavesdrop on <%= to_name %> - Campfire" />
+        <meta property="og:description" content="<%= to_name %> responds to <%= from_first_name %>'s question: <%= question %> on Campfire." />
+        
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="<%= 'https://campfire.fm/eavesdrop/'+id %>" />
         <meta property="og:image" content="<%= imageUrl %>" />
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="fb:app_id" content="<%= fb_app_id %>"/>
     </head>
     <body>
-        <p>description: <%= question %></p>
-        <img src="<%= imageUrl %>">
+        <p>Title: "Eavesdrop on <%= to_name %> - Campfire"</p>
+        <p>Description: <%= question %></p>
     </body>
 </html>
