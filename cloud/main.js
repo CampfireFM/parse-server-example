@@ -192,6 +192,21 @@ Parse.Cloud.define('getQuestionDetails', function(req, res) {
 });
 
 
+Parse.Cloud.define('deleteCharity', function(req, res) {
+
+    var charity_ids_array = req.params.charity_ids_array;
+    deleteCharity(array_charity_ids,function(err,result){
+        if(err){
+          return res.error(result);
+        }else{
+          return res.success(result);
+        }
+    });
+
+});
+
+
+
 function deleteCharity(array_charity_ids,callback){
 
     var array_charity_pointers = [];
@@ -203,6 +218,7 @@ function deleteCharity(array_charity_ids,callback){
     query.equalTo("charityRef", array_charity_pointers);
     query.find({
       success: function(results_users) {
+
           for(i in results_users){
             results_users[i].unset("charityRef");
           }
@@ -213,6 +229,7 @@ function deleteCharity(array_charity_ids,callback){
           query.equalTo("charity", array_charity_pointers);
           query.find({
             success: function(results_questions) {
+
                 for(i in results_questions){
                   results_questions[i].unset("charity");
                   results_questions[i].set("charityPercentage",0);
@@ -223,18 +240,22 @@ function deleteCharity(array_charity_ids,callback){
                 var query = new Parse.Query(Charity);
                 query.containedIn('objectId', array_charity_ids);
                 query.find({useMasterKey:true}).then(function (charity_objects) {
+
                     Parse.Object.destroyAll(charity_objects);
+
+                    return callback("Delete was success");
+
                 }, function (error) {
-                     response.error(error);
+                     return callback(error,null);
                 });
             },
             error: function(error) {
-                response.error(error);
+                return callback(error,null);
             }
           });
       },
       error: function(error) {
-          response.error("Some Issue with search people");
+          return callback(error,null);
       }
     });
 
