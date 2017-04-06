@@ -240,7 +240,7 @@ app.get('/eavesdrop/:id', function(req, res) {
             campfire = camfireObj
             return res.render('eavesdrop_meta',{
               id: campfireId,
-              imageUrl: campfire.from.cover,
+              imageUrl: toUser.get('coverPhoto') ? (toUser.get('coverPhoto')).toJSON().url : '',
               question: '"' + campfire.question + '"',
               to_name: campfire.to.name,
               from_first_name: campfire.from.firstName,
