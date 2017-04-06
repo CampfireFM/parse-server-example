@@ -85,7 +85,7 @@ function saveCampfire(question, answer) {
         console.log(isTestUser);
     }
     
-    let fromUser = question.get("fromUser");
+    var fromUser = question.get("fromUser");
     
     if (isTestUser == false) {
         if (!fromUser.get("isTestUser")) {
