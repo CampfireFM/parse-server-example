@@ -52,6 +52,29 @@ Parse.Cloud.define('createStripeSourceForCustomer', function(req, res) {
 });
 
 
+Parse.Cloud.define('createStripeCustomer', function(req, res) {
+                   if(!req.user){
+                   return res.error("User not logged in");
+                   }
+                   var email = req.params.email;
+                   var sourceToken = req.params.sourceToken;
+                   if(!email || !sourceToken){
+                   return res.error('email and SourceToken are mandatory');
+                   }else{
+                   stripe.customers.create({
+                                           description: 'Customer for email' +email,
+                                           source: sourceToken // obtained with Stripe.js
+                                           }, function(err, customer) {
+                                           if(err){
+                                           return res.error(err);
+                                           }else{
+                                           return res.success(customer);
+                                           }
+                                           });
+                   }
+                   });
+
+
 Parse.Cloud.define('chargeWithToken', function(req, res) {
 	if(!req.user){
 		return res.error("User not logged in");
