@@ -191,3 +191,52 @@ Parse.Cloud.define('getQuestionDetails', function(req, res) {
       });
 });
 
+
+function deleteCharity(array_charity_ids,callback){
+
+    var array_charity_pointers = [];
+    for(id in array_charity_ids){
+      array_charity_ids[id] = {__type: "Pointer",className: "Charity",objectId: array_charity_ids[id]};
+    }
+
+    var query = new Parse.Query(Parse.User);
+    query.equalTo("charityRef", array_charity_pointers);
+    query.find({
+      success: function(results_users) {
+          for(i in results_users){
+            results_users[i].unset("charityRef");
+          }
+          Parse.Object.saveAll(results_users,{useMasterKey:true});
+
+          var Question = Parse.Object.extend('Question');
+          var query = new Parse.Query(Question);
+          query.equalTo("charity", array_charity_pointers);
+          query.find({
+            success: function(results_questions) {
+                for(i in results_questions){
+                  results_questions[i].unset("charity");
+                  results_questions[i].set("charityPercentage",0);
+                }
+                Parse.Object.saveAll(results_questions,{useMasterKey:true});
+
+                var Charity = Parse.Object.extend('Charity');
+                var query = new Parse.Query(Charity);
+                query.containedIn('objectId', array_charity_ids);
+                query.find({useMasterKey:true}).then(function (charity_objects) {
+                    Parse.Object.destroyAll(charity_objects);
+                }, function (error) {
+                     response.error(error);
+                });
+            },
+            error: function(error) {
+                response.error(error);
+            }
+          });
+      },
+      error: function(error) {
+          response.error("Some Issue with search people");
+      }
+    });
+
+}
+
