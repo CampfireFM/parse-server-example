@@ -58,8 +58,8 @@ Parse.Cloud.define('createStripeCustomer', function(req, res) {
                    }
                    var email = req.params.email;
                    var sourceToken = req.params.sourceToken;
-                   if(!email || !sourceToken){
-                   return res.error('email and SourceToken are mandatory');
+                   if(!email){
+                   return res.error('email is mandatory');
                    }else{
                    stripe.customers.create({
                                            description: 'Customer for email' +email,
