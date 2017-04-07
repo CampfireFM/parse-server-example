@@ -217,7 +217,8 @@ Parse.Cloud.define('getFeaturedTopics', function(req, res) {
       response.error(error);
     }
   })
-}
+});
+
 
 
 Parse.Cloud.define('getTopics', function(req, res){
