@@ -1,15 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html itemscope itemtype="http://schema.org/Conversation">
     <head>
         <title>Campfire Media</title>
+        <meta name="description" content="<%= to_name %> responds to <%= from_first_name %>'s question: <%= question %> on Campfire." />
+
+        <!-- Schema.org markup for Google+ -->
+        <meta itemprop="name" content="Eavesdrop on <%= to_name %> - Campfire">
+        <meta itemprop="description" content="<%= to_name %> responds to <%= from_first_name %>'s question: <%= question %> on Campfire.">
+        <meta itemprop="image" content="<%= imageUrl %>">
+
+        <!-- Twitter Card data -->
+        <meta name="twitter:card" content="summary_large_image">
+        <!-- <meta name="twitter:site" content="@publisher_handle"> -->
+        <meta name="twitter:title" content="Eavesdrop on <%= to_name %> - Campfire">
+        <meta name="twitter:description" content="<%= to_name %> responds to <%= from_first_name %>'s question: <%= question %> on Campfire.">
+        <!-- <meta name="twitter:creator" content="@author_handle"> -->
+        <!-- Twitter summary card with large image must be at least 280x150px -->
+        <meta name="twitter:image" content="<%= imageUrl %>">
+        <meta name="twitter:image:alt" content="Cover picture">
+
+        <!-- Open Graph data -->
         <meta property="og:title" content="Eavesdrop on <%= to_name %> - Campfire" />
-        <meta property="og:description" content="<%= to_name %> responds to <%= from_first_name %>'s question: <%= question %> on Campfire." />
-        
         <meta property="og:type" content="website" />
+        <meta property="og:url" content="<%= 'https://campfire.fm/eavesdrop/'+id %>" />
         <meta property="og:image" content="<%= imageUrl %>" />
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
+        <meta property="og:description" content="<%= to_name %> responds to <%= from_first_name %>'s question: <%= question %> on Campfire." />
         <meta property="fb:app_id" content="<%= fb_app_id %>"/>
+        <meta property="og:site_name" content="Campfire Media" />
+
     </head>
     <body>
         <p>Title: "Eavesdrop on <%= to_name %> - Campfire"</p>
