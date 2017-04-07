@@ -32,6 +32,7 @@ Parse.Cloud.define('getStripeCustomer', function(req, res) {
   	}
 });
 
+
 Parse.Cloud.define('createStripeSourceForCustomer', function(req, res) {
 	if(!req.user){
 		return res.error("User not logged in");
