@@ -72,27 +72,16 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
 
 Parse.Cloud.define('getTopics', function(req, res){
   var topics = [];
-  var limit = req.params.limit || 10;
-  var skip =  req.params.skip || 0;
-
   var List = Parse.Object.extend('List');
   var query = new Parse.Query(List);
 
-  for (var key in req.params.filter) {
-    query.equalTo(key, req.params.filter[key]);
-  }
-
-  query.descending('createdAt');
-  query.limit(limit);
-  query.skip(skip);
-
   query.find({
     success: function(objects) {
-      console.log(objects);
       if (objects.length) {
         for (var i = 0; i < objects.length; i++) {
+        var object = objects[i];
           topics.push({
-            id: object.id,
+            id: object.objectId,
             name: object.get('name'),
             type: object.get('type'),
             image: object.get('image') ? (object.get('image')).toJSON().url : ''
