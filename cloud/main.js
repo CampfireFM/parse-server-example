@@ -184,7 +184,7 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
           }
         }
       }
-      res.success(campfires);      
+      res.success(campfires);
     },
     error: function(error) {
       response.error(error);
@@ -192,6 +192,30 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
   })
 });
 
+Parse.Cloud.define('getTopics', function(req, res){
+  var topics = [];
+  var List = Parse.Object.extend('List');
+  var query = new Parse.Query(List);
+  query.find({
+    success: function(objects) {
+      if (objects.length) {
+        for (var i = 0; i < objects.length; i++) {
+        var object = objects[i];
+          topics.push({
+            id: object.objectId,
+            name: object.get('name'),
+            type: object.get('type'),
+            image: object.get('image') ? (object.get('image')).toJSON().url : ''
+          });
+        }
+      }
+      res.success(topics);
+    },
+    error: function(error) {
+      response.error(error);
+    }
+  })
+});
 
 Parse.Cloud.define('getQuestionDetails', function(req, res) {
 
@@ -285,3 +309,123 @@ function deleteCharity(array_charity_ids,callback){
 
 }
 
+Parse.Cloud.define("updateNewUser", function(request, response) {
+  var profilePicFile = null;
+  var coverPicFile = null;
+  var params = request.params
+  var firstname = params.firstName || '';
+  var lastname = params.lastName || '';
+  var bio = params.bio || '';
+  var initial_match_count = 0;
+  var default_image = {};
+  var Defaults = Parse.Object.extend('Defaults');
+  var default_values = null;
+  var query = new Parse.Query(Defaults);
+  query.limit(1);
+
+  query.find().then(function(defaults){
+    default_values = defaults;
+    initial_match_count = defaults[0].get('initialMatchCount');
+    default_image = defaults[0].get('coverPhoto');
+    if(request.user){
+      setUserValues(request.user);
+    }
+    else{
+      var id = request.params.id;
+      var User = Parse.Object.extend('User');
+      var query = new Parse.Query(User);
+      query.get(id, {
+        success: function(user){
+          setUserValues(user);
+        },
+        error: function(error){
+          response.error(error.message);
+        }
+      })
+    }
+  },function(error){
+    response.error(error.message);
+  })
+
+  var setUserValues = function(user){
+    user.set('firstName', firstname);
+    user.set('lastName', lastname);
+    user.set('fullName', firstname + ' ' + lastname)
+    user.set('gender', params.gender);
+    user.set('email', params.email);
+    user.set('bio', params.bio);
+
+    //default values
+
+    user.set('unansweredQuestionCount', 0);
+    user.set('missedNotificationCount', 0);
+    user.set('matchCount', initial_match_count);
+    user.set('questionPrice', 5);
+    user.set('accountBalance', '');
+    user.set('askAbout', '');
+    user.set('tagline', '');
+    user.set('donationPercentage', 0);
+    user.set('totalEarnings', 0);
+    user.set('isTestUser', false);
+    user.set('isDummyUser', false);
+
+    // setting both image to default image
+    user.set('coverPhoto', default_image);
+    user.set('profilePhoto', default_image);
+
+    if(params.profilePicUrl && params.coverPicUrl){
+      var image_file_regex = /(.*\.(?:png|jpg|jpeg|gif))/i
+      if(!image_file_regex.test(params.profilePicUrl)){
+        // If profile pic url is not an image url then save with
+        // default image
+        saveUser();
+      }
+      Parse.Cloud.httpRequest({ url: params.profilePicUrl }).then(function(response) {
+        var base64_profile_image = response.buffer.toString('base64');
+        profilePicFile = new Parse.File("profile.jpeg", { base64: base64_profile_image });
+        profilePicFile.save().then(function() {
+          user.set('profilePhoto', profilePicFile);
+          if(!image_file_regex.test(params.coverPicUrl)){
+            // If cover pic url is not an image url then save with
+            // default image
+            saveUser();
+          }
+          Parse.Cloud.httpRequest({ url: params.coverPicUrl }).then(function(response) {
+            var base64_cover_image = response.buffer.toString('base64');
+            coverPicFile = new Parse.File("cover.jpeg", { base64: base64_cover_image });
+            coverPicFile.save().then(function() {
+              user.set('coverPhoto', coverPicFile);
+              saveUser();
+            }, function(error) {
+              response.error(error.message);
+            });
+          }, function(error){
+            saveUser();
+          });
+        }, function(error) {
+          response.error(error.message);
+        });
+      },function(error){
+        // if we get any error from profile pic url like 404,
+        // we save user and give succes response
+        // to avoid loosing the rest of the data
+        saveUser();
+      });
+    }
+    else{
+      user.save(null, {useMasterKey : true}).then(function(user) {
+        response.success(user);
+      }, function(error) {
+        response.error(error.message);
+      });
+    }
+
+    var saveUser = function(){
+      user.save(null, {useMasterKey : true}).then(function(user) {
+        response.success(user);
+      }, function(error) {
+        response.error(error.message);
+      });
+    }
+  }
+});
