@@ -16,7 +16,8 @@
         <meta name="twitter:description" content="<%= to_name %> responds to <%= from_first_name %>'s question: <%= question %> on Campfire.">
         <!-- <meta name="twitter:creator" content="@author_handle"> -->
         <!-- Twitter summary card with large image must be at least 280x150px -->
-        <meta name="twitter:image:src" content="<%= imageUrl %>">
+        <meta name="twitter:image" content="<%= imageUrl %>">
+        <meta name="twitter:image:alt" content="Cover picture">
 
         <!-- Open Graph data -->
         <meta property="og:title" content="Eavesdrop on <%= to_name %> - Campfire" />
@@ -28,7 +29,6 @@
         <meta property="og:description" content="<%= to_name %> responds to <%= from_first_name %>'s question: <%= question %> on Campfire." />
         <meta property="fb:app_id" content="<%= fb_app_id %>"/>
         <meta property="og:site_name" content="Campfire Media" />
-        <meta property="article:tag" content="campfire" />
 
     </head>
     <body>
