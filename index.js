@@ -239,13 +239,17 @@ app.get('/meta/*', function(req, res) {
                 }
               };
             }
-            campfire = camfireObj
+            campfire = camfireObj;
+
+            desc = campfire.to.name + "responds to " + campfire.from.firstName + "'s" + ' question: "' + campfire.question + '" on Campfire.';
+            title = "Eavesdrop on " + campfire.to.name + " - Campfire";
+            
             return res.render('eavesdrop_meta',{
               page: req.params[0],
               imageUrl: toUser.get('coverPhoto') ? (toUser.get('coverPhoto')).toJSON().url : '',
               fb_app_id: config.facebookAppIds[0],
-              description: campfire.to.name + "responds to " + campfire.from.firstName + "'s question: \""+ campfire.question + "\" on Campfire.",
-              title: "Eavesdrop on " + to_name + " - Campfire"
+              description: desc,
+              title: title
             });
           },
           error: function(object, error) {
