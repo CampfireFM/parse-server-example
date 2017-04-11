@@ -200,6 +200,7 @@ app.get("/access-token", function(req, res) {
 
 app.get('/meta/*', function(req, res) {
     var page = req.params[0];
+    page = page.replace('home', '');
     var isEavesdropPage = /^eavesdrop\/(.*)$/.test(page);
     if(isEavesdropPage){
       var campfire = {};
@@ -265,7 +266,7 @@ app.get('/meta/*', function(req, res) {
     }
     else{
       return res.render('eavesdrop_meta',{
-        page: req.params[0],
+        page: page,
         imageUrl: 'https://campfire.fm/images/logo.png',
         fb_app_id: config.facebookAppIds[0],
         description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
