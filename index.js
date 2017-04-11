@@ -199,10 +199,12 @@ app.get("/access-token", function(req, res) {
   }
 });
 
-app.get('/eavesdrop/:id', function(req, res) {
-    var campfire = {};
-    var campfireId = req.params.id
-    if(campfireId){
+app.get('/meta/*', function(req, res) {
+    var page = req.params[0];
+    var isEavesdropPage = /^eavesdrop\/(.*)$/.test(page);
+    if(isEavesdropPage){
+      var campfire = {};
+      var campfireId = req.params[0].split('/')[1]
       var Campfire = Parse.Object.extend('Campfire');
       var query = new Parse.Query(Campfire);
       query.include(['questionRef', 'answerRef', 'questionRef.fromUser.fullName', 'answerRef.fromUser.fullName', 'questionRef.toUser.fullName']);
@@ -238,28 +240,37 @@ app.get('/eavesdrop/:id', function(req, res) {
                 }
               };
             }
-            campfire = camfireObj
+            campfire = camfireObj;
+
+            desc = campfire.to.name + "responds to " + campfire.from.firstName + "'s" + ' question: "' + campfire.question + '" on Campfire.';
+            title = "Eavesdrop on " + campfire.to.name + " - Campfire";
+            
             return res.render('eavesdrop_meta',{
-              id: campfireId,
+              page: req.params[0],
               imageUrl: toUser.get('coverPhoto') ? (toUser.get('coverPhoto')).toJSON().url : '',
-              question: '"' + campfire.question + '"',
-              to_name: campfire.to.name,
-              from_first_name: campfire.from.firstName,
-              fb_app_id: config.facebookAppIds[0]
+              fb_app_id: config.facebookAppIds[0],
+              description: desc,
+              title: title
             });
           },
           error: function(object, error) {
-            return res.status(500).json({
-              success: false,
-              message: error.message
+            return res.render('eavesdrop_meta',{
+              page: req.params[0],
+              imageUrl: 'https://campfire.fm/images/logo.png',
+              fb_app_id: config.facebookAppIds[0],
+              description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
+              title: "Campfire - Hear it here."
             });
           }
       });
     }
     else{
-      return res.status(500).json({
-        success: false,
-        message: 'No Campfire Id found.'
+      return res.render('eavesdrop_meta',{
+        page: req.params[0],
+        imageUrl: 'https://campfire.fm/images/logo.png',
+        fb_app_id: config.facebookAppIds[0],
+        description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
+        title: "Campfire - Hear it here."
       });
     }
 });
