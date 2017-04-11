@@ -9,7 +9,6 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
         var campfireRef = request.object.get("campfireRef");
         campfireRef.fetch({
             success: function (campfire) {
-                          
                 var questionRef = campfire.get("questionRef");
                 getQuestionObjAndItsPointers(questionRef.id, function(err_question, complete_question){
                         if(err_question){
@@ -18,19 +17,18 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
                             console.log(err_question);
 
                         }else{
-
                             var params = {
                                 question: complete_question,
                                 campfireunlock: request.object,
                                 campfire : campfire
                             };
 
-                                             
+                            campfire.increment("unlockCount",1);
+                            campfire.save({useMasterKey:true});
+
                             splitUnlockEarnings(params);
-                                             
                             sendUnlockPushToAsker(campfire, complete_question, currentUser);
                             sendUnlockPushToAnswerer(campfire, complete_question, currentUser);
-
                         }
                 });
             },
@@ -45,8 +43,7 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 
 
 function saveUnlockActivity(campfire, question, currentUser, toUser, type) {
-    
-        // Create and save a new "Unlock" activity for the question Asker
+     // Create and save a new "Unlock" activity for the question Asker
     var Activity = Parse.Object.extend("Activity");
     var newActivity = new Activity();
     newActivity.set("question", question);
