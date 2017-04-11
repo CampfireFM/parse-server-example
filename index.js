@@ -256,7 +256,7 @@ app.get('/meta/*', function(req, res) {
           error: function(object, error) {
             return res.render('eavesdrop_meta',{
               page: req.params[0],
-              imageUrl: 'https://campfire.fm/images/default-share-1200-800.png',
+              imageUrl: 'https://campfire.fm/images/logo.png',
               fb_app_id: config.facebookAppIds[0],
               description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
               title: "Campfire - Hear it here."
@@ -267,7 +267,7 @@ app.get('/meta/*', function(req, res) {
     else{
       return res.render('eavesdrop_meta',{
         page: page,
-        imageUrl: 'https://campfire.fm/images/default-share-1200-800.png',
+        imageUrl: 'https://campfire.fm/images/logo.png',
         fb_app_id: config.facebookAppIds[0],
         description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
         title: "Campfire - Hear it here."
