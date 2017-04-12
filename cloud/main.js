@@ -323,7 +323,7 @@ Parse.Cloud.define('getCampfires', function(req, res){
   if(!(req.params.topic_id && req.params.noPagination)){
     query.count().then(function(result){ count = result; });
   }
-  
+
   // sorting
   sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
 
@@ -403,7 +403,7 @@ Parse.Cloud.define('getPeople', function(req, res){
     sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
 
     // pagination
-    query.limit(limit); 
+    query.limit(limit);
     query.skip(skip);
     query.find({useMasterKey : true}).then(function(objects){
         if (objects.length > 0) {
