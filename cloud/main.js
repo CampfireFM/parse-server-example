@@ -207,6 +207,7 @@ Parse.Cloud.define('getFeaturedTopics', function(req, res) {
 });
 
 Parse.Cloud.define('getCampfires', function(req, res){
+  console.log(req.params);
   var campfires = [];
   var sortedBy = req.params.sortedBy || 'createdAt';
   var sortDir = req.params.sortDir || 'desc';
@@ -220,25 +221,29 @@ Parse.Cloud.define('getCampfires', function(req, res){
   query.include(['questionRef', 'answerRef', 'questionRef.fromUser.fullName',
     'questionRef.toUser.fullName']);
 
-  // filtering(WIP)
-  // if (req.params.answererName){
-  //   var toUsers = [];
-  //   var User = Parse.Object.extend('User');
-  //   var UserQuery = new Parse.Query(User);
-  //   UserQuery.select("objectId", "fullName");
-  //   UserQuery.startsWith("fullName", req.params.answererName);
-  //   UserQuery.find().then(function(users) {
-  //     if (users.length > 0) {
-  //       for (var i = 0; i < users.length; i++) {
-  //         var user = users[i]
-  //         toUsers.push(users.objectId);
-  //       }
-  //       var Question = Parse.Object.extend("Question");
-  //       var QuestionQuery = new Parse.Query(Defaults);
-  //       QuestionQuery.equalTo("toUser", toUsers);
-  //     }
-  //   });
-  // }
+  // filtering
+  if (req.params.answererName || req.params.answererAskerName){
+    var User = Parse.Object.extend('User');
+    var UserQuery = new Parse.Query(User);
+    UserQuery.select("objectId", "fullName");
+    (req.params.answererAskerName) ? UserQuery.startsWith("fullName", req.params.answererAskerName) : UserQuery.startsWith("fullName", req.params.answererName);
+    var Question = Parse.Object.extend("Question");
+    var QuestionQuery = new Parse.Query(Question);
+    (req.params.answererAskerName) ? QuestionQuery.matchesQuery('fromUser', UserQuery) : QuestionQuery.matchesQuery('toUser', UserQuery)
+    query.matchesQuery('questionRef', QuestionQuery);
+  }
+  if (req.params.question){
+    var Question = Parse.Object.extend("Question");
+    var QuestionQuery = new Parse.Query(Question);
+    QuestionQuery.startsWith('text', req.params.question)
+    query.matchesQuery('questionRef', QuestionQuery);
+  }
+  if (req.params.fromDate){
+    query.greaterThanOrEqualTo("createdAt", req.params.fromDate);
+  }
+  if (req.params.toDate){
+    query.greaterThanOrEqualTo("createdAt", req.params.toDate);
+  }
 
   // totalpages count
   var count;
