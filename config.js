@@ -21,3 +21,7 @@ module.exports = {
 	stripe_test_key : 'sk_test_dI6EuGEjaEwNrBLMKlcS84lq',
 	stripe_live_key : 'sk_test_7D6yb4r&^U2?QCj/u4i}CFE+'
 };
+
+const env = process.env.NODE_ENV || 'development';
+
+module.exports = configs[env];

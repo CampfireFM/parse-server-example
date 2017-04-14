@@ -1,5 +1,5 @@
-    // Example express application adding the parse-server module to expose Parse
-    // compatible API routes.
+// Example express application adding the parse-server module to expose Parse
+// compatible API routes.
 
 var express = require('express');
 var ParseServer = require('parse-server').ParseServer;
@@ -7,7 +7,7 @@ var path = require('path');
 var ParseDashboard = require('parse-dashboard');
 var config = require('./config.js');
 var cors = require('cors')
-
+const resolve = require('path').resolve;
 var Twitter = require("node-twitter-api");
 
 var twitter = new Twitter({
@@ -39,6 +39,40 @@ var api = new ParseServer({
           bundleId: 'com.campfire',
           production: true
       }]
+    },
+    emailAdapter: {
+        module: 'parse-server-mailgun',
+        options: {
+            // The address that your emails come from
+            fromAddress: config.mailgun.fromAddress,
+            // Your domain from mailgun.com
+            domain: config.mailgun.domain,
+            // Your API key from mailgun.com
+            apiKey: config.mailgun.apiKey,
+            // The template section
+            templates: {
+                // passwordResetEmail: {
+                //     subject: 'Reset your password',
+                //     pathPlainText: resolve(__dirname, 'path/to/templates/password_reset_email.txt'),
+                //     pathHtml: resolve(__dirname, 'path/to/templates/password_reset_email.html'),
+                //     callback: (user) => {return {firstName: user.get('firstName')}}
+                //
+                // // Now you can use {{firstName}} in your templates
+                // },
+                // verificationEmail: {
+                //     subject: 'Confirm your account',
+                //     pathPlainText: resolve(__dirname, 'path/to/templates/verification_email.txt'),
+                //     pathHtml: resolve(__dirname, 'path/to/templates/verification_email.html'),
+                //     callback: (user) => {return {firstName: user.get('firstName')}}
+                // // Now you can use {{firstName}} in your templates
+                // },
+                welcomeEmail: {
+                    subject: 'Welcome!',
+                    pathPlainText: resolve(__dirname, './templates/welcome.txt'),
+                    pathHtml: resolve(__dirname, './templates/welcome.html')
+                }
+            }
+        }
     }
 });
 

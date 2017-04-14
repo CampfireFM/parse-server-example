@@ -10,11 +10,11 @@ require("./models/CampfireUnlock.js");
 require("./models/Follow.js");
 require("./models/Like.js");
 require("./models/Question.js");
-
+require("./models/User.js");
 
 //the below function is just to test if everything is working fine
 Parse.Cloud.define('hello', function(req, res) {
-  res.success('Hi');
+    res.success("Hi");
 });
 
 Parse.Cloud.define('getStripeCustomer', function(req, res) {
