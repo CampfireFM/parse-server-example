@@ -218,6 +218,7 @@ Parse.Cloud.define('getCampfires', function(req, res){
   var Campfire = Parse.Object.extend('Campfire');
   var query = new Parse.Query(Campfire);
   query.equalTo('isDummyData', false);
+  // query.equalTo('isTest', false);
   query.include(['questionRef', 'answerRef', 'questionRef.fromUser.fullName',
     'questionRef.toUser.fullName']);
 
@@ -242,7 +243,7 @@ Parse.Cloud.define('getCampfires', function(req, res){
     query.greaterThanOrEqualTo("createdAt", req.params.fromDate);
   }
   if (req.params.toDate){
-    query.greaterThanOrEqualTo("createdAt", req.params.toDate);
+    query.lessThanOrEqualTo("createdAt", req.params.toDate);
   }
 
   // totalpages count
@@ -265,7 +266,7 @@ Parse.Cloud.define('getCampfires', function(req, res){
           var toUser = object.get('questionRef').get('toUser');
           var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
           var CuQuery = new Parse.Query(CampfireUnlock);
-          CuQuery.equalTo("objectId", object.objectId);
+          CuQuery.equalTo("objectId", object.get('objectId'));
           var Cucount;
           CuQuery.count().then(function(result){ Cucount = result; });
           date =  new Date(object.get('createdAt'));
