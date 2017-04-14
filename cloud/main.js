@@ -219,7 +219,7 @@ Parse.Cloud.define('getTopics', function(req, res){
         for (var i = 0; i < objects.length; i++) {
         var object = objects[i];
           topics.push({
-            id: object.objectId,
+            id: object.id,
             name: object.get('name'),
             type: object.get('type'),
             image: object.get('image') ? (object.get('image')).toJSON().url : ''
