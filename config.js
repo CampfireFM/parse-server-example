@@ -11,8 +11,8 @@ module.exports = {
 	facebookAppIds: ["984145855062964"],
 	auth: {
 		twitter: {
-		consumer_key: "sVvr3kgLVpEq9xYvkwA3BUty8", // Required
-		consumer_secret: "32lUjhIvlWjbmvEFN17nzkQJNNIY7kYXYFBQIeNdK64odICfEb", // Required
+		consumer_key: "PxGZmDyQbD778kzrWmyyPXeIc", // Required
+		consumer_secret: "qBTm2TEkqnsc8WxrtkKzq0qDrOhFFTvALsDIo4cFhXmZEjN3ee", // Required
 		callback_url: "https://campfire.fm",
 		auth_url: "https://api.twitter.com/oauth/authenticate?oauth_token="
 		}
