@@ -218,7 +218,7 @@ Parse.Cloud.define('getCampfires', function(req, res){
   var Campfire = Parse.Object.extend('Campfire');
   var query = new Parse.Query(Campfire);
   query.equalTo('isDummyData', false);
-  // query.equalTo('isTest', false);
+  query.notEqualTo('isTest', true);
   query.include(['questionRef', 'answerRef', 'questionRef.fromUser.fullName',
     'questionRef.toUser.fullName']);
 
