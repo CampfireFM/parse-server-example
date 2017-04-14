@@ -1,8 +1,7 @@
 
-var config = require('../config.js');
-var payment_methods = require("../utils/paymenthandler.js");
-var stripe = require('stripe')(config.stripe_test_key);
-
+const config = require('../config.js');
+const payment_methods = require("../utils/paymenthandler.js");
+const stripe = require('stripe')(config.stripe_test_key);
 //include the JS files which represent each classes (models), and contains their operations
 require("./models/Answer.js");
 require("./models/Campfire.js");
@@ -331,7 +330,7 @@ function deleteCharity(array_charity_ids,callback){
 Parse.Cloud.define("updateNewUser", function(request, response) {
   var profilePicFile = null;
   var coverPicFile = null;
-  var params = request.params
+  var params = request.params;
   var firstname = params.firstName || '';
   var lastname = params.lastName || '';
   var bio = params.bio || '';
@@ -342,7 +341,7 @@ Parse.Cloud.define("updateNewUser", function(request, response) {
   var query = new Parse.Query(Defaults);
   query.limit(1);
 
-  query.find().then(function(defaults){
+  query.find({useMasterKey : true}).then(function(defaults){
     default_values = defaults;
     initial_match_count = defaults[0].get('initialMatchCount');
     default_image = defaults[0].get('coverPhoto');
@@ -353,20 +352,18 @@ Parse.Cloud.define("updateNewUser", function(request, response) {
       var id = request.params.id;
       var User = Parse.Object.extend('User');
       var query = new Parse.Query(User);
-      query.get(id, {
-        success: function(user){
+      query.get(id, {useMasterKey : true}).then(function(user){
           setUserValues(user);
-        },
-        error: function(error){
+        }, function(error){
           response.error(error.message);
-        }
-      })
+        });
     }
   },function(error){
     response.error(error.message);
-  })
+  });
 
   var setUserValues = function(user){
+
     user.set('firstName', firstname);
     user.set('lastName', lastname);
     user.set('fullName', firstname + ' ' + lastname)
