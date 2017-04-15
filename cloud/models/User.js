@@ -7,7 +7,7 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
     const firstName = request.object.get('firstName');
     const lastName = request.object.get('lastName');
 
-    if(!(userEmail != undefined && userEmail != "")) {
+    if(!(userEmail != undefined && userEmail != '')) {
         return response.success("Email undefined");
     }
 
@@ -24,17 +24,18 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
 
 Parse.Cloud.beforeSave(Parse.User, function(request, response) {
 
-    const userEmail = request.object.get('email');
-    isUpdating = userEmail !== undefined;
-    console.log(userEmail);
-    console.log(isUpdating);
+    const id = request.object.id;
+    isUpdating = id !== undefined;
+
     if(isUpdating == true){
         var query = new Parse.Query(Parse.User);
         query.get(request.object.id, {useMasterKey : true}).then(function(result){
             if(result)
                 oldEmail = result.get('email');
             else
-                oldEmail = '';
+                oldEmail = undefined;
+            if(oldEmail == undefined)
+                isUpdating = false;
             response.success('ok');
         }, function(err){
             console.log(err.message);
