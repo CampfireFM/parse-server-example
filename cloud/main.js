@@ -369,7 +369,7 @@ Parse.Cloud.define('getCampfires', function(req, res){
 
   query.include(['questionRef', 'answerRef', 'questionRef.fromUser.fullName',
     'questionRef.toUser.fullName']);
-
+    
   // filtering
   if (req.params.answererName || req.params.answererAskerName){
     var User = Parse.Object.extend('User');
