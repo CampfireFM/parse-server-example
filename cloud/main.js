@@ -285,10 +285,9 @@ Parse.Cloud.define('AddCampfiresToList', function(req, res){
       if (objects.length) {
         for (var i = 0; i < objects.length; i++) {
           var object = objects[i];
-          var List = Parse.Object.extend('List');
-          var listQuery = new Parse.Query(List);
-          // WIP
-          object.addUnique("lists", req.params.list);
+          var pointer = new Parse.Object("List");
+          pointer.id = req.params.list.id;
+          object.addUnique("lists", pointer);
           object.save();
         }
         res.success('Success');
