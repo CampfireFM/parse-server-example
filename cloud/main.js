@@ -219,9 +219,16 @@ Parse.Cloud.define('getCampfires', function(req, res){
   var query = new Parse.Query(Campfire);
   query.equalTo('isDummyData', false);
   query.notEqualTo('isTest', true);
+
+  if(req.params.topic_id){
+    var topic = new Parse.Object("List");
+    topic.id = req.params.topic_id;
+    query.equalTo('lists', topic);
+  }
+  
   query.include(['questionRef', 'answerRef', 'questionRef.fromUser.fullName',
     'questionRef.toUser.fullName']);
-
+    
   // filtering
   if (req.params.answererName || req.params.answererAskerName){
     var User = Parse.Object.extend('User');
