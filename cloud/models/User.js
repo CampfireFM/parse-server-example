@@ -1,5 +1,6 @@
 const mail = require('../../utils/mail');
-
+const config = require('../../config');
+var Mixpanel = require('mixpanel');
 var isUpdating = false;
 var oldEmail = '';
 Parse.Cloud.afterSave(Parse.User, function(request, response) {
@@ -11,13 +12,32 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
         return response.success("Email undefined");
     }
 
+    //Init MixPanel
+    var mixpanel = Mixpanel.init(config.mixpanelToken);
     //Add user to mailing list and send welcome email if new user or update mailing list
+    //mixpanel.track("played_game");
     if(!isUpdating) {
         mail.sendWelcomeMail(userEmail);
         mail.updateMailingList(firstName, lastName, userEmail);
+        //Add user to MixPanel
+        mixpanel.people.set(request.object.get('username'), {
+            $first_name: firstName,
+            $last_name: lastName,
+            $email: userEmail,
+            $created: (new Date()).toISOString()
+        });
     } else {
         mail.updateMailingList(firstName, lastName, oldEmail, userEmail);
+        //Update user at mixpanel
+
+        mixpanel.people.set(request.object.get('username'), {
+            $first_name: firstName,
+            $last_name: lastName,
+            $email: userEmail
+        });
     }
+
+
     response.success('ok');
 });
 

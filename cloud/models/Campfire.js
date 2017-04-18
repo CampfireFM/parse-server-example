@@ -1,5 +1,33 @@
 
 var paymenthandler = require('../../utils/paymenthandler.js');
+var transactionPercentage = 2.9;
+var transactionFee = 0.3;
+
+(function loadDefaultSettings(){
+    var Defaults = Parse.Object.extend('Defaults');
+    var default_values = null;
+    var query = new Parse.Query(Defaults);
+    query.limit(1);
+
+    query.find({useMasterKey : true}).then(function(defaults) {
+        transactionPercentage = defaults[0].get('transactionPercentage');
+        transactionFee = defaults[0].get('transactionFee');
+    }, function(err){
+        //set to default value
+        transactionFee = 0.3;
+        transactionPercentage = 2.9;
+        console.log(err);
+    })
+})();
+
+Parse.Cloud.afterSave('Defaults', function(request){
+    transactionPercentage = request.object.get('transactionPercentage');
+    transactionFee = request.object.get('transactionFee');
+    if(!transactionPercentage)
+        transactionPercentage = 2.9;
+    if(!transactionFee)
+        transactionFee = 0.3;
+});
 
 //begin of afterSave
 Parse.Cloud.afterSave("Campfire", function(request) {
@@ -122,9 +150,9 @@ function splitAndMakePayments(question, charge, callback){
                     });
 
        var deposit_params = {
-       transactionPercentage: 2.9,
+       transactionPercentage: transactionPercentage,
        amount: price,
-       transactionFee : 0.3,
+       transactionFee : transactionFee,
        userRef : fromUser,
        questionRef : question,
        chargeRef : charge

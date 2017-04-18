@@ -27,7 +27,8 @@ configs = {
             fromAddress: 'Customer Service <postmaster@sandbox320d32bf0d1b4770a7fb5ec892696dfd.mailgun.org>',
             apiKey: 'key-8603e31c95f12cbd1ac969203c1ff7fe',
             listAddress: 'campfire_ios_users@sandbox320d32bf0d1b4770a7fb5ec892696dfd.mailgun.org'
-        }
+        },
+        mixpanelToken : 'a09156a83517cda592357ca818137887'
     },
 	production : {
         appName: process.env.APP_NAME || 'campfiremedia',
@@ -54,7 +55,8 @@ configs = {
             fromAddress: 'Customer Service <postmaster@sandbox320d32bf0d1b4770a7fb5ec892696dfd.mailgun.org>',
             apiKey: 'key-8603e31c95f12cbd1ac969203c1ff7fe',
             listAddress: 'campfire_ios_users@sandbox320d32bf0d1b4770a7fb5ec892696dfd.mailgun.org'
-        }
+        },
+        mixpanelToken : '09b2a637be266aeb72c61a05ea51e81d'
 	}
 };
 
