@@ -335,7 +335,7 @@ Parse.Cloud.define('getPeople', function(req, res){
 
   var People = Parse.Object.extend('User');
   var query = new Parse.Query(People);
-  
+
   // filtering
   if (req.params.fullName){
     query.startsWith('fullName', req.params.fullName);
@@ -352,35 +352,37 @@ Parse.Cloud.define('getPeople', function(req, res){
 
   // totalpages count
   var count;
-  query.count().then(function(result){ count = result; });
+  query.count().then(function(result){
+    count = result;
 
-  // sorting
-  sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
+    // sorting
+    sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
 
-  // pagination
-  query.limit(limit);
-  query.skip(skip);
-  query.find({
-    success: function(objects) {
-      if (objects.length > 0) {
-        for (var i = 0; i < objects.length; i++) {
-          var object = objects[i];
-          people.push({
-            id: object.id,
-            profileImage: object.get('profilePhoto') ? (object.get('profilePhoto')).toJSON().url : '',
-            fullName: object.get('fullName'),
-            email: object.get('email'),
-            gender: object.get('gender'),
-            tagline: object.get('tagline')
-          });
+    // pagination
+    query.limit(limit); 
+    query.skip(skip);
+    query.find({useMasterKey : true}).then(function(objects){
+        if (objects.length > 0) {
+          for (var i = 0; i < objects.length; i++) {
+            var object = objects[i];
+            people.push({
+              id: object.id,
+              profileImage: object.get('profilePhoto') ? (object.get('profilePhoto')).toJSON().url : '',
+              fullName: object.get('fullName'),
+              email: object.get('email'),
+              gender: object.get('gender'),
+              tagline: object.get('tagline')
+            });
+          }
         }
-      }
-      res.success({people: people,totalItems: count});
-    },
-    error: function(error) {
-      response.error(error);
-    }
-  })
+        res.success({people: people,totalItems: count});
+      },function(error) {
+        response.error(error);
+      })
+  },function(error) {
+    response.error(error);
+  });
+
 });
 
 Parse.Cloud.define('getTopics', function(req, res){
