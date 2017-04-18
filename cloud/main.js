@@ -232,7 +232,6 @@ Parse.Cloud.define('getFeaturedTopics', function(req, res) {
 });
 
 Parse.Cloud.define('getCampfires', function(req, res){
-  console.log(req.params);
   var campfires = [];
   var sortedBy = req.params.sortedBy || 'createdAt';
   var sortDir = req.params.sortDir || 'desc';
@@ -279,15 +278,19 @@ Parse.Cloud.define('getCampfires', function(req, res){
   }
 
   // totalpages count
-  var count;
-  query.count().then(function(result){ count = result; });
-
+  var count = 0;
+  if(!(req.params.topic_id && req.params.noPagination)){
+    query.count().then(function(result){ count = result; });
+  }
+  
   // sorting
   sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
 
   // pagination
-  query.limit(limit);
-  query.skip(skip);
+  if(!(req.params.topic_id && req.params.noPagination)){
+    query.limit(limit);
+    query.skip(skip);
+  }
 
   query.find({
     success: function(objects) {
