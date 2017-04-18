@@ -128,8 +128,12 @@ function splitAndMakePayments(question, charge, callback){
        var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
        var price = question.get("price") ? question.get("price") : 0;
 
+       // split_app is the amount going to the app. 
        var split_app = price * ( 20 / 100);
-       var split_charity = price * ( charity_percentage / 100);
+
+       // split_app is the amount (if any) going to a charity. 
+       // Split to charity and split to answerer are found after money for app is taken out 
+       var split_charity = (price - split_app) * ( charity_percentage / 100);
        var split_answerer = price - (split_app + split_charity);
 
        var toUser = qAnswerer;
