@@ -323,7 +323,6 @@ Parse.Cloud.define('getFeaturedTopics', function(req, res) {
 });
 
 Parse.Cloud.define('getCampfires', function(req, res){
-  console.log(req.params);
   var campfires = [];
   var sortedBy = req.params.sortedBy || 'createdAt';
   var sortDir = req.params.sortDir || 'desc';
