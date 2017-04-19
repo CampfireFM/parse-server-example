@@ -799,7 +799,7 @@ function runSummaryUpdate(){
                         if(process.env.NODE_ENV == 'production' && process.env.IS_TEST == false)
                             sendSummaryEmail(user.get('email'), summaries);
                         else
-                            sendSummaryEmail('krittylor@gmail.com', summaries);
+                            sendSummaryEmail('eric@campfire.fm', summaries);
                     })
                 });
             });
