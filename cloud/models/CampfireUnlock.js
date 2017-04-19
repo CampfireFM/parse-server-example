@@ -1,4 +1,21 @@
 
+var campfireUnlockValue = 0.12;
+
+(function loadDefaultSettings(){
+    var Defaults = Parse.Object.extend('Defaults');
+    var default_values = null;
+    var query = new Parse.Query(Defaults);
+    query.limit(1);
+
+    query.find({useMasterKey : true}).then(function(defaults) {
+        campfireUnlockValue = defaults[0].get('campfireUnlockValue');
+    }, function(err){
+        //set to default value
+        campfireUnlockValue = 0.12;
+        console.log(err);
+    })
+})();
+
 Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 
     if (request.object.existed() == false) {
@@ -133,7 +150,7 @@ function splitUnlockEarnings(params){
 
       console.log("reached here11");
       var question = params.question;
-      var total_unlock_earnings = 0.12;
+      var total_unlock_earnings = campfireUnlockValue;
     
       var fromUser = question.get("fromUser");
       var toUser   = question.get("toUser");

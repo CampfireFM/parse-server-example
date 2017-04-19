@@ -2,6 +2,7 @@
 var paymenthandler = require('../../utils/paymenthandler.js');
 var transactionPercentage = 2.9;
 var transactionFee = 0.3;
+var answerPercentageToCampfire = 0.2;
 
 (function loadDefaultSettings(){
     var Defaults = Parse.Object.extend('Defaults');
@@ -12,10 +13,12 @@ var transactionFee = 0.3;
     query.find({useMasterKey : true}).then(function(defaults) {
         transactionPercentage = defaults[0].get('transactionPercentage');
         transactionFee = defaults[0].get('transactionFee');
+        answerPercentageToCampfire = defaults[0].get('answerPercentageToCampfire');
     }, function(err){
         //set to default value
         transactionFee = 0.3;
         transactionPercentage = 2.9;
+        answerPercentageToCampfire = 0.2;
         console.log(err);
     })
 })();
@@ -129,7 +132,7 @@ function splitAndMakePayments(question, charge, callback){
        var price = question.get("price") ? question.get("price") : 0;
 
        // split_app is the amount going to the app. 
-       var split_app = price * ( 20 / 100);
+       var split_app = price * answerPercentageToCampfire;
 
        // split_app is the amount (if any) going to a charity. 
        // Split to charity and split to answerer are found after money for app is taken out 
