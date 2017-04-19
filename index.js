@@ -70,6 +70,11 @@ var api = new ParseServer({
                     subject: 'Welcome!',
                     pathPlainText: resolve(__dirname, './templates/welcome.txt'),
                     pathHtml: resolve(__dirname, './templates/welcome.html')
+                },
+                summaryEmail: {
+                    subject: 'New answers last day!',
+                    pathPlainText: resolve(__dirname, './templates/summary.txt'),
+                    pathHtml: resolve(__dirname, './templates/summary.html')
                 }
             }
         }

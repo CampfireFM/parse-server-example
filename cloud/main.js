@@ -1,4 +1,4 @@
-
+const {sendSummaryEmail} = require('../utils/mail');
 const config = require('../config.js');
 const payment_methods = require("../utils/paymenthandler.js");
 const stripe = require('stripe')(config.stripe_test_key);
@@ -10,6 +10,47 @@ require("./models/Follow.js");
 require("./models/Like.js");
 require("./models/Question.js");
 require("./models/User.js");
+
+var transactionPercentage = 2.9;
+var transactionFee = 0.3;
+var answerPercentageToCampfire = 0.2;
+var campfireUnlockValue = 0.12;
+
+(function loadDefaultSettings(){
+    var Defaults = Parse.Object.extend('Defaults');
+    var default_values = null;
+    var query = new Parse.Query(Defaults);
+    query.limit(1);
+
+    query.find({useMasterKey : true}).then(function(defaults) {
+        transactionPercentage = defaults[0].get('transactionPercentage');
+        transactionFee = defaults[0].get('transactionFee');
+        answerPercentageToCampfire = defaults[0].get('answerPercentageToCampfire');
+        campfireUnlockValue = defaults[0].get('campfireUnlockValue');
+    }, function(err){
+        //set to default value
+        transactionFee = 0.3;
+        transactionPercentage = 2.9;
+        answerPercentageToCampfire = 0.2;
+        campfireUnlockValue = 0.12;
+        console.log(err);
+    })
+})();
+
+Parse.Cloud.afterSave('Defaults', function(request){
+    transactionPercentage = request.object.get('transactionPercentage');
+    transactionFee = request.object.get('transactionFee');
+    answerPercentageToCampfire = request.object.get('answerPercentageToCampfire');
+    campfireUnlockValue = request.object.get('campfireUnlockValue');
+    if(!transactionPercentage)
+        transactionPercentage = 2.9;
+    if(!transactionFee)
+        transactionFee = 0.3;
+    if(!answerPercentageToCampfire)
+        answerPercentageToCampfire = 0.2;
+    if(!campfireUnlockValue)
+        campfireUnlockValue = 0.12;
+});
 
 //the below function is just to test if everything is working fine
 Parse.Cloud.define('hello', function(req, res) {
@@ -79,11 +120,11 @@ Parse.Cloud.define('chargeWithToken', function(req, res) {
 	if(!req.user){
 		return res.error("User not logged in");
 	}
-                   
+
 	var sourceToken = req.params.sourceToken;
     var customerId = req.params.customerId;
 	var amount = req.params.amount;
-                   
+
   	if(!customerId || !amount){
   		return res.error('authToken and amount are mandatory');
   	}else{
@@ -112,15 +153,15 @@ Parse.Cloud.define('updateCustomer', function(req, res) {
                    if(!req.user){
                    return res.error("User not logged in");
                    }
-                   
+
                    var sourceToken = req.params.sourceToken;
                    var customerId = req.params.customerId;
-                   
+
                    if(!customerId || !sourceToken){
                    return res.error('sourceToken and customerId are mandatory');
                    }else{
-                   
-                   
+
+
                    stripe.customers.update(customerId, {
                                                  source: sourceToken
                                                  }, function(err, customer) {
@@ -192,12 +233,12 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
 });
 
 
-Parse.Cloud.define('getFeaturedTopics', function(req, res) {  
+Parse.Cloud.define('getFeaturedTopics', function(req, res) {
   // var topics = [];
   var List = Parse.Object.extend('List');
   var query = new Parse.Query(List);
   query.equalTo("objectId",'06LOiNkyrJ');
-  query.find({   
+  query.find({
     success: function(topics) {
       res.success(topics);
     },
@@ -445,3 +486,160 @@ Parse.Cloud.define("updateNewUser", function(request, response) {
     }
   }
 });
+
+function getFollows(user, callback){
+    var Follow = Parse.Object.extend('Follow');
+    var followQuery = new Parse.Query(Follow);
+    followQuery.include('toUser');
+    followQuery.equalTo('fromUser', user);
+    followQuery.find({useMasterKey : true}).then(function(follows){
+        callback(null, follows);
+    }, function(err){
+        callback(err, null);
+    });
+}
+
+function getRecentAnswers(users, callback){
+    var Answer = Parse.Object.extend('Answer');
+    var answerQuery = new Parse.Query(Answer);
+    var date = new Date();
+    date.setDate(date.getDate() - 1);
+    answerQuery.include('userRef', 'questionRef', 'createdAt');
+    answerQuery.greaterThan('updatedAt', date);
+    answerQuery.containedIn('userRef', users);
+    answerQuery.find({useMasterKey : true}).then(function(answers){
+        if(answers[0])
+            callback(null, answers);
+        else
+            callback(null, []);
+    }, function(err){
+        callback(err);
+    })
+}
+
+function getQuestions(questionIds, callback){
+    var Question = Parse.Object.extend('Question');
+    var questionQuery = new Parse.Query(Question);
+    questionQuery.include('text');
+    questionQuery.containedIn('objectId', questionIds);
+    questionQuery.find({useMasterKey : true}).then(function(questions){
+        if(questions)
+            callback(null, questions);
+        else
+            callback(null, []);
+    }, function(err){
+        console.log(err.message);
+        callback(err);
+    });
+}
+
+function getCampfireFromQuestions(questions, callback){
+    var Campfire = Parse.Object.extend('Campfire');
+    var campfireQuery = new Parse.Query(Campfire);
+    campfireQuery.containedIn('questionRef', questions);
+    campfireQuery.find({useMasterKey : true}).then(function(campfires){
+        callback(null, campfires);
+    }, function(err){
+        callback(err);
+    });
+}
+
+function runSummaryUpdate(){
+    var query = new Parse.Query(Parse.User);
+    var limitExceed = false;
+    return query.each(function(user){
+        getFollows(user, function(err, follows){
+            if(err){
+                console.log(err.message);
+                return;
+            }
+            if(follows.length == 0)
+                return;
+            follows = follows.reduce(function(pre, follow){
+                pre.push(follow.get('toUser'));
+                return pre;
+            }, []);
+            getRecentAnswers(follows, function(err, answers){
+                if(err) {
+                    console.log(err.message);
+                    return;
+                }
+                if(answers.length == 0)
+                    return;
+                //Get latest answers upto 5 from answer array
+                answers.sort(function(a, b){
+                    if(a.get('createdAt') > b.get('createdAt'))
+                        return 1;
+                    if(a.get('createdAt') < b.get('createdAt'))
+                        return -1;
+                    return 0;
+                });
+                if(answers.length > 5)
+                    limitExceed = true;
+                answers = answers.slice(0, 5);
+                var answerUserMap = {};
+                let questionIds = answers.reduce(function(pre, answer){
+                    pre.push(answer.get('questionRef').id);
+                    Object.assign(answerUserMap, {}, {[answer.get('questionRef').id] : answer.get('userRef')});
+                    return pre;
+                }, []);
+                getQuestions(questionIds, function(err, questions){
+                    if(err){
+                        console.log('Failed to fetch questions');
+                        return;
+                    }
+                    console.log(user.get('username') + ':' + questions);
+
+                    //Extract question texts
+                    var questionMap = {};
+                    questions.forEach(function(question){
+                        Object.assign(questionMap, {}, {[question.id] : question.get('text')});
+                    });
+                    //Get CampfireId
+                    getCampfireFromQuestions(questions, function(err, campfires){
+                        if(err){
+                            console.log(err);
+                            return;
+                        }
+
+                        var summaries = campfires.reduce(function(pre, campfire){
+                            //Get userId from answer
+                            pre.push({
+                                question : questionMap[campfire.get('questionRef').id],
+                                campfireId : campfire.id,
+                                questionId : campfire.get('questionRef').id,
+                                username : answerUserMap[campfire.get('questionRef').id].get('firstName') + ' ' + answerUserMap[campfire.get('questionRef').id].get('lastName'),
+                                profilePhoto : answerUserMap[campfire.get('questionRef').id].get('profilePhoto')._name
+                            });
+                            return pre;
+                        }, []);
+
+                        console.log("CampfireMap : ", summaries);
+                        //Generate email with template
+                        //send to test email in development
+                        if(process.env.NODE_ENV == 'production')
+                            sendSummaryEmail(user.get('email'), summaries);
+                        else
+                            sendSummaryEmail('krittylor@gmail.com', summaries);
+                    })
+                });
+            });
+        });
+    }, {useMasterKey : true})
+}
+
+Parse.Cloud.job("sendSummary", function(request, status){
+
+    runSummaryUpdate().then(function(){
+        status.success();
+    });
+});
+
+//Schedule runSummaryUpdate everyday
+(function scheduleSummary(){
+    setInterval(function(){
+        runSummaryUpdate().then(function(){
+            console.log('Updated users with summary');
+        })
+    }, 3600 * 24 * 1000);
+})();

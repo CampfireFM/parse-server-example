@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        /* Rounded avatars */
+        .avatar {
+            float: left;
+            margin-top: 1em;
+            margin-right: 1em;
+            position: relative;
+            width: 3.4rem;
+            height: 3.4rem;
+            -webkit-border-radius: 50%;
+            -moz-border-radius: 50%;
+            border-radius: 50%;
+
+            -webkit-box-shadow: 0 0 0 3px #fff, 0 0 0 4px #999, 0 2px 5px 4px rgba(0,0,0,.2);
+            -moz-box-shadow: 0 0 0 3px #fff, 0 0 0 4px #999, 0 2px 5px 4px rgba(0,0,0,.2);
+            box-shadow: 0 0 0 3px #fff, 0 0 0 4px #999, 0 2px 5px 4px rgba(0,0,0,.2);
+        }
+        .profile-photo {
+            width: 3.4rem;
+            height: 3.4rem;
+            border-radius: 500px;
+            float: left;
+            background: #fff;
+            background-size: cover;
+            background-position: center center;
+            margin-right: .7rem;
+        }
+        a.LinkButton {
+            width: 300px;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 100%;
+            background: #3366cc;
+            color: #fff;
+            border: 1px solid #3366cc;
+            border-radius: 10px;
+            -moz-box-shadow: 6px 6px 5px #999;
+            -webkit-box-shadow: 6px 6px 5px #999;
+            box-shadow: 6px 6px 5px #999;
+        }
+        .campfire-inner {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-flow: column;
+        }
+        .responder-tagline {
+            float: left;
+            width: 100%;
+            font-family: Nunito,sans-serif;
+            font-weight: 300;
+            font-size: .9rem;
+            color: #000;
+        }
+        .responder-right{
+            float: left;
+            font-family: Nunito,sans-serif;
+            font-weight: 400;
+            font-size: 1.2rem;
+            position: relative;
+            color: #000;
+        }
+        .responder-name {
+            float: left;
+            width: 100%;
+            font-family: Nunito,sans-serif;
+            font-weight: 400;
+            font-size: 1.2rem;
+            position: relative;
+            color: #000;
+        }
+        .responder-button {
+            float: left;
+            width: 100%;
+            padding-top: 5px;
+            font-family: Nunito,sans-serif;
+            font-weight: 400;
+            font-size: 1.2rem;
+            position: relative;
+            color: #000;
+        }
+        .bottom-aligner {
+            position: absolute;
+            bottom: 0;
+        }
+        .responder {
+            width: 100%;
+            flex: 0 1 auto;
+            margin: 5% 5% 0 5%;
+        }
+    </style>
+</head>
+<body>
+    <p>&nbsp;</p>
+    <h1 style="color: #333333; text-align: center;">Here are some new Q&amp;As on Campfire!</h1>
+    <ol style="list-style: none; font-size: 14px; line-height: 32px; font-weight: bold;">
+        {{#summaries}}
+        <li style="clear: both;">
+            <table style="float: left; height: auto; margin-left: auto; margin-right: auto;" width="auto">
+                <tbody>
+                <tr>
+                    <td style="vertical-align: top;width: 3.4rem;">
+                        {{#buildUserProfilePhoto}}https://campfiremedia.herokuapp.com/parse/files/maryhadalittlelamb/{{profilePhoto}}{{/buildUserProfilePhoto}}
+                        <!--<div class="profile-photo" background-image="https://campfiremedia.herokuapp.com/parse/files/maryhadalittlelamb/627cc20ca991b20ec9f576969ef3e357_file.jpeg" style="background-image: url(&quot;https://campfiremedia.herokuapp.com/parse/files/maryhadalittlelamb/627cc20ca991b20ec9f576969ef3e357_file.jpeg&quot;); background-repeat: no-repeat;"></div>-->
+                    </td>
+                    <td style="vertical-align: top;">
+                        <div class="responder-name">{{username}}</div>
+                        <div class="responder-tagline">{{question}}</div>
+                        <div class="responder-button">
+                            {{#buildLinkButton}}https://campfire.fm/eavesdrop/{{campfireId}}{{/buildLinkButton}}
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </li>
+        <li style="clear: both;"></li>
+        {{/summaries}}
+    </ol>
+</body>
+</html>

@@ -1,21 +1,3 @@
-
-var campfireUnlockValue = 0.12;
-
-(function loadDefaultSettings(){
-    var Defaults = Parse.Object.extend('Defaults');
-    var default_values = null;
-    var query = new Parse.Query(Defaults);
-    query.limit(1);
-
-    query.find({useMasterKey : true}).then(function(defaults) {
-        campfireUnlockValue = defaults[0].get('campfireUnlockValue');
-    }, function(err){
-        //set to default value
-        campfireUnlockValue = 0.12;
-        console.log(err);
-    })
-})();
-
 Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 
     if (request.object.existed() == false) {
