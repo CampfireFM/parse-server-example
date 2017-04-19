@@ -371,10 +371,12 @@ Parse.Cloud.define('getCampfires', function(req, res){
           var Cucount;
           CuQuery.count().then(function(result){ Cucount = result; });
           date =  new Date(object.get('createdAt'));
-          // var answerFile = object.get('answerRef').get('answerFile');
+          var answer = object.get('answerRef').get('answerFile');
+          var answerFile = answer ? answer.toJSON().url : ''
           // if (answerFile) {
             campfires.push({
               id: object.id,
+              answer: answerFile,
               answererProfileImage: toUser.get('profilePhoto').url ? (toUser.get('profilePhoto')).toJSON().url : '',
               answererName: toUser.get('fullName'),
               answererAskerName: fromUser.get('fullName'),
