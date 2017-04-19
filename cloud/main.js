@@ -79,11 +79,11 @@ Parse.Cloud.define('chargeWithToken', function(req, res) {
 	if(!req.user){
 		return res.error("User not logged in");
 	}
-                   
+
 	var sourceToken = req.params.sourceToken;
     var customerId = req.params.customerId;
 	var amount = req.params.amount;
-                   
+
   	if(!customerId || !amount){
   		return res.error('authToken and amount are mandatory');
   	}else{
@@ -112,15 +112,15 @@ Parse.Cloud.define('updateCustomer', function(req, res) {
                    if(!req.user){
                    return res.error("User not logged in");
                    }
-                   
+
                    var sourceToken = req.params.sourceToken;
                    var customerId = req.params.customerId;
-                   
+
                    if(!customerId || !sourceToken){
                    return res.error('sourceToken and customerId are mandatory');
                    }else{
-                   
-                   
+
+
                    stripe.customers.update(customerId, {
                                                  source: sourceToken
                                                  }, function(err, customer) {
@@ -134,6 +134,31 @@ Parse.Cloud.define('updateCustomer', function(req, res) {
                    });
 
 
+
+Parse.Cloud.define('AddCampfiresToList', function(req, res){
+  var Campfire = Parse.Object.extend('Campfire');
+  var query = new Parse.Query(Campfire);
+  query.containedIn("objectId", req.params.CampfiresIds);
+  query.find({
+    success: function(objects) {
+      if (objects.length) {
+        for (var i = 0; i < objects.length; i++) {
+          var object = objects[i];
+          var pointer = new Parse.Object("List");
+          pointer.id = req.params.list.id;
+          object.addUnique("lists", pointer);
+          object.save();
+        }
+        res.success('Success');
+      }
+    },
+    error: function(error) {
+      response.error(error);
+    }
+
+  })
+
+});
 
 Parse.Cloud.define('getFeaturedCampfire', function(req, res){
   var campfires = [];
@@ -191,13 +216,12 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
   })
 });
 
-
-Parse.Cloud.define('getFeaturedTopics', function(req, res) {  
+Parse.Cloud.define('getFeaturedTopics', function(req, res) {
   // var topics = [];
   var List = Parse.Object.extend('List');
   var query = new Parse.Query(List);
   query.equalTo("objectId",'06LOiNkyrJ');
-  query.find({   
+  query.find({
     success: function(topics) {
       res.success(topics);
     },
@@ -207,7 +231,162 @@ Parse.Cloud.define('getFeaturedTopics', function(req, res) {
   })
 });
 
+Parse.Cloud.define('getCampfires', function(req, res){
+  var campfires = [];
+  var sortedBy = req.params.sortedBy || 'createdAt';
+  var sortDir = req.params.sortDir || 'desc';
+  var page = req.params.currentPage || 1;
+  var limit = req.params.perPage || 6;
+  var skip = (page - 1) * limit;
 
+  var Campfire = Parse.Object.extend('Campfire');
+  var query = new Parse.Query(Campfire);
+  query.equalTo('isDummyData', false);
+  query.notEqualTo('isTest', true);
+
+  if(req.params.topic_id){
+    var topic = new Parse.Object("List");
+    topic.id = req.params.topic_id;
+    query.equalTo('lists', topic);
+  }
+
+  query.include(['questionRef', 'answerRef', 'questionRef.fromUser.fullName',
+    'questionRef.toUser.fullName']);
+
+  // filtering
+  if (req.params.answererName || req.params.answererAskerName){
+    var User = Parse.Object.extend('User');
+    var UserQuery = new Parse.Query(User);
+    UserQuery.select("objectId", "fullName");
+    (req.params.answererAskerName) ? UserQuery.startsWith("fullName", req.params.answererAskerName) : UserQuery.startsWith("fullName", req.params.answererName);
+    var Question = Parse.Object.extend("Question");
+    var QuestionQuery = new Parse.Query(Question);
+    (req.params.answererAskerName) ? QuestionQuery.matchesQuery('fromUser', UserQuery) : QuestionQuery.matchesQuery('toUser', UserQuery)
+    query.matchesQuery('questionRef', QuestionQuery);
+  }
+  if (req.params.question){
+    var Question = Parse.Object.extend("Question");
+    var QuestionQuery = new Parse.Query(Question);
+    QuestionQuery.startsWith('text', req.params.question)
+    query.matchesQuery('questionRef', QuestionQuery);
+  }
+  if (req.params.fromDate){
+    query.greaterThanOrEqualTo("createdAt", req.params.fromDate);
+  }
+  if (req.params.toDate){
+    query.lessThanOrEqualTo("createdAt", req.params.toDate);
+  }
+
+  // totalpages count
+  var count = 0;
+  if(!(req.params.topic_id && req.params.noPagination)){
+    query.count().then(function(result){ count = result; });
+  }
+  
+  // sorting
+  sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
+
+  // pagination
+  if(!(req.params.topic_id && req.params.noPagination)){
+    query.limit(limit);
+    query.skip(skip);
+  }
+
+  query.find({
+    success: function(objects) {
+      if (objects.length > 0) {
+        for (var i = 0; i < objects.length; i++) {
+          var object = objects[i];
+          var fromUser = object.get('questionRef').get('fromUser');
+          var toUser = object.get('questionRef').get('toUser');
+          var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
+          var CuQuery = new Parse.Query(CampfireUnlock);
+          CuQuery.equalTo("objectId", object.get('objectId'));
+          var Cucount;
+          CuQuery.count().then(function(result){ Cucount = result; });
+          date =  new Date(object.get('createdAt'));
+          // var answerFile = object.get('answerRef').get('answerFile');
+          // if (answerFile) {
+            campfires.push({
+              id: object.id,
+              answererProfileImage: toUser.get('profilePhoto').url ? (toUser.get('profilePhoto')).toJSON().url : '',
+              answererName: toUser.get('fullName'),
+              answererAskerName: fromUser.get('fullName'),
+              question: object.get('questionRef').get('text'),
+              date: date.toDateString() ,
+              eavesdrops: (Cucount > 0 ? true : false),
+              likes: object.get('likeCount')
+            });
+          // }
+        }
+      }
+      res.success({campfires: campfires,totalItems: count});
+    },
+    error: function(error) {
+      response.error(error);
+    }
+  })
+});
+
+Parse.Cloud.define('getPeople', function(req, res){
+  var people = [];
+  var sortedBy = req.params.sortedBy || 'createdAt';
+  var sortDir = req.params.sortDir || 'desc';
+  var page = req.params.currentPage || 1;
+  var limit = req.params.perPage || 6;
+  var skip = (page - 1) * limit;
+
+  var People = Parse.Object.extend('User');
+  var query = new Parse.Query(People);
+
+  // filtering
+  if (req.params.fullName){
+    query.startsWith('fullName', req.params.fullName);
+  }
+  if (req.params.email){
+    query.startsWith('email', req.params.email);
+  }
+  if (req.params.gender){
+    query.equalTo("gender", req.params.gender);
+  }
+  if (req.params.tagline){
+    query.startsWith("tagline", req.params.tagline);
+  }
+
+  // totalpages count
+  var count;
+  query.count().then(function(result){
+    count = result;
+
+    // sorting
+    sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
+
+    // pagination
+    query.limit(limit); 
+    query.skip(skip);
+    query.find({useMasterKey : true}).then(function(objects){
+        if (objects.length > 0) {
+          for (var i = 0; i < objects.length; i++) {
+            var object = objects[i];
+            people.push({
+              id: object.id,
+              profileImage: object.get('profilePhoto') ? (object.get('profilePhoto')).toJSON().url : '',
+              fullName: object.get('fullName'),
+              email: object.get('email'),
+              gender: object.get('gender'),
+              tagline: object.get('tagline')
+            });
+          }
+        }
+        res.success({people: people,totalItems: count});
+      },function(error) {
+        response.error(error);
+      })
+  },function(error) {
+    response.error(error);
+  });
+
+});
 
 Parse.Cloud.define('getTopics', function(req, res){
   var topics = [];
@@ -219,7 +398,7 @@ Parse.Cloud.define('getTopics', function(req, res){
         for (var i = 0; i < objects.length; i++) {
         var object = objects[i];
           topics.push({
-            id: object.objectId,
+            id: object.id,
             name: object.get('name'),
             type: object.get('type'),
             image: object.get('image') ? (object.get('image')).toJSON().url : ''
