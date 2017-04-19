@@ -796,10 +796,11 @@ function runSummaryUpdate(){
                         console.log("CampfireMap : ", summaries);
                         //Generate email with template
                         //send to test email in development
+                        var testEmail = process.env.TEST_EMAIL ? process.env.TEST_EMAIL : 'krittylor@gmail.com';
                         if(process.env.NODE_ENV == 'production' && process.env.IS_TEST == false)
                             sendSummaryEmail(user.get('email'), summaries);
                         else
-                            sendSummaryEmail('eric@campfire.fm', summaries);
+                            sendSummaryEmail(testEmail, summaries);
                     })
                 });
             });
