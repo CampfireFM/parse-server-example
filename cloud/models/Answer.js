@@ -6,7 +6,7 @@ var answer_methods = {};
 Parse.Cloud.afterSave("Answer", function(request) {
 
     console.log("starting afterSave");
-                      
+
     //check if its a new record.                     
     if (request.object.existed() == false) {
 
@@ -80,26 +80,26 @@ Parse.Cloud.afterSave("Answer", function(request) {
 function saveCampfire(question, answer) {
     var Campfire = Parse.Object.extend("Campfire");
     var newCampfire = new Campfire();
-    
+
     newCampfire.set("answerRef", answer);
     newCampfire.set("questionRef", question);
     newCampfire.set("listenCount", 0);
     newCampfire.set("likeCount", 0);
     newCampfire.set("flagCount", 0);
     newCampfire.set("isDummyData", false);
-    
-    
+
+
     var questionAnswerer = question.get("toUser");
     // see if either question user is a test user
     var isTestUser = false;
-    
+
     if (typeof questionAnswerer.get("isTestUser") !== 'undefined') {
         isTestUser = questionAnswerer.get("isTestUser");
         console.log(isTestUser);
     }
-    
+
     var fromUser = question.get("fromUser");
-    
+
     if (isTestUser == false) {
         if (!fromUser.get("isTestUser")) {
                 // isTestUser is Undefined")
@@ -107,16 +107,16 @@ function saveCampfire(question, answer) {
             isTestUser = fromUser.get("isTestUser");
         }
     }
-    
+
     newCampfire.set("isTest", isTestUser);
-    
+
     newCampfire.save(null, { useMasterKey: true });
 }
 
 
 
 function getQuestionAndItsPointers(questionId,callback){
-    
+
     var Question = Parse.Object.extend("Question");
     var query = new Parse.Query(Question);
     query.include(["toUser", "fromUser", "charity"]);

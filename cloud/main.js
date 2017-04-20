@@ -201,6 +201,80 @@ Parse.Cloud.define('AddCampfiresToList', function(req, res){
 
 });
 
+Parse.Cloud.define('getUsers', function(req, res){
+  var users = [];
+  var User = Parse.Object.extend('User');
+  var query = new Parse.Query(User);
+
+  query.find({
+    success: function(objects) {
+      if (objects.length) {
+        for (var i = 0; i < objects.length; i++) {
+        var object = objects[i];
+          users.push({
+            id: object.id,
+            name: object.get('fullName')
+          });
+        }
+      }
+      res.success(users);
+    },
+    error: function(error) {
+      response.error(error);
+    }
+  })
+});
+
+Parse.Cloud.define('AddCampfiresToList', function(req, res){
+  var Campfire = Parse.Object.extend('Campfire');
+  var query = new Parse.Query(Campfire);
+  query.containedIn("objectId", req.params.CampfiresIds);
+  query.find({
+    success: function(objects) {
+      if (objects.length) {
+        for (var i = 0; i < objects.length; i++) {
+          var object = objects[i];
+          var pointer = new Parse.Object("List");
+          pointer.id = req.params.list.id;
+          object.addUnique("lists", pointer);
+          object.save();
+        }
+        res.success('Success');
+      }
+    },
+    error: function(error) {
+      response.error(error);
+    }
+
+  })
+
+});
+
+Parse.Cloud.define('AddCampfiresToList', function(req, res){
+  var Campfire = Parse.Object.extend('Campfire');
+  var query = new Parse.Query(Campfire);
+  query.containedIn("objectId", req.params.CampfiresIds);
+  query.find({
+    success: function(objects) {
+      if (objects.length) {
+        for (var i = 0; i < objects.length; i++) {
+          var object = objects[i];
+          var pointer = new Parse.Object("List");
+          pointer.id = req.params.list.id;
+          object.addUnique("lists", pointer);
+          object.save();
+        }
+        res.success('Success');
+      }
+    },
+    error: function(error) {
+      response.error(error);
+    }
+
+  })
+
+});
+
 Parse.Cloud.define('getFeaturedCampfire', function(req, res){
   var campfires = [];
   var limit = req.params.limit || 6;
@@ -323,7 +397,7 @@ Parse.Cloud.define('getCampfires', function(req, res){
   if(!(req.params.topic_id && req.params.noPagination)){
     query.count().then(function(result){ count = result; });
   }
-  
+
   // sorting
   sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
 
@@ -336,35 +410,56 @@ Parse.Cloud.define('getCampfires', function(req, res){
   query.find({
     success: function(objects) {
       if (objects.length > 0) {
-        for (var i = 0; i < objects.length; i++) {
-          var object = objects[i];
-          var fromUser = object.get('questionRef').get('fromUser');
-          var toUser = object.get('questionRef').get('toUser');
-          var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
-          var CuQuery = new Parse.Query(CampfireUnlock);
-          CuQuery.equalTo("objectId", object.get('objectId'));
-          var Cucount;
-          CuQuery.count().then(function(result){ Cucount = result; });
-          date =  new Date(object.get('createdAt'));
-          // var answerFile = object.get('answerRef').get('answerFile');
-          // if (answerFile) {
-            campfires.push({
-              id: object.id,
-              answererProfileImage: toUser.get('profilePhoto').url ? (toUser.get('profilePhoto')).toJSON().url : '',
-              answererName: toUser.get('fullName'),
-              answererAskerName: fromUser.get('fullName'),
-              question: object.get('questionRef').get('text'),
-              date: date.toDateString() ,
-              eavesdrops: (Cucount > 0 ? true : false),
-              likes: object.get('likeCount')
+        return Parse.Promise.as().then(function() {
+          var promise = Parse.Promise.as();
+
+          objects.forEach(function(object) {
+            promise = promise.then(function() {
+              var fromUser = object.get('questionRef').get('fromUser');
+              var toUser = object.get('questionRef').get('toUser');
+              var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
+              var CuQuery = new Parse.Query(CampfireUnlock);
+              var answer = object.get('answerRef').get('answerFile');
+              var answerFile = answer ? answer.toJSON().url : ''
+              date =  new Date(object.get('createdAt'));
+
+              CuQuery.equalTo("campfireRef", object);
+              var Cucount = 0;
+              return CuQuery.count().then(function(result){
+                Cucount = result;
+                campfires.push({
+                  id: object.id,
+                  answer: answerFile,
+                  answererProfileImage: toUser.get('profilePhoto').url ? (toUser.get('profilePhoto')).toJSON().url : '',
+                  answererName: toUser.get('fullName'),
+                  answererAskerName: fromUser.get('fullName'),
+                  question: object.get('questionRef').get('text'),
+                  date: date.toDateString() ,
+                  eavesdrops: Cucount,
+                  likes: object.get('likeCount')
+                });
+
+                return Parse.Promise.as();
+
+              }, function(error) {
+                res.error(error);
+              });
             });
-          // }
-        }
+          });
+          return promise;
+
+        }).then(function() {
+          return res.success({campfires: campfires,totalItems: count});
+        }, function (error) {
+          res.error(error);
+        });
       }
-      res.success({campfires: campfires,totalItems: count});
+      else{
+        res.success({campfires: [],totalItems: 0});
+      }
     },
     error: function(error) {
-      response.error(error);
+      res.error(error);
     }
   })
 });
@@ -403,7 +498,7 @@ Parse.Cloud.define('getPeople', function(req, res){
     sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
 
     // pagination
-    query.limit(limit); 
+    query.limit(limit);
     query.skip(skip);
     query.find({useMasterKey : true}).then(function(objects){
         if (objects.length > 0) {
@@ -830,3 +925,4 @@ Parse.Cloud.define('getFriendsMatch', function(request, response){
 
 
 });
+
