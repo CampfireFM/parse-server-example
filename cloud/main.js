@@ -823,3 +823,10 @@ Parse.Cloud.job("sendSummary", function(request, status){
         })
     }, 3600 * 24 * 1000);
 })();
+
+Parse.Cloud.define('getFriendsMatch', function(request, response){
+    var facebookIds = request.params.facebookIds;
+    var emails = request.params.emails;
+
+
+});
