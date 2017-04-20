@@ -213,7 +213,7 @@ Parse.Cloud.define('getUsers', function(req, res){
         var object = objects[i];
           users.push({
             id: object.id,
-            name: object.get('username')
+            name: object.get('fullName')
           });
         }
       }
