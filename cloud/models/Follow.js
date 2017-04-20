@@ -17,6 +17,12 @@ Parse.Cloud.afterSave("Follow", function(request) {
             newActivity.set("type", "follow");
             newActivity.save(null, { useMasterKey: true });
 
+            //Check for push subscription of like
+            if(!checkPushSubscription(toUser, 'follows')){
+                console.log('Question asker has not subscribed to receive follows notification yet');
+                return;
+            }
+
              // setup a push to the question Answerer
              var pushQuery = new Parse.Query(Parse.Installation);
              pushQuery.equalTo('deviceType', 'ios');

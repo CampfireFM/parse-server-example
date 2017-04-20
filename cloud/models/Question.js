@@ -45,6 +45,12 @@ Parse.Cloud.afterSave("Question", function(request) {
                         //call the stripe api and create the Charge Object
                         createCharge(params, function(err_charge, res_charge){
                             if(res_charge){
+
+                                //Check for push subscription of question
+                                if(!checkPushSubscription(toUser, 'questions')){
+                                    console.log('Question asker has not subscribed to receive questions notification yet');
+                                    return;
+                                }
                                 Parse.Push.send({
                                     where: pushQuery,
                                     data: {

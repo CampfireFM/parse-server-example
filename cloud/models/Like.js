@@ -38,6 +38,11 @@ Parse.Cloud.afterSave("Like", function(request) {
                                 newActivity.set("type", "likeToAsker");
                                 newActivity.save(null, { useMasterKey: true });
 
+                                //Check for push subscription of likes
+                                if(!checkPushSubscription(questionAskerUser, 'likes')){
+                                    console.log('Question asker has not subscribed to receive likes notification yet');
+                                    return;
+                                }
 
                                 // setup a push to the question Answerer
                                 var pushQuery = new Parse.Query(Parse.Installation);
@@ -106,6 +111,7 @@ Parse.Cloud.afterSave("Like", function(request) {
                                 if (firstName) {
                                     alert = firstName + " " + lastName + " just liked your answer!";
                                 }
+
 
                                 Parse.Push.send({
                                     where: pushQuery,

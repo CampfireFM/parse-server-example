@@ -16,50 +16,63 @@ Parse.Cloud.afterSave("Answer", function(request) {
 
         var questionRef = answer.get("questionRef");
         getQuestionAndItsPointers(questionRef.id,function(err_question, question) {
-                                if(err_question){
-                                request.log.error("FAILED IN QUESTION DETAILS FETCH");
-                                request.log.error(JSON.stringify(err_question));
-                                } else {
-                                  
-                                question.set("isAnswered", true);
-                                question.save(null, { useMasterKey: true });
-                                
-                                // create and save a new Campfire
-                                saveCampfire(question, answer);
-                                  
-                                      
-                                // setup a push to the question Asker
-                                var pushQuery = new Parse.Query(Parse.Installation);
-                                pushQuery.equalTo('deviceType', 'ios');
-                                pushQuery.equalTo('user', fromUser);
+            if(err_question){
+                request.log.error("FAILED IN QUESTION DETAILS FETCH");
+                request.log.error(JSON.stringify(err_question));
+            } else {
 
-                                var alert = "";
-                                var firstName = currentUser.get('firstName');
-                                var lastName = currentUser.get('lastName');
-                                if (firstName) {
-                                    alert = firstName + " " + lastName + " just answered your question!";
-                                  }
+                question.set("isAnswered", true);
+                question.save(null, { useMasterKey: true });
 
-                                Parse.Push.send({
-                                                where: pushQuery,
-                                                data: {
-                                                alert: alert,
-                                                questionId: question.id
-                                                }
-                                                }, {
-                                                useMasterKey: true,
-                                                success: function() {
-                                                // Push was successful
-                                                },
-                                                error: function(error) {
-                                                throw "PUSH: Got an error " + error.code + " : " + error.message;
-                                                }
-                                                });
-                              }
-          });
+                // create and save a new Campfire
+                saveCampfire(question, answer);
+
+                var fromUser = question.get('fromUser');
+                fromUser.fetch({
+                    useMasterKey : true,
+                    success : function(user){
+                        //Check for push subscription of answers
+                        if(!checkPushSubscription(user, 'answers')){
+                            console.log('Question asker has not subscribed to receive answers notification yet');
+                            return;
+                        }
+                        // setup a push to the question Asker
+                        var pushQuery = new Parse.Query(Parse.Installation);
+                        pushQuery.equalTo('deviceType', 'ios');
+                        pushQuery.equalTo('user', fromUser);
+
+                        var alert = "";
+                        var firstName = currentUser.get('firstName');
+                        var lastName = currentUser.get('lastName');
+                        if (firstName) {
+                            alert = firstName + " " + lastName + " just answered your question!";
+                        }
+
+                        Parse.Push.send({
+                            where: pushQuery,
+                            data: {
+                                alert: alert,
+                                questionId: question.id
+                            }
+                        }, {
+                            useMasterKey: true,
+                            success: function() {
+                                // Push was successful
+                            },
+                            error: function(error) {
+                                throw "PUSH: Got an error " + error.code + " : " + error.message;
+                            }
+                        });
+                    },
+                    error : function(error){
+                        console.log(error);
+                        throw "Got an error " + error.code + " : " + error.message;
+                    }
+                });
+            }
+        });
         //ENDS HERE - TO BE UNCOMMENTED
-        }
-  
+    }  
 });
 //end of afterSave function
 
@@ -109,16 +122,16 @@ function getQuestionAndItsPointers(questionId,callback){
     query.include(["toUser", "fromUser", "charity"]);
     query.equalTo("objectId",questionId);
     query.find({
-               success: function(questions) {
-               console.log(questions.length);
-               console.log(questions[0]);
-               return callback(null,questions[0]);
-               },
-               error: function(object, error) {
-               console.log(error);
-               return callback(error,null);
-               }
-               });
+        success: function(questions) {
+            console.log(questions.length);
+            console.log(questions[0]);
+            return callback(null,questions[0]);
+        },
+        error: function(object, error) {
+            console.log(error);
+            return callback(error,null);
+        }
+    });
 }
 
 

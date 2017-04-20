@@ -10,11 +10,11 @@ require("./models/Follow.js");
 require("./models/Like.js");
 require("./models/Question.js");
 require("./models/User.js");
-
-var transactionPercentage = 2.9;
-var transactionFee = 0.3;
-var answerPercentageToCampfire = 0.2;
-var campfireUnlockValue = 0.12;
+require("./common");
+transactionPercentage = 2.9;
+transactionFee = 0.3;
+answerPercentageToCampfire = 0.2;
+campfireUnlockValue = 0.12;
 
 (function loadDefaultSettings(){
     var Defaults = Parse.Object.extend('Defaults');

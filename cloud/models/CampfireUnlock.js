@@ -11,17 +11,14 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
                 var questionRef = campfire.get("questionRef");
                 getQuestionObjAndItsPointers(questionRef.id, function(err_question, complete_question){
                         if(err_question){
-
                             request.log.error(err_question);
                             console.log(err_question);
-
                         }else{
                             var params = {
                                 question: complete_question,
                                 campfireunlock: request.object,
                                 campfire : campfire
                             };
-
                             campfire.increment("unlockCount",1);
                             campfire.save({useMasterKey:true});
 
@@ -59,33 +56,43 @@ function sendUnlockPushToAsker(campfire, question, currentUser) {
     
     saveUnlockActivity(campfire, question, currentUser, question.get("fromUser"), "unlockToAsker");
     
-    
-    // setup a push to the question Asker
-    var pushQuery = new Parse.Query(Parse.Installation);
-    pushQuery.equalTo('deviceType', 'ios');
-    pushQuery.equalTo('user', question.get("fromUser"));
-    var alert = "";
-    var firstName = currentUser.get('firstName');
-    var lastName = currentUser.get('lastName');
-    if (firstName) {
-        alert = firstName + " " + lastName + " unlocked your question.";
-    }
-    
-    Parse.Push.send({
-                    where: pushQuery,
-                    data: {
+    var fromUser = question.get('fromUser');
+    fromUser.fetch({
+        useMasterKey : true,
+        success : function(user){
+            //Check for push subscription of unlocks
+            if(!checkPushSubscription(user, 'unlocks')){
+                console.log('Question asker has not subscribed to receive unlocks notification yet');
+                return;
+            }
+            // setup a push to the question Asker
+            var pushQuery = new Parse.Query(Parse.Installation);
+            pushQuery.equalTo('deviceType', 'ios');
+            pushQuery.equalTo('user', fromUser);
+            var alert = "";
+            var firstName = currentUser.get('firstName');
+            var lastName = currentUser.get('lastName');
+            if (firstName) {
+                alert = firstName + " " + lastName + " unlocked your question.";
+            }
+
+            Parse.Push.send({
+                where: pushQuery,
+                data: {
                     alert: alert,
                     questionId: question.id
-                    }
-                    }, {
-                    useMasterKey: true,
-                    success: function () {
+                }
+            }, {
+                useMasterKey: true,
+                success: function () {
                     // Push was successful
-                    },
-                    error: function (error) {
+                },
+                error: function (error) {
                     throw "PUSH: Got an error " + error.code + " : " + error.message;
-                    }
-                    });
+                }
+            });
+        }
+    });
 }
 
 
@@ -93,34 +100,46 @@ function sendUnlockPushToAsker(campfire, question, currentUser) {
 function sendUnlockPushToAnswerer(campfire, question, currentUser) {
     
     saveUnlockActivity(campfire, question, currentUser, question.get("toUser"), "unlockToAnswerer");
-    
-    // setup a push to the question Answerer
-    var pushQuery = new Parse.Query(Parse.Installation);
-    pushQuery.equalTo('deviceType', 'ios');
-    pushQuery.equalTo('user', question.get("toUser"));
-    
-    var alert = "";
-    var firstName = currentUser.get('firstName');
-    var lastName = currentUser.get('lastName');
-    if (firstName) {
-        alert = firstName + " " + lastName + " unlocked your answer";
-    }
-    
-    Parse.Push.send({
-                    where: pushQuery,
-                    data: {
+
+    var toUser = question.get('toUser');
+    toUser.fetch({
+        useMasterKey : true,
+        success : function(user){
+            //Check for push subscription of unlocks
+            if(!checkPushSubscription(user, 'unlocks')){
+                console.log('Question answerer has not subscribed to receive unlocks notification yet');
+                return;
+            }
+
+            // setup a push to the question Answerer
+            var pushQuery = new Parse.Query(Parse.Installation);
+            pushQuery.equalTo('deviceType', 'ios');
+            pushQuery.equalTo('user', question.get("toUser"));
+
+            var alert = "";
+            var firstName = currentUser.get('firstName');
+            var lastName = currentUser.get('lastName');
+            if (firstName) {
+                alert = firstName + " " + lastName + " unlocked your answer";
+            }
+
+            Parse.Push.send({
+                where: pushQuery,
+                data: {
                     alert: alert,
                     questionId: question.id
-                    }
-                    }, {
-                    useMasterKey: true,
-                    success: function () {
+                }
+            }, {
+                useMasterKey: true,
+                success: function () {
                     // Push was successful
-                    },
-                    error: function (error) {
+                },
+                error: function (error) {
                     throw "PUSH: Got an error " + error.code + " : " + error.message;
-                    }
-                    });
+                }
+            });
+        }
+    });
 }
 
 
