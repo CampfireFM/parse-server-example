@@ -1,3 +1,4 @@
+const {checkPushSubscription} = require('../common');
 
 Parse.Cloud.afterSave("Follow", function(request) {
 

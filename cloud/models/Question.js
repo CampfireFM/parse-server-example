@@ -1,4 +1,4 @@
-
+const {checkPushSubscription} = require('../common');
 var paymenthandler = require('../../utils/paymenthandler.js');
 
 Parse.Cloud.afterSave("Question", function(request) {

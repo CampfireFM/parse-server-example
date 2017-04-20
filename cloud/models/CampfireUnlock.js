@@ -1,3 +1,5 @@
+const {checkPushSubscription} = require('../common');
+
 Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 
     if (request.object.existed() == false) {

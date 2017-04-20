@@ -1,4 +1,4 @@
-
+const {checkPushSubscription} = require('../common');
 Parse.Cloud.afterSave("Like", function(request) {
 
 

@@ -1,4 +1,4 @@
-
+const {checkPushSubscription} = require('../common');
 
 var answer_methods = {};
 
