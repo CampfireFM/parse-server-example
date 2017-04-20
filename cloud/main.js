@@ -367,13 +367,14 @@ Parse.Cloud.define('getCampfires', function(req, res){
           var toUser = object.get('questionRef').get('toUser');
           var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
           var CuQuery = new Parse.Query(CampfireUnlock);
-          CuQuery.equalTo("objectId", object.get('objectId'));
-          var Cucount;
-          CuQuery.count().then(function(result){ Cucount = result; });
-          date =  new Date(object.get('createdAt'));
           var answer = object.get('answerRef').get('answerFile');
           var answerFile = answer ? answer.toJSON().url : ''
-          // if (answerFile) {
+          date =  new Date(object.get('createdAt'));
+          
+          CuQuery.equalTo("campfireRef", object);
+          var Cucount = 0;
+          CuQuery.count().then(function(result){
+            Cucount = result;
             campfires.push({
               id: object.id,
               answer: answerFile,
@@ -382,13 +383,26 @@ Parse.Cloud.define('getCampfires', function(req, res){
               answererAskerName: fromUser.get('fullName'),
               question: object.get('questionRef').get('text'),
               date: date.toDateString() ,
-              eavesdrops: (Cucount > 0 ? true : false),
+              eavesdrops: Cucount,
               likes: object.get('likeCount')
             });
-          // }
+            
+            checkAndRespond(campfires, objects.length);
+          }, function(error) {
+            response.error(error);
+          });
         }
       }
-      res.success({campfires: campfires,totalItems: count});
+      else{
+        res.success({campfires: [],totalItems: 0});
+      }
+
+      var checkAndRespond = function(campfire_array, length){
+        if(campfire_array.length === length){
+          res.success({campfires: campfires,totalItems: count});
+        }
+      }
+
     },
     error: function(error) {
       response.error(error);
