@@ -361,51 +361,56 @@ Parse.Cloud.define('getCampfires', function(req, res){
   query.find({
     success: function(objects) {
       if (objects.length > 0) {
-        for (var i = 0; i < objects.length; i++) {
-          var object = objects[i];
-          var fromUser = object.get('questionRef').get('fromUser');
-          var toUser = object.get('questionRef').get('toUser');
-          var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
-          var CuQuery = new Parse.Query(CampfireUnlock);
-          var answer = object.get('answerRef').get('answerFile');
-          var answerFile = answer ? answer.toJSON().url : ''
-          date =  new Date(object.get('createdAt'));
-          
-          CuQuery.equalTo("campfireRef", object);
-          var Cucount = 0;
-          CuQuery.count().then(function(result){
-            Cucount = result;
-            campfires.push({
-              id: object.id,
-              answer: answerFile,
-              answererProfileImage: toUser.get('profilePhoto').url ? (toUser.get('profilePhoto')).toJSON().url : '',
-              answererName: toUser.get('fullName'),
-              answererAskerName: fromUser.get('fullName'),
-              question: object.get('questionRef').get('text'),
-              date: date.toDateString() ,
-              eavesdrops: Cucount,
-              likes: object.get('likeCount')
+        return Parse.Promise.as().then(function() {
+          var promise = Parse.Promise.as();
+
+          objects.forEach(function(object) {
+            promise = promise.then(function() {
+              var fromUser = object.get('questionRef').get('fromUser');
+              var toUser = object.get('questionRef').get('toUser');
+              var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
+              var CuQuery = new Parse.Query(CampfireUnlock);
+              var answer = object.get('answerRef').get('answerFile');
+              var answerFile = answer ? answer.toJSON().url : ''
+              date =  new Date(object.get('createdAt'));
+
+              CuQuery.equalTo("campfireRef", object);
+              var Cucount = 0;
+              return CuQuery.count().then(function(result){
+                Cucount = result;
+                campfires.push({
+                  id: object.id,
+                  answer: answerFile,
+                  answererProfileImage: toUser.get('profilePhoto').url ? (toUser.get('profilePhoto')).toJSON().url : '',
+                  answererName: toUser.get('fullName'),
+                  answererAskerName: fromUser.get('fullName'),
+                  question: object.get('questionRef').get('text'),
+                  date: date.toDateString() ,
+                  eavesdrops: Cucount,
+                  likes: object.get('likeCount')
+                });
+
+                return Parse.Promise.as();
+
+              }, function(error) {
+                res.error(error);
+              });
             });
-            
-            checkAndRespond(campfires, objects.length);
-          }, function(error) {
-            response.error(error);
           });
-        }
+          return promise;
+
+        }).then(function() {
+          return res.success({campfires: campfires,totalItems: count});
+        }, function (error) {
+          res.error(error);
+        });
       }
       else{
         res.success({campfires: [],totalItems: 0});
       }
-
-      var checkAndRespond = function(campfire_array, length){
-        if(campfire_array.length === length){
-          res.success({campfires: campfires,totalItems: count});
-        }
-      }
-
     },
     error: function(error) {
-      response.error(error);
+      res.error(error);
     }
   })
 });
