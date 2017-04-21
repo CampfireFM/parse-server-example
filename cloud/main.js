@@ -431,7 +431,7 @@ Parse.Cloud.define('getCampfires', function(req, res){
                 campfires.push({
                   id: object.id,
                   answer: answerFile,
-                  answererProfileImage: toUser.get('profilePhoto').url ? (toUser.get('profilePhoto')).toJSON().url : '',
+                  answererProfileImage: (toUser.get('profilePhoto') && toUser.get('profilePhoto').url) ? (toUser.get('profilePhoto')).toJSON().url : '',
                   answererName: toUser.get('fullName'),
                   answererAskerName: fromUser.get('fullName'),
                   question: object.get('questionRef').get('text'),
