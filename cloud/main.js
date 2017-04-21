@@ -386,6 +386,9 @@ Parse.Cloud.define('getCampfires', function(req, res){
     QuestionQuery.startsWith('text', req.params.question)
     query.matchesQuery('questionRef', QuestionQuery);
   }
+  if (req.params.likeCount){
+    query.greaterThanOrEqualTo("likeCount", parseInt(req.params.likeCount));
+  }
   if (req.params.fromDate){
     query.greaterThanOrEqualTo("createdAt", req.params.fromDate);
   }
