@@ -41,38 +41,37 @@ Parse.Cloud.afterSave("Like", function(request) {
                                 //Check for push subscription of likes
                                 if(!checkPushSubscription(questionAskerUser, 'likes')){
                                     console.log('Question asker has not subscribed to receive likes notification yet');
-                                    return;
-                                }
+                                } else {
 
-                                // setup a push to the question Answerer
-                                var pushQuery = new Parse.Query(Parse.Installation);
-                                pushQuery.equalTo('deviceType', 'ios');
-                                pushQuery.equalTo('user', questionAsker);
+                                    // setup a push to the question Answerer
+                                    var pushQuery = new Parse.Query(Parse.Installation);
+                                    pushQuery.equalTo('deviceType', 'ios');
+                                    pushQuery.equalTo('user', questionAskerUser);
 
-                                var alert = "";
-                                var firstName = currentUser.get('firstName');
-                                var lastName = currentUser.get('lastName');
-                                if (firstName) {
-                                    alert = firstName + " " + lastName + " just liked the answer to your question!";
-                                }
-
-                                Parse.Push.send({
-                                    where: pushQuery,
-                                    data: {
-                                        alert: alert,
-                                        questionId: question.id
+                                    var alert = "";
+                                    var firstName = currentUser.get('firstName');
+                                    var lastName = currentUser.get('lastName');
+                                    if (firstName) {
+                                        alert = firstName + " " + lastName + " just liked the answer to your question!";
                                     }
-                                }, {
-                                    useMasterKey: true,
-                                    success: function() {
-                                        console.log("Successful push to question Asker for like");
-                                        // Push was successful
-                                    },
-                                    error: function(error) {
-                                        throw "PUSH: Got an error " + error.code + " : " + error.message;
-                                    }
-                                });
 
+                                    Parse.Push.send({
+                                        where: pushQuery,
+                                        data: {
+                                            alert: alert,
+                                            questionId: question.id
+                                        }
+                                    }, {
+                                        useMasterKey: true,
+                                        success: function () {
+                                            console.log("Successful push to question Asker for like");
+                                            // Push was successful
+                                        },
+                                        error: function (error) {
+                                            throw "PUSH: Got an error " + error.code + " : " + error.message;
+                                        }
+                                    });
+                                }
                             },
                             useMasterKey: true,
                             error: function(object, error) {

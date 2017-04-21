@@ -8,4 +8,12 @@ function checkPushSubscription(user, type){
     return true;
 }
 
-module.exports = {checkPushSubscription}
+function checkEmailSubscription(user, type){
+    var emailSubscriptions = user.get('emailSubscriptions');
+
+    //Search subscription type in array
+    if(emailSubscriptions == undefined || emailSubscriptions.indexOf(type) == -1)
+        return false;
+    return true;
+}
+module.exports = {checkPushSubscription, checkEmailSubscription};

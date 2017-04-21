@@ -1,4 +1,5 @@
 const {sendSummaryEmail} = require('../utils/mail');
+const {checkEmailSubscription} = require('./common');
 const config = require('../config.js');
 const payment_methods = require("../utils/paymenthandler.js");
 const stripe = require('stripe')(config.stripe_test_key);
@@ -889,13 +890,17 @@ function runSummaryUpdate(){
                         }, []);
 
                         console.log("CampfireMap : ", summaries);
-                        //Generate email with template
-                        //send to test email in development
-                        var testEmail = process.env.TEST_EMAIL ? process.env.TEST_EMAIL : 'krittylor@gmail.com';
-                        if(process.env.NODE_ENV == 'production' && process.env.IS_TEST == false)
-                            sendSummaryEmail(user.get('email'), summaries);
-                        else
-                            sendSummaryEmail(testEmail, summaries);
+                        //Generate email with template if user already subscribed summary to emailSubscription
+                        if(checkEmailSubscription(user, 'summary')){
+                            console.log(`${user.get('username')} has not subscribed to receive summary emails`);
+                        } else {
+                            //send to test email in development
+                            var testEmail = process.env.TEST_EMAIL ? process.env.TEST_EMAIL : 'krittylor@gmail.com';
+                            if (process.env.NODE_ENV == 'production' && process.env.IS_TEST == false)
+                                sendSummaryEmail(user.get('email'), summaries);
+                            else
+                                sendSummaryEmail(testEmail, summaries);
+                        }
                     })
                 });
             });

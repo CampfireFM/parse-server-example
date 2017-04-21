@@ -84,4 +84,75 @@ function sendSummaryEmail(recipient, summaries){
         }
     });
 }
-module.exports = {sendWelcomeMail, updateMailingList, sendSummaryEmail};
+
+function sendFollowEmail(recipient, followerProfilePhoto, followerUsername){
+    const { AppCache } = require('parse-server/lib/cache');
+    // Get a reference to the MailgunAdapter
+    // NOTE: It's best to do this inside the Parse.Cloud.define(...) method body and not at the top of your file with your other imports. This gives Parse Server time to boot, setup cloud code and the email adapter.
+    const MailgunAdapter = AppCache.get(config.appId)['userController']['adapter'];
+
+    // Invoke the send method with an options object
+    MailgunAdapter.send({
+        templateName: 'followEmail',
+        recipient: recipient,
+        variables: {
+            followerProfilePhoto,
+            followerUsername,
+            buildUserProfilePhoto : function(){
+                return function(text, render){
+                    return `<div class="profile-photo" background-image="${render(text)}" style="background-image: url(&quot;${render(text)}&quot;); background-repeat: no-repeat;"></div>`
+                    //return `<img style="float: top;" class="profile-photo" src="${render(text)}" alt="interactive connection" width="45" />`
+                }
+            }
+        }
+    });
+}
+
+function sendQuestionEmail(recipient, questionAskerProfilePhoto, questionAskerUsername, questionText){
+    const { AppCache } = require('parse-server/lib/cache');
+    // Get a reference to the MailgunAdapter
+    // NOTE: It's best to do this inside the Parse.Cloud.define(...) method body and not at the top of your file with your other imports. This gives Parse Server time to boot, setup cloud code and the email adapter.
+    const MailgunAdapter = AppCache.get(config.appId)['userController']['adapter'];
+
+    // Invoke the send method with an options object
+    MailgunAdapter.send({
+        templateName: 'questionEmail',
+        recipient: recipient,
+        variables: {
+            questionAskerProfilePhoto,
+            questionAskerUsername,
+            questionText,
+            buildUserProfilePhoto : function(){
+                return function(text, render){
+                    return `<div class="profile-photo" background-image="${render(text)}" style="background-image: url(&quot;${render(text)}&quot;); background-repeat: no-repeat;"></div>`
+                    //return `<img style="float: top;" class="profile-photo" src="${render(text)}" alt="interactive connection" width="45" />`
+                }
+            }
+        }
+    });
+}
+
+function sendAnswerEmail(recipient, questionAnswererProfilePhoto, questionAnswererUsername, questionText){
+    const { AppCache } = require('parse-server/lib/cache');
+    // Get a reference to the MailgunAdapter
+    // NOTE: It's best to do this inside the Parse.Cloud.define(...) method body and not at the top of your file with your other imports. This gives Parse Server time to boot, setup cloud code and the email adapter.
+    const MailgunAdapter = AppCache.get(config.appId)['userController']['adapter'];
+
+    // Invoke the send method with an options object
+    MailgunAdapter.send({
+        templateName: 'answerEmail',
+        recipient: recipient,
+        variables: {
+            questionAnswererProfilePhoto,
+            questionAnswererUsername,
+            questionText,
+            buildUserProfilePhoto : function(){
+                return function(text, render){
+                    return `<div class="profile-photo" background-image="${render(text)}" style="background-image: url(&quot;${render(text)}&quot;); background-repeat: no-repeat;"></div>`
+                    //return `<img style="float: top;" class="profile-photo" src="${render(text)}" alt="interactive connection" width="45" />`
+                }
+            }
+        }
+    });
+}
+module.exports = {sendWelcomeMail, updateMailingList, sendSummaryEmail, sendFollowEmail, sendQuestionEmail, sendAnswerEmail};

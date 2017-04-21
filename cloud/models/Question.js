@@ -1,4 +1,5 @@
-const {checkPushSubscription} = require('../common');
+const {checkPushSubscription, checkEmailSubscription} = require('../common');
+const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 
 Parse.Cloud.afterSave("Question", function(request) {
@@ -7,80 +8,94 @@ Parse.Cloud.afterSave("Question", function(request) {
 
         var toUser = request.object.get("toUser");
         toUser.fetch({
-                     useMasterKey: true,
-                     success: function(user) {
-                         var questCount = user.get("unansweredQuestionCount");
-                         if (questCount == null) {
-                            questCount = 0;
-                         }
-                         questCount++;
-                         user.set("unansweredQuestionCount", questCount);
-                         user.save(null, { useMasterKey: true });
-                         var currentUser = request.user
-                         var pushQuery = new Parse.Query(Parse.Installation);
-                         pushQuery.equalTo('deviceType', 'ios');
-                         pushQuery.equalTo('user', user);
-                         var alert = "";
-                         var firstName = currentUser.get('firstName');
-                         var lastName = currentUser.get('lastName');
-                         if (firstName) {
-                         alert = firstName + " " + lastName + " asked you a question.";
-                         }
+            useMasterKey: true,
+            success: function(user) {
+                var questCount = user.get("unansweredQuestionCount");
+                if (questCount == null) {
+                    questCount = 0;
+                }
+                questCount++;
+                user.set("unansweredQuestionCount", questCount);
+                user.save(null, { useMasterKey: true });
+                var currentUser = request.user;
+                var pushQuery = new Parse.Query(Parse.Installation);
+                pushQuery.equalTo('deviceType', 'ios');
+                pushQuery.equalTo('user', user);
+                var alert = "";
 
-                        var params = {
-                            questionRef : request.object,
-                            userRef : request.user,
-                            amount : request.object.get("price"),
-                            isExpired : false,
-                            authToken : request.object.get("authToken"),
-                            customerId : request.object.get("customerId"),
-                            chargeId : request.object.get("chargeId")
-                        };
+                alert = "Test";
 
-                        if(!params.customerId){
-                            params.customerId = request.user.get("customerId");
-                            console.log("got customerId from request.user");
+                var params = {
+                    questionRef : request.object,
+                    userRef : request.user,
+                    amount : request.object.get("price"),
+                    isExpired : false,
+                    authToken : request.object.get("authToken"),
+                    customerId : request.object.get("customerId"),
+                    chargeId : request.object.get("chargeId")
+                };
+
+                if(!params.customerId){
+                    params.customerId = request.user.get("customerId");
+                    console.log("got customerId from request.user");
+                }
+
+
+                //call the stripe api and create the Charge Object
+                createCharge(params, function(err_charge, res_charge){
+                    if(res_charge){
+
+                        //Check for push subscription of question
+                        if(!checkPushSubscription(toUser, 'questions')){
+                            console.log('Question answerer has not subscribed to receive questions notification yet');
+                        } else {
+                            Parse.Push.send({
+                                where: pushQuery,
+                                data: {
+                                    alert: alert,
+                                    questionId: request.object.id
+                                }
+                            }, {
+                                useMasterKey: true,
+                                success: function () {
+                                            // Push was successful
+                                },
+                                error: function (error) {
+                                    throw "PUSH: Got an error " + error.code + " : " + error.message;
+                                }
+                            });
                         }
 
-                        //call the stripe api and create the Charge Object
-                        createCharge(params, function(err_charge, res_charge){
-                            if(res_charge){
+                        //Check for email subscription of email
+                        if(!checkEmailSubscription(toUser, 'questions')) {
+                            console.log('Question answerer has not subscribed to receive question emails yet')
+                        } else {
+                            mail.sendQuestionEmail(
+                                toUser.get('email'),
+                                request.user.get('profilePhoto')._name,
+                                request.user.get('fullName'),
+                                request.object.get('text')
+                            );
+                        }
 
-                                //Check for push subscription of question
-                                if(!checkPushSubscription(toUser, 'questions')){
-                                    console.log('Question asker has not subscribed to receive questions notification yet');
-                                    return;
-                                }
-                                Parse.Push.send({
-                                    where: pushQuery,
-                                    data: {
-                                      alert: alert,
-                                      questionId: request.object.id
-                                    }
-                                    }, {
-                                    useMasterKey: true,
-                                     success: function() {
-                                     // Push was successful
-                                    },
-                                    error: function(error) {
-                                     throw "PUSH: Got an error " + error.code + " : " + error.message;
-                                    }
-                                });
-                            }else{
+                    } else {
                                 //currently do nothing
-                            }
-                        });
-                        //end of create charge function call handling
 
-                        //removes the authToken from the question attributes
-                        request.object.unset('chargeId');
-                        request.object.save(null,{useMasterKey:true});
-                     },
-                     error: function(object, error) {
-                        console.log(error);
-                        throw "Got an error " + error.code + " : " + error.message;
-                     }
+                    }
+
                 });
+                //end of create charge function call handling
+
+                //removes the authToken from the question attributes
+                request.object.unset('chargeId');
+                request.object.save(null,{useMasterKey:true});
+
+            },
+            error: function(object, error) {
+                console.log(error);
+                throw "Got an error " + error.code + " : " + error.message;
+            }
+        });
     }
 });
 
@@ -114,4 +129,3 @@ function createCharge(params, callback){
     });
     //end of save operation code block
 }
-

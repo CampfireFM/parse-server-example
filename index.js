@@ -75,6 +75,21 @@ var api = new ParseServer({
                     subject: 'New answers last day!',
                     pathPlainText: resolve(__dirname, './templates/summary.txt'),
                     pathHtml: resolve(__dirname, './templates/summary.html')
+                },
+                followEmail: {
+                    subject: 'You have new follower',
+                    pathPlainText: resolve(__dirname, './templates/follow.txt'),
+                    pathHtml: resolve(__dirname, './templates/follow.html'),
+                },
+                questionEmail: {
+                    subject: 'You were asked new question',
+                    pathPlainText: resolve(__dirname, './templates/question.txt'),
+                    pathHtml: resolve(__dirname, './templates/question.html'),
+                },
+                answerEmail: {
+                    subject: 'You were answered a question',
+                    pathPlainText: resolve(__dirname, './templates/answer.txt'),
+                    pathHtml: resolve(__dirname, './templates/answer.html'),
                 }
             }
         }

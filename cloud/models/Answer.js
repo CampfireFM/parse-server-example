@@ -1,5 +1,5 @@
-const {checkPushSubscription} = require('../common');
-
+const {checkPushSubscription, checkEmailSubscription} = require('../common');
+const mail = require('../../utils/mail');
 var answer_methods = {};
 
 //begin of afterSave function
@@ -30,39 +30,52 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 var fromUser = question.get('fromUser');
                 fromUser.fetch({
                     useMasterKey : true,
-                    success : function(user){
+                    success : function(user) {
                         //Check for push subscription of answers
-                        if(!checkPushSubscription(user, 'answers')){
+                        if (!checkPushSubscription(user, 'answers')) {
                             console.log('Question asker has not subscribed to receive answers notification yet');
-                            return;
-                        }
-                        // setup a push to the question Asker
-                        var pushQuery = new Parse.Query(Parse.Installation);
-                        pushQuery.equalTo('deviceType', 'ios');
-                        pushQuery.equalTo('user', fromUser);
 
-                        var alert = "";
-                        var firstName = currentUser.get('firstName');
-                        var lastName = currentUser.get('lastName');
-                        if (firstName) {
-                            alert = firstName + " " + lastName + " just answered your question!";
+                        } else {
+                            // setup a push to the question Asker
+                            var pushQuery = new Parse.Query(Parse.Installation);
+                            pushQuery.equalTo('deviceType', 'ios');
+                            pushQuery.equalTo('user', fromUser);
+
+                            var alert = "";
+                            var firstName = currentUser.get('firstName');
+                            var lastName = currentUser.get('lastName');
+                            if (firstName) {
+                                alert = firstName + " " + lastName + " just answered your question!";
+                            }
+
+                            Parse.Push.send({
+                                where: pushQuery,
+                                data: {
+                                    alert: alert,
+                                    questionId: question.id
+                                }
+                            }, {
+                                useMasterKey: true,
+                                success: function () {
+                                    // Push was successful
+                                },
+                                error: function (error) {
+                                    throw "PUSH: Got an error " + error.code + " : " + error.message;
+                                }
+                            });
                         }
 
-                        Parse.Push.send({
-                            where: pushQuery,
-                            data: {
-                                alert: alert,
-                                questionId: question.id
-                            }
-                        }, {
-                            useMasterKey: true,
-                            success: function() {
-                                // Push was successful
-                            },
-                            error: function(error) {
-                                throw "PUSH: Got an error " + error.code + " : " + error.message;
-                            }
-                        });
+                        //Check for email subscription of questionAsker
+                        if (!checkEmailSubscription(user, 'answers')){
+                            console.log('Question asker has not been subscribed to receive answer emails yet');
+                        } else {
+                            mail.sendAnswerEmail(
+                                user.get('email'),
+                                user.get('profilePhoto')._name,
+                                user.get('fullName'),
+                                question.get('text')
+                            )
+                        }
                     },
                     error : function(error){
                         console.log(error);
