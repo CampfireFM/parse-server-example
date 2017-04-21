@@ -2,6 +2,12 @@ const {checkPushSubscription, checkEmailSubscription} = require('../common');
 const mail = require('../../utils/mail');
 var answer_methods = {};
 
+Parse.Cloud.beforeSave("Answer", function(request, response){
+    if(request.object.get("liveDate") === undefined)
+        request.object.set("liveDate", new Date());
+    response.success();
+});
+
 //begin of afterSave function
 Parse.Cloud.afterSave("Answer", function(request) {
 

@@ -925,9 +925,26 @@ Parse.Cloud.job("sendSummary", function(request, status){
 })();
 
 Parse.Cloud.define('getFriendsMatch', function(request, response){
-    var facebookIds = request.params.facebookIds;
+    var facebookIds = request.params.fbUserIds;
     var emails = request.params.emails;
 
+    if(facebookIds === undefined)
+        facebookIds = [];
+    if(emails === undefined)
+        emails = [];
 
+    var usersFBIdMatch = new Parse.Query(Parse.User);
+    usersFBIdMatch.containedIn('authData.facebook.id', facebookIds);
+
+    var usersEmailMatch = new Parse.Query(Parse.User);
+    usersEmailMatch.containedIn('email', emails);
+
+    var usersMatch = Parse.Query.or(usersFBIdMatch, usersEmailMatch);
+    usersMatch.find({useMasterKey : true}).then(function(users){
+        response.success(users);
+    }, function(err){
+        console.log(err);
+        throw "Got an error " + error.code + " : " + error.message;
+    });
 });
 
