@@ -276,7 +276,8 @@ Parse.Cloud.define('AddCampfiresToList', function(req, res){
 
 });
 
-Parse.Cloud.define('AddCampfiresToList', function(req, res){
+
+Parse.Cloud.define('removeCampfiresFromList', function(req, res){
   var Campfire = Parse.Object.extend('Campfire');
   var query = new Parse.Query(Campfire);
   query.containedIn("objectId", req.params.CampfiresIds);
@@ -286,8 +287,8 @@ Parse.Cloud.define('AddCampfiresToList', function(req, res){
         for (var i = 0; i < objects.length; i++) {
           var object = objects[i];
           var pointer = new Parse.Object("List");
-          pointer.id = req.params.list.id;
-          object.addUnique("lists", pointer);
+          pointer.id = req.params.listId;
+          object.remove("lists", pointer);
           object.save();
         }
         res.success('Success');
