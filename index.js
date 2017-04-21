@@ -109,9 +109,11 @@ var dashboard = new ParseDashboard({
 },true);
 
 var app = express();
-app.use(cors({
-  credentials: true
-}));
+
+app.all('*', function(req, res, next) { 
+  res.header('Access-Control-Allow-Credentials', false);
+  next(); 
+});
 
 app.set('view engine', 'ejs');
 

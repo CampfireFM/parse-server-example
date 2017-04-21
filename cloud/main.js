@@ -276,6 +276,32 @@ Parse.Cloud.define('AddCampfiresToList', function(req, res){
 
 });
 
+
+Parse.Cloud.define('removeCampfiresFromList', function(req, res){
+  var Campfire = Parse.Object.extend('Campfire');
+  var query = new Parse.Query(Campfire);
+  query.containedIn("objectId", req.params.CampfiresIds);
+  query.find({
+    success: function(objects) {
+      if (objects.length) {
+        for (var i = 0; i < objects.length; i++) {
+          var object = objects[i];
+          var pointer = new Parse.Object("List");
+          pointer.id = req.params.listId;
+          object.remove("lists", pointer);
+          object.save();
+        }
+        res.success('Success');
+      }
+    },
+    error: function(error) {
+      response.error(error);
+    }
+
+  })
+
+});
+
 Parse.Cloud.define('getFeaturedCampfire', function(req, res){
   var campfires = [];
   var limit = req.params.limit || 6;
@@ -368,7 +394,7 @@ Parse.Cloud.define('getCampfires', function(req, res){
 
   query.include(['questionRef', 'answerRef', 'questionRef.fromUser.fullName',
     'questionRef.toUser.fullName']);
-
+    
   // filtering
   if (req.params.answererName || req.params.answererAskerName){
     var User = Parse.Object.extend('User');
@@ -401,7 +427,7 @@ Parse.Cloud.define('getCampfires', function(req, res){
   if(!(req.params.topic_id && req.params.noPagination)){
     query.count().then(function(result){ count = result; });
   }
-
+  
   // sorting
   sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
 
