@@ -87,6 +87,7 @@ function saveCampfire(question, answer) {
     newCampfire.set("likeCount", 0);
     newCampfire.set("flagCount", 0);
     newCampfire.set("isDummyData", false);
+    newCampfire.set("liveDate", answer.get('liveDate'));
 
 
     var questionAnswerer = question.get("toUser");
