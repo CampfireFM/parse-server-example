@@ -256,11 +256,11 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
   var limit = req.params.limit || 6;
   var skip =  req.params.skip || 0;
 
-  var Campfire = Parse.Object.extend('Campfire');
-  var query = new Parse.Query(Campfire);
-  query.equalTo('isDummyData', false);
+  var Answer = Parse.Object.extend('Answer');
+  var query = new Parse.Query(Answer);
+  //query.equalTo('isDummyData', false);
 
-  query.include(['questionRef', 'answerRef', 'questionRef.fromUser.fullName',
+  query.include(['questionRef', 'questionRef.fromUser.fullName',
     'questionRef.toUser.fullName']);
   query.descending('createdAt');
   query.limit(limit);
@@ -273,8 +273,8 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
           var object = objects[i];
           var fromUser = object.get('questionRef').get('fromUser');
           var toUser = object.get('questionRef').get('toUser');
-          var answerFile = object.get('answerRef').get('answerFile');
-          if (answerFile) {
+          var answerFile = object.get('answerFile');
+          if (answerFile || true) {
             campfires.push({
               id: object.id,
               question: object.get('questionRef').get('text'),
