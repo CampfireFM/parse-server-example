@@ -761,6 +761,7 @@ function getRecentAnswers(users, callback){
     answerQuery.include('userRef', 'questionRef', 'createdAt');
     answerQuery.greaterThan('updatedAt', date);
     answerQuery.containedIn('userRef', users);
+    answerQuery.descending('createdAt');
     answerQuery.find({useMasterKey : true}).then(function(answers){
         if(answers[0])
             callback(null, answers);
@@ -787,21 +788,13 @@ function getQuestions(questionIds, callback){
     });
 }
 
-function getCampfireFromQuestions(questions, callback){
-    var Campfire = Parse.Object.extend('Campfire');
-    var campfireQuery = new Parse.Query(Campfire);
-    campfireQuery.containedIn('questionRef', questions);
-    campfireQuery.find({useMasterKey : true}).then(function(campfires){
-        callback(null, campfires);
-    }, function(err){
-        callback(err);
-    });
-}
-
 function runSummaryUpdate(){
     var query = new Parse.Query(Parse.User);
     var limitExceed = false;
     return query.each(function(user){
+        //Cancel getting summary if user has not subscribed to receive summary email
+        if(checkEmailSubscription(user, 'summary') == false)
+            return;
         getFollows(user, function(err, follows){
             if(err){
                 console.log(err.message);
@@ -820,68 +813,31 @@ function runSummaryUpdate(){
                 }
                 if(answers.length == 0)
                     return;
-                //Get latest answers upto 5 from answer array
-                answers.sort(function(a, b){
-                    if(a.get('createdAt') > b.get('createdAt'))
-                        return 1;
-                    if(a.get('createdAt') < b.get('createdAt'))
-                        return -1;
-                    return 0;
-                });
                 if(answers.length > 5)
                     limitExceed = true;
                 answers = answers.slice(0, 5);
-                var answerUserMap = {};
-                let questionIds = answers.reduce(function(pre, answer){
-                    pre.push(answer.get('questionRef').id);
-                    Object.assign(answerUserMap, {}, {[answer.get('questionRef').id] : answer.get('userRef')});
+
+                var summaries = answers.reduce(function(pre, answer){
+                    //Get userId from answer
+                    pre.push({
+                        answerId : answer.id,
+                        questionId : answer.get('questionRef').id,
+                        question : answer.get('questionRef').get('text'),
+                        username : answer.get('userRef').get('fullName'),
+                        profilePhoto : answer.get('userRef').get('profilePhoto')._name
+                    });
                     return pre;
                 }, []);
-                getQuestions(questionIds, function(err, questions){
-                    if(err){
-                        console.log('Failed to fetch questions');
-                        return;
-                    }
-                    console.log(user.get('username') + ':' + questions);
 
-                    //Extract question texts
-                    var questionMap = {};
-                    questions.forEach(function(question){
-                        Object.assign(questionMap, {}, {[question.id] : question.get('text')});
-                    });
-                    //Get CampfireId
-                    getCampfireFromQuestions(questions, function(err, campfires){
-                        if(err){
-                            console.log(err);
-                            return;
-                        }
+                console.log("SummaryMap : ", summaries);
+                //Generate email with template
 
-                        var summaries = campfires.reduce(function(pre, campfire){
-                            //Get userId from answer
-                            pre.push({
-                                question : questionMap[campfire.get('questionRef').id],
-                                campfireId : campfire.id,
-                                questionId : campfire.get('questionRef').id,
-                                username : answerUserMap[campfire.get('questionRef').id].get('firstName') + ' ' + answerUserMap[campfire.get('questionRef').id].get('lastName'),
-                                profilePhoto : answerUserMap[campfire.get('questionRef').id].get('profilePhoto')._name
-                            });
-                            return pre;
-                        }, []);
-
-                        console.log("CampfireMap : ", summaries);
-                        //Generate email with template if user already subscribed summary to emailSubscription
-                        if(checkEmailSubscription(user, 'summary')){
-                            console.log(`${user.get('username')} has not subscribed to receive summary emails`);
-                        } else {
-                            //send to test email in development
-                            var testEmail = process.env.TEST_EMAIL ? process.env.TEST_EMAIL : 'krittylor@gmail.com';
-                            if (process.env.NODE_ENV == 'production' && process.env.IS_TEST == false)
-                                sendSummaryEmail(user.get('email'), summaries);
-                            else
-                                sendSummaryEmail(testEmail, summaries);
-                        }
-                    })
-                });
+                //send to test email in development
+                var testEmail = process.env.TEST_EMAIL ? process.env.TEST_EMAIL : 'krittylor@gmail.com';
+                if (process.env.NODE_ENV == 'production' && process.env.IS_TEST == false)
+                    sendSummaryEmail(user.get('email'), summaries);
+                else
+                    sendSummaryEmail(testEmail, summaries);
             });
         });
     }, {useMasterKey : true})
