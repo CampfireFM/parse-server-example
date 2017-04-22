@@ -7,10 +7,10 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
         var currentUser = request.user;
 
         // It's a new "Unlock"
-        var campfireRef = request.object.get("campfireRef");
-        campfireRef.fetch({
-            success: function (campfire) {
-                var questionRef = campfire.get("questionRef");
+        var answerRef = request.object.get("answerRef");
+        answerRef.fetch({
+            success: function (answer) {
+                var questionRef = answer.get("questionRef");
                 getQuestionObjAndItsPointers(questionRef.id, function(err_question, complete_question){
                         if(err_question){
                             request.log.error(err_question);
@@ -19,14 +19,14 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
                             var params = {
                                 question: complete_question,
                                 campfireunlock: request.object,
-                                campfire : campfire
+                                answer : answer
                             };
-                            campfire.increment("unlockCount",1);
-                            campfire.save({useMasterKey:true});
+                            answer.increment("unlockCount",1);
+                            answer.save();
 
                             splitUnlockEarnings(params);
-                            sendUnlockPushToAsker(campfire, complete_question, currentUser);
-                            sendUnlockPushToAnswerer(campfire, complete_question, currentUser);
+                            sendUnlockPushToAsker(answer, complete_question, currentUser);
+                            sendUnlockPushToAnswerer(answer, complete_question, currentUser);
                         }
                 });
             },
@@ -40,12 +40,12 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 });
 
 
-function saveUnlockActivity(campfire, question, currentUser, toUser, type) {
+function saveUnlockActivity(answer, question, currentUser, toUser, type) {
      // Create and save a new "Unlock" activity for the question Asker
     var Activity = Parse.Object.extend("Activity");
     var newActivity = new Activity();
     newActivity.set("question", question);
-    newActivity.set("campfire", campfire);
+    newActivity.set("answer", answer);
     newActivity.set("isRead", false);
     newActivity.set("toUser", toUser);
     newActivity.set("fromUser", currentUser);
@@ -54,9 +54,9 @@ function saveUnlockActivity(campfire, question, currentUser, toUser, type) {
     
 }
 
-function sendUnlockPushToAsker(campfire, question, currentUser) {
+function sendUnlockPushToAsker(answer, question, currentUser) {
     
-    saveUnlockActivity(campfire, question, currentUser, question.get("fromUser"), "unlockToAsker");
+    saveUnlockActivity(answer, question, currentUser, question.get("fromUser"), "unlockToAsker");
     
     var fromUser = question.get('fromUser');
     fromUser.fetch({
@@ -99,9 +99,9 @@ function sendUnlockPushToAsker(campfire, question, currentUser) {
 
 
 
-function sendUnlockPushToAnswerer(campfire, question, currentUser) {
+function sendUnlockPushToAnswerer(answer, question, currentUser) {
     
-    saveUnlockActivity(campfire, question, currentUser, question.get("toUser"), "unlockToAnswerer");
+    saveUnlockActivity(answer, question, currentUser, question.get("toUser"), "unlockToAnswerer");
 
     var toUser = question.get('toUser');
     toUser.fetch({
