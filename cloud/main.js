@@ -322,125 +322,126 @@ Parse.Cloud.define('getFeaturedTopics', function(req, res) {
   })
 });
 
-Parse.Cloud.define('getCampfires', function(req, res){
-  var campfires = [];
-  var sortedBy = req.params.sortedBy || 'createdAt';
-  var sortDir = req.params.sortDir || 'desc';
-  var page = req.params.currentPage || 1;
-  var limit = req.params.perPage || 6;
-  var skip = (page - 1) * limit;
+Parse.Cloud.define('getCampfires', function(req, res) {
+    var campfires = [];
+    var sortedBy = req.params.sortedBy || 'createdAt';
+    var sortDir = req.params.sortDir || 'desc';
+    var page = req.params.currentPage || 1;
+    var limit = req.params.perPage || 6;
+    var skip = (page - 1) * limit;
 
-  var Campfire = Parse.Object.extend('Campfire');
-  var query = new Parse.Query(Campfire);
-  query.equalTo('isDummyData', false);
-  query.notEqualTo('isTest', true);
+    var Campfire = Parse.Object.extend('Answer');
+    var query = new Parse.Query(Campfire);
+    // query.equalTo('isDummyData', false);
+    // query.notEqualTo('isTest', true);
 
-  if(req.params.topic_id){
-    var topic = new Parse.Object("List");
-    topic.id = req.params.topic_id;
-    query.equalTo('lists', topic);
-  }
-
-  query.include(['questionRef', 'answerRef', 'questionRef.fromUser.fullName',
-    'questionRef.toUser.fullName']);
-    
-  // filtering
-  if (req.params.answererName || req.params.answererAskerName){
-    var User = Parse.Object.extend('User');
-    var UserQuery = new Parse.Query(User);
-    UserQuery.select("objectId", "fullName");
-    (req.params.answererAskerName) ? UserQuery.startsWith("fullName", req.params.answererAskerName) : UserQuery.startsWith("fullName", req.params.answererName);
-    var Question = Parse.Object.extend("Question");
-    var QuestionQuery = new Parse.Query(Question);
-    (req.params.answererAskerName) ? QuestionQuery.matchesQuery('fromUser', UserQuery) : QuestionQuery.matchesQuery('toUser', UserQuery)
-    query.matchesQuery('questionRef', QuestionQuery);
-  }
-  if (req.params.question){
-    var Question = Parse.Object.extend("Question");
-    var QuestionQuery = new Parse.Query(Question);
-    QuestionQuery.startsWith('text', req.params.question)
-    query.matchesQuery('questionRef', QuestionQuery);
-  }
-  if (req.params.likeCount){
-    query.greaterThanOrEqualTo("likeCount", parseInt(req.params.likeCount));
-  }
-  if (req.params.fromDate){
-    query.greaterThanOrEqualTo("createdAt", req.params.fromDate);
-  }
-  if (req.params.toDate){
-    query.lessThanOrEqualTo("createdAt", req.params.toDate);
-  }
-
-  // totalpages count
-  var count = 0;
-  if(!(req.params.topic_id && req.params.noPagination)){
-    query.count().then(function(result){ count = result; });
-  }
-  
-  // sorting
-  sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
-
-  // pagination
-  if(!(req.params.topic_id && req.params.noPagination)){
-    query.limit(limit);
-    query.skip(skip);
-  }
-
-  query.find({
-    success: function(objects) {
-      if (objects.length > 0) {
-        return Parse.Promise.as().then(function() {
-          var promise = Parse.Promise.as();
-
-          objects.forEach(function(object) {
-            promise = promise.then(function() {
-              var fromUser = object.get('questionRef').get('fromUser');
-              var toUser = object.get('questionRef').get('toUser');
-              var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
-              var CuQuery = new Parse.Query(CampfireUnlock);
-              var answer = object.get('answerRef').get('answerFile');
-              var answerFile = answer ? answer.toJSON().url : ''
-              date =  new Date(object.get('createdAt'));
-
-              CuQuery.equalTo("campfireRef", object);
-              var Cucount = 0;
-              return CuQuery.count().then(function(result){
-                Cucount = result;
-                campfires.push({
-                  id: object.id,
-                  answer: answerFile,
-                  answererProfileImage: (toUser.get('profilePhoto') && toUser.get('profilePhoto').url) ? (toUser.get('profilePhoto')).toJSON().url : '',
-                  answererName: toUser.get('fullName'),
-                  answererAskerName: fromUser.get('fullName'),
-                  question: object.get('questionRef').get('text'),
-                  date: date.toDateString() ,
-                  eavesdrops: Cucount,
-                  likes: object.get('likeCount')
-                });
-
-                return Parse.Promise.as();
-
-              }, function(error) {
-                res.error(error);
-              });
-            });
-          });
-          return promise;
-
-        }).then(function() {
-          return res.success({campfires: campfires,totalItems: count});
-        }, function (error) {
-          res.error(error);
-        });
-      }
-      else{
-        res.success({campfires: [],totalItems: 0});
-      }
-    },
-    error: function(error) {
-      res.error(error);
+    if (req.params.topic_id) {
+        var topic = new Parse.Object("List");
+        topic.id = req.params.topic_id;
+        query.equalTo('lists', topic);
     }
-  })
+
+    query.include(['questionRef', 'questionRef.fromUser.fullName',
+        'questionRef.toUser.fullName']);
+
+    // filtering
+    if (req.params.answererName || req.params.answererAskerName) {
+        var User = Parse.Object.extend('User');
+        var UserQuery = new Parse.Query(User);
+        UserQuery.select("objectId", "fullName");
+        (req.params.answererAskerName) ? UserQuery.startsWith("fullName", req.params.answererAskerName) : UserQuery.startsWith("fullName", req.params.answererName);
+        var Question = Parse.Object.extend("Question");
+        var QuestionQuery = new Parse.Query(Question);
+        (req.params.answererAskerName) ? QuestionQuery.matchesQuery('fromUser', UserQuery) : QuestionQuery.matchesQuery('toUser', UserQuery)
+        query.matchesQuery('questionRef', QuestionQuery);
+    }
+    if (req.params.question) {
+        var Question = Parse.Object.extend("Question");
+        var QuestionQuery = new Parse.Query(Question);
+        QuestionQuery.startsWith('text', req.params.question)
+        query.matchesQuery('questionRef', QuestionQuery);
+    }
+    if (req.params.likeCount) {
+        query.greaterThanOrEqualTo("likeCount", parseInt(req.params.likeCount));
+    }
+    if (req.params.fromDate) {
+        query.greaterThanOrEqualTo("createdAt", req.params.fromDate);
+    }
+    if (req.params.toDate) {
+        query.lessThanOrEqualTo("createdAt", req.params.toDate);
+    }
+
+    // totalpages count
+    var count = 0;
+    if (!(req.params.topic_id && req.params.noPagination)) {
+        query.count().then(function (result) {
+            count = result;
+            // sorting
+            sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
+
+            // pagination
+            if (!(req.params.topic_id && req.params.noPagination)) {
+                query.limit(limit);
+                query.skip(skip);
+            }
+
+            query.find({
+                success: function (objects) {
+                    if (objects.length > 0) {
+                        return Parse.Promise.as().then(function () {
+                            var promise = Parse.Promise.as();
+
+                            objects.forEach(function (object) {
+                                promise = promise.then(function () {
+                                    var fromUser = object.get('questionRef').get('fromUser');
+                                    var toUser = object.get('questionRef').get('toUser');
+                                    var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
+                                    var CuQuery = new Parse.Query(CampfireUnlock);
+                                    var answer = object.get('answerFile');
+                                    var answerFile = answer ? answer.toJSON().url : ''
+                                    date = new Date(object.get('createdAt'));
+
+                                    CuQuery.equalTo("answerRef", object);
+                                    var Cucount = 0;
+                                    return CuQuery.count().then(function (result) {
+                                        Cucount = result;
+                                        campfires.push({
+                                            id: object.id,
+                                            answer: answerFile,
+                                            answererProfileImage: (toUser.get('profilePhoto') && toUser.get('profilePhoto').url) ? (toUser.get('profilePhoto')).toJSON().url : '',
+                                            answererName: toUser.get('fullName'),
+                                            answererAskerName: fromUser.get('fullName'),
+                                            question: object.get('questionRef').get('text'),
+                                            date: date.toDateString(),
+                                            eavesdrops: Cucount,
+                                            likes: object.get('likeCount')
+                                        });
+
+                                        return Parse.Promise.as();
+
+                                    }, function (error) {
+                                        res.error(error);
+                                    });
+                                });
+                            });
+                            return promise;
+
+                        }).then(function () {
+                            return res.success({campfires: campfires, totalItems: count});
+                        }, function (error) {
+                            res.error(error);
+                        });
+                    }
+                    else {
+                        res.success({campfires: [], totalItems: 0});
+                    }
+                },
+                error: function (error) {
+                    res.error(error);
+                }
+            })
+        });
+    }
 });
 
 Parse.Cloud.define('getPeople', function(req, res){
