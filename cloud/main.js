@@ -177,10 +177,10 @@ Parse.Cloud.define('updateCustomer', function(req, res) {
 
 
 
-Parse.Cloud.define('AddCampfiresToList', function(req, res){
-  var Campfire = Parse.Object.extend('Campfire');
-  var query = new Parse.Query(Campfire);
-  query.containedIn("objectId", req.params.CampfiresIds);
+Parse.Cloud.define('addAnswersToList', function(req, res){
+  var Answer = Parse.Object.extend('Answer');
+  var query = new Parse.Query(Answer);
+  query.containedIn("objectId", req.params.answerIds);
   query.find({
     success: function(objects) {
       if (objects.length) {
