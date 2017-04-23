@@ -1,6 +1,7 @@
 const mail = require('../../utils/mail');
 const config = require('../../config');
 var Mixpanel = require('mixpanel');
+var graph = require('fbgraph');
 var oldEmail = '';
 Parse.Cloud.afterSave(Parse.User, function(request, response) {
     const userEmail = request.object.get('email');
@@ -29,8 +30,63 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
         //New to campfire, consider email or social login
         if (request.object.existed() == false && userEmail) //email sign up
             isNewToCampfire = true;
-        if (request.object.existed() == true && request.object.get('isWelcomeEmailSent') != true) //facebook or twitter login
+        //facebook or twitter login
+        if (request.object.existed() == true && request.object.get('isWelcomeEmailSent') != true) {
             isNewToCampfire = true;
+            //Look for friends already signed up to campfire
+            var authData = request.object.get('authData');
+            var facebookAuth = authData.facebook;
+            if(facebookAuth != undefined){
+                graph.setAccessToken(facebookAuth.access_token);
+                graph.get(facebookAuth.id + '/friends', function(err, friends){
+                    if(err)
+                        return console.log(err);
+                    else{
+                        console.log(friends);
+                        //Send notification to the followers
+                        if(friends.summary.total_count > 0){
+                            var friendIds = friends.data.map(function(friend){
+                                return friend.id;
+                            });
+                            getUsersByFacebookIds(friendIds, function(err, campfireFriends){
+                                if(err){
+                                    console.log(err);
+                                } else {
+                                    campfireFriends.forEach(function(friend){
+                                        // setup a push to the question Answerer
+                                        var pushQuery = new Parse.Query(Parse.Installation);
+                                        pushQuery.equalTo('deviceType', 'ios');
+                                        pushQuery.equalTo('user', friend);
+
+                                        var alert = 'Your friend just joined campfire, you can ask him whatever interested';
+                                        if (request.user) {
+                                            alert = 'Your friend ' + request.user.get('fullName') + ' has joined Campfire \n You can ask him anything interested';
+                                        }
+
+                                        Parse.Push.send({
+                                            where: pushQuery,
+                                            data: {
+                                                alert: alert,
+                                                userId: request.user.id
+                                            }
+                                        }, {
+                                            useMasterKey: true,
+                                            success: function () {
+                                                // Push was successful
+                                            },
+                                            error: function (error) {
+                                                throw "PUSH: Got an error " + error.code + " : " + error.message;
+                                            }
+                                        });
+                                    });
+                                }
+                            });
+                        }
+
+                    }
+                });
+            }
+        }
     }
 
     if(isNewToCampfire) {
@@ -57,3 +113,18 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
     }
     response.success('ok');
 });
+
+function getUsersByFacebookIds(facebookIds, callback){
+    var query = new Parse.Query(Parse.User);
+    query.containedIn('authData.facebook.id', facebookIds);
+    query.find({useMasterKey : true}).then(function(users){
+        if(users.length > 0){
+            callback(null, users);
+        } else {
+            callback(null, []);
+        }
+    }, function(err){
+        console.log(err);
+        callback(err);
+    })
+}
