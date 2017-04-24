@@ -110,9 +110,9 @@ var dashboard = new ParseDashboard({
 
 var app = express();
 
-app.all('*', function(req, res, next) { 
+app.all('*', function(req, res, next) {
   res.header('Access-Control-Allow-Credentials', false);
-  next(); 
+  next();
 });
 
 app.set('view engine', 'ejs');
@@ -301,7 +301,7 @@ app.get('/meta/*', function(req, res) {
 
             desc = campfire.to.name + "responds to " + campfire.from.firstName + "'s" + ' question: "' + campfire.question + '" on Campfire.';
             title = "Eavesdrop on " + campfire.to.name + " - Campfire";
-            
+
             return res.render('eavesdrop_meta',{
               page: req.params[0],
               imageUrl: toUser.get('coverPhoto') ? (toUser.get('coverPhoto')).toJSON().url : '',
