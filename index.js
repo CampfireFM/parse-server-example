@@ -260,20 +260,20 @@ app.get('/meta/*', function(req, res) {
     page = page.replace('home', '');
     var isEavesdropPage = /^eavesdrop\/(.*)$/.test(page);
     if(isEavesdropPage){
-      var campfire = {};
-      var campfireId = req.params[0].split('/')[1]
-      var Campfire = Parse.Object.extend('Campfire');
-      var query = new Parse.Query(Campfire);
-      query.include(['questionRef', 'answerRef', 'questionRef.fromUser.fullName', 'answerRef.fromUser.fullName', 'questionRef.toUser.fullName']);
+      var answer = {};
+      var answerId = req.params[0].split('/')[1]
+      var Answer = Parse.Object.extend('Answer');
+      var query = new Parse.Query(Answer);
+      query.include(['questionRef', 'questionRef.fromUser.fullName', 'questionRef.toUser.fullName']);
       query.equalTo('isDummyData', false);
-      query.get(campfireId, {
+      query.get(answerId, {
         success: function(object) {
-            var camfireObj = {};
+            var answerObj = {};
             var fromUser = object.get('questionRef').get('fromUser');
             var toUser = object.get('questionRef').get('toUser');
-            var answerFile = object.get('answerRef').get('answerFile');
+            var answerFile = object.get('answerFile');
             if (answerFile) {
-              camfireObj = {
+              answerObj = {
                 id: object.id,
                 question: object.get('questionRef').get('text'),
                 answer: answerFile.toJSON().url,
@@ -297,10 +297,10 @@ app.get('/meta/*', function(req, res) {
                 }
               };
             }
-            campfire = camfireObj;
+            answer = answerObj;
 
-            desc = campfire.to.name + "responds to " + campfire.from.firstName + "'s" + ' question: "' + campfire.question + '" on Campfire.';
-            title = "Eavesdrop on " + campfire.to.name + " - Campfire";
+            desc = answer.to.name + "responds to " + answer.from.firstName + "'s" + ' question: "' + answer.question + '" on Campfire.';
+            title = "Eavesdrop on " + answer.to.name + " - Campfire";
 
             return res.render('eavesdrop_meta',{
               page: req.params[0],
