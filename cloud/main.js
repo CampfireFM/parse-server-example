@@ -342,7 +342,7 @@ Parse.Cloud.define('getCampfires', function(req, res) {
     }
 
     query.include(['questionRef', 'questionRef.fromUser.fullName',
-        'questionRef.toUser.fullName']);
+        'questionRef.toUser.fullName', 'questionRef.charity.name']);
 
     // filtering
     if (req.params.answererName || req.params.answererAskerName) {
@@ -392,9 +392,11 @@ Parse.Cloud.define('getCampfires', function(req, res) {
                             var promise = Parse.Promise.as();
 
                             objects.forEach(function (object) {
+                              if (object.get('questionRef')) {
                                 promise = promise.then(function () {
                                     var fromUser = object.get('questionRef').get('fromUser');
                                     var toUser = object.get('questionRef').get('toUser');
+                                    var charity = object.get('questionRef').get('charity');
                                     var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
                                     var CuQuery = new Parse.Query(CampfireUnlock);
                                     var answer = object.get('answerFile');
@@ -414,7 +416,8 @@ Parse.Cloud.define('getCampfires', function(req, res) {
                                             question: object.get('questionRef').get('text'),
                                             date: date.toDateString(),
                                             eavesdrops: Cucount,
-                                            likes: object.get('likeCount')
+                                            likes: object.get('likeCount'),
+                                            charity: (charity) ? charity.get('name') : 'None'
                                         });
 
                                         return Parse.Promise.as();
@@ -423,6 +426,7 @@ Parse.Cloud.define('getCampfires', function(req, res) {
                                         res.error(error);
                                     });
                                 });
+                              }
                             });
                             return promise;
 
