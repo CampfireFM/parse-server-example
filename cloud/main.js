@@ -371,80 +371,84 @@ Parse.Cloud.define('getCampfires', function(req, res) {
         query.lessThanOrEqualTo("createdAt", req.params.toDate);
     }
 
+    // sorting
+    sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
+
     // totalpages count
     var count = 0;
+
+    var findCampfires = function (){
+      query.find({
+          success: function (objects) {
+              if (objects.length > 0) {
+                  return Parse.Promise.as().then(function () {
+                      var promise = Parse.Promise.as();
+
+                      objects.forEach(function (object) {
+                        if (object.get('questionRef')) {
+                          promise = promise.then(function () {
+                              var fromUser = object.get('questionRef').get('fromUser');
+                              var toUser = object.get('questionRef').get('toUser');
+                              var charity = object.get('questionRef').get('charity');
+                              var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
+                              var CuQuery = new Parse.Query(CampfireUnlock);
+                              var answer = object.get('answerFile');
+                              var answerFile = answer ? answer.toJSON().url : ''
+                              date = new Date(object.get('createdAt'));
+
+                              CuQuery.equalTo("answerRef", object);
+                              var Cucount = 0;
+                              return CuQuery.count().then(function (result) {
+                                  Cucount = result;
+                                  campfires.push({
+                                      id: object.id,
+                                      answer: answerFile,
+                                      answererProfileImage: (toUser.get('profilePhoto') && toUser.get('profilePhoto').url) ? (toUser.get('profilePhoto')).toJSON().url : '',
+                                      answererName: toUser.get('fullName'),
+                                      answererAskerName: fromUser.get('fullName'),
+                                      question: object.get('questionRef').get('text'),
+                                      date: date.toDateString(),
+                                      eavesdrops: Cucount,
+                                      likes: object.get('likeCount'),
+                                      charity: (charity) ? charity.get('name') : 'None'
+                                  });
+
+                                  return Parse.Promise.as();
+
+                              }, function (error) {
+                                  res.error(error);
+                              });
+                          });
+                        }
+                      });
+                      return promise;
+
+                  }).then(function () {
+                      return res.success({campfires: campfires, totalItems: count});
+                  }, function (error) {
+                      res.error(error);
+                  });
+              }
+              else {
+                  res.success({campfires: [], totalItems: 0});
+              }
+          },
+          error: function (error) {
+              res.error(error);
+          }
+      })
+    }
+
     if (!(req.params.topic_id && req.params.noPagination)) {
         query.count().then(function (result) {
             count = result;
-            // sorting
-            sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
-
             // pagination
-            if (!(req.params.topic_id && req.params.noPagination)) {
-                query.limit(limit);
-                query.skip(skip);
-            }
-
-            query.find({
-                success: function (objects) {
-                    if (objects.length > 0) {
-                        return Parse.Promise.as().then(function () {
-                            var promise = Parse.Promise.as();
-
-                            objects.forEach(function (object) {
-                              if (object.get('questionRef')) {
-                                promise = promise.then(function () {
-                                    var fromUser = object.get('questionRef').get('fromUser');
-                                    var toUser = object.get('questionRef').get('toUser');
-                                    var charity = object.get('questionRef').get('charity');
-                                    var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
-                                    var CuQuery = new Parse.Query(CampfireUnlock);
-                                    var answer = object.get('answerFile');
-                                    var answerFile = answer ? answer.toJSON().url : ''
-                                    date = new Date(object.get('createdAt'));
-
-                                    CuQuery.equalTo("answerRef", object);
-                                    var Cucount = 0;
-                                    return CuQuery.count().then(function (result) {
-                                        Cucount = result;
-                                        campfires.push({
-                                            id: object.id,
-                                            answer: answerFile,
-                                            answererProfileImage: (toUser.get('profilePhoto') && toUser.get('profilePhoto').url) ? (toUser.get('profilePhoto')).toJSON().url : '',
-                                            answererName: toUser.get('fullName'),
-                                            answererAskerName: fromUser.get('fullName'),
-                                            question: object.get('questionRef').get('text'),
-                                            date: date.toDateString(),
-                                            eavesdrops: Cucount,
-                                            likes: object.get('likeCount'),
-                                            charity: (charity) ? charity.get('name') : 'None'
-                                        });
-
-                                        return Parse.Promise.as();
-
-                                    }, function (error) {
-                                        res.error(error);
-                                    });
-                                });
-                              }
-                            });
-                            return promise;
-
-                        }).then(function () {
-                            return res.success({campfires: campfires, totalItems: count});
-                        }, function (error) {
-                            res.error(error);
-                        });
-                    }
-                    else {
-                        res.success({campfires: [], totalItems: 0});
-                    }
-                },
-                error: function (error) {
-                    res.error(error);
-                }
-            })
+            query.limit(limit);
+            query.skip(skip);
+            findCampfires();
         });
+    } else {
+      findCampfires();
     }
 });
 
