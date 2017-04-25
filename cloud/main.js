@@ -926,3 +926,28 @@ Parse.Cloud.define('getFriendsMatch', function(request, response){
     });
 });
 
+Parse.Cloud.define('getCategories', function(req, res){
+  var categories = [];
+  var Category = Parse.Object.extend('Category');
+  var query = new Parse.Query(Category);
+  query.find({
+    success: function(objects) {
+      if (objects.length) {
+        for (var i = 0; i < objects.length; i++) {
+        var object = objects[i];
+          categories.push({
+            id: object.id,
+            name: object.get('name'),
+            desc: object.get('desc'),
+            image: object.get('image') ? (object.get('image')).toJSON().url : '',
+            isLive: object.get('isLive')
+          });
+        }
+      }
+      res.success({categories: categories});
+    },
+    error: function(error) {
+      response.error(error);
+    }
+  })
+});
