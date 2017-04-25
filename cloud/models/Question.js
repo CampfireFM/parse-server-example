@@ -7,95 +7,97 @@ Parse.Cloud.afterSave("Question", function(request) {
     if (request.object.existed() == false) {
 
         var toUser = request.object.get("toUser");
-        toUser.fetch({
-            useMasterKey: true,
-            success: function(user) {
-                var questCount = user.get("unansweredQuestionCount");
-                if (questCount == null) {
-                    questCount = 0;
-                }
-                questCount++;
-                user.set("unansweredQuestionCount", questCount);
-                user.save(null, { useMasterKey: true });
-                var currentUser = request.user;
-                var pushQuery = new Parse.Query(Parse.Installation);
-                pushQuery.equalTo('deviceType', 'ios');
-                pushQuery.equalTo('user', user);
-                var alert = "";
+        if (toUser) {
+            toUser.fetch({
+                useMasterKey: true,
+                success: function(user) {
+                    var questCount = user.get("unansweredQuestionCount");
+                    if (questCount == null) {
+                        questCount = 0;
+                    }
+                    questCount++;
+                    user.set("unansweredQuestionCount", questCount);
+                    user.save(null, { useMasterKey: true });
+                    var currentUser = request.user;
+                    var pushQuery = new Parse.Query(Parse.Installation);
+                    pushQuery.equalTo('deviceType', 'ios');
+                    pushQuery.equalTo('user', user);
+                    var alert = "";
 
-                alert = "Test";
+                    alert = "Test";
 
-                var params = {
-                    questionRef : request.object,
-                    userRef : request.user,
-                    amount : request.object.get("price"),
-                    isExpired : false,
-                    authToken : request.object.get("authToken"),
-                    customerId : request.object.get("customerId"),
-                    chargeId : request.object.get("chargeId")
-                };
+                    var params = {
+                        questionRef : request.object,
+                        userRef : request.user,
+                        amount : request.object.get("price"),
+                        isExpired : false,
+                        authToken : request.object.get("authToken"),
+                        customerId : request.object.get("customerId"),
+                        chargeId : request.object.get("chargeId")
+                    };
 
-                if(!params.customerId){
-                    params.customerId = request.user.get("customerId");
-                    console.log("got customerId from request.user");
-                }
-
-
-                //call the stripe api and create the Charge Object
-                createCharge(params, function(err_charge, res_charge){
-                    if(res_charge){
-
-                        //Check for push subscription of question
-                        if(!checkPushSubscription(toUser, 'questions')){
-                            console.log('Question answerer has not subscribed to receive questions notification yet');
-                        } else {
-                            Parse.Push.send({
-                                where: pushQuery,
-                                data: {
-                                    alert: alert,
-                                    questionId: request.object.id
-                                }
-                            }, {
-                                useMasterKey: true,
-                                success: function () {
-                                            // Push was successful
-                                },
-                                error: function (error) {
-                                    throw "PUSH: Got an error " + error.code + " : " + error.message;
-                                }
-                            });
-                        }
-
-                        //Check for email subscription of email
-                        if(!checkEmailSubscription(toUser, 'questions')) {
-                            console.log('Question answerer has not subscribed to receive question emails yet')
-                        } else {
-                            mail.sendQuestionEmail(
-                                toUser.get('email'),
-                                request.user.get('profilePhoto')._name,
-                                request.user.get('fullName'),
-                                request.object.get('text')
-                            );
-                        }
-
-                    } else {
-                                //currently do nothing
-
+                    if(!params.customerId){
+                        params.customerId = request.user.get("customerId");
+                        console.log("got customerId from request.user");
                     }
 
-                });
-                //end of create charge function call handling
 
-                //removes the authToken from the question attributes
-                request.object.unset('chargeId');
-                request.object.save(null,{useMasterKey:true});
+                    //call the stripe api and create the Charge Object
+                    createCharge(params, function(err_charge, res_charge){
+                        if(res_charge){
 
-            },
-            error: function(object, error) {
-                console.log(error);
-                throw "Got an error " + error.code + " : " + error.message;
-            }
-        });
+                            //Check for push subscription of question
+                            if(!checkPushSubscription(toUser, 'questions')){
+                                console.log('Question answerer has not subscribed to receive questions notification yet');
+                            } else {
+                                Parse.Push.send({
+                                    where: pushQuery,
+                                    data: {
+                                        alert: alert,
+                                        questionId: request.object.id
+                                    }
+                                }, {
+                                    useMasterKey: true,
+                                    success: function () {
+                                                // Push was successful
+                                    },
+                                    error: function (error) {
+                                        throw "PUSH: Got an error " + error.code + " : " + error.message;
+                                    }
+                                });
+                            }
+
+                            //Check for email subscription of email
+                            if(!checkEmailSubscription(toUser, 'questions')) {
+                                console.log('Question answerer has not subscribed to receive question emails yet')
+                            } else {
+                                mail.sendQuestionEmail(
+                                    toUser.get('email'),
+                                    request.user.get('profilePhoto')._name,
+                                    request.user.get('fullName'),
+                                    request.object.get('text')
+                                );
+                            }
+
+                        } else {
+                                    //currently do nothing
+
+                        }
+
+                    });
+                    //end of create charge function call handling
+
+                    //removes the authToken from the question attributes
+                    request.object.unset('chargeId');
+                    request.object.save(null,{useMasterKey:true});
+
+                },
+                error: function(object, error) {
+                    console.log(error);
+                    throw "Got an error " + error.code + " : " + error.message;
+                }
+            });
+        }
     }
 });
 
