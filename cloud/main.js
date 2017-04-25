@@ -12,6 +12,10 @@ require("./models/Like.js");
 require("./models/Question.js");
 require("./models/User.js");
 require("./common");
+
+require("./category");
+require("./topic");
+
 transactionPercentage = 2.9;
 transactionFee = 0.3;
 answerPercentageToCampfire = 0.2;
@@ -195,7 +199,7 @@ Parse.Cloud.define('addAnswersToList', function(req, res){
       }
     },
     error: function(error) {
-      response.error(error);
+      res.error(error);
     }
 
   })
@@ -221,7 +225,7 @@ Parse.Cloud.define('getUsers', function(req, res){
       res.success(users);
     },
     error: function(error) {
-      response.error(error);
+      res.error(error);
     }
   })
 });
@@ -244,7 +248,7 @@ Parse.Cloud.define('removeAnswersFromList', function(req, res){
       }
     },
     error: function(error) {
-      response.error(error);
+      res.error(error);
     }
 
   })
@@ -302,22 +306,7 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
       res.success(campfires);
     },
     error: function(error) {
-      response.error(error);
-    }
-  })
-});
-
-Parse.Cloud.define('getFeaturedTopics', function(req, res) {
-  // var topics = [];
-  var List = Parse.Object.extend('List');
-  var query = new Parse.Query(List);
-  query.equalTo("objectId",'06LOiNkyrJ');
-  query.find({
-    success: function(topics) {
-      res.success(topics);
-    },
-    error: function(error) {
-      response.error(error);
+      res.error(error);
     }
   })
 });
@@ -505,39 +494,13 @@ Parse.Cloud.define('getPeople', function(req, res){
         }
         res.success({people: people,totalItems: count});
       },function(error) {
-        response.error(error);
+        res.error(error);
       })
   },function(error) {
-    response.error(error);
+    res.error(error);
   });
 
 });
-
-Parse.Cloud.define('getTopics', function(req, res){
-  var topics = [];
-  var List = Parse.Object.extend('List');
-  var query = new Parse.Query(List);
-  query.find({
-    success: function(objects) {
-      if (objects.length) {
-        for (var i = 0; i < objects.length; i++) {
-        var object = objects[i];
-          topics.push({
-            id: object.id,
-            name: object.get('name'),
-            type: object.get('type'),
-            image: object.get('image') ? (object.get('image')).toJSON().url : ''
-          });
-        }
-      }
-      res.success(topics);
-    },
-    error: function(error) {
-      response.error(error);
-    }
-  })
-});
-
 
 Parse.Cloud.define('getQuestionDetails', function(req, res) {
 
@@ -926,28 +889,3 @@ Parse.Cloud.define('getFriendsMatch', function(request, response){
     });
 });
 
-Parse.Cloud.define('getCategories', function(req, res){
-  var categories = [];
-  var Category = Parse.Object.extend('Category');
-  var query = new Parse.Query(Category);
-  query.find({
-    success: function(objects) {
-      if (objects.length) {
-        for (var i = 0; i < objects.length; i++) {
-        var object = objects[i];
-          categories.push({
-            id: object.id,
-            name: object.get('name'),
-            desc: object.get('desc'),
-            image: object.get('image') ? (object.get('image')).toJSON().url : '',
-            isLive: object.get('isLive')
-          });
-        }
-      }
-      res.success({categories: categories});
-    },
-    error: function(error) {
-      response.error(error);
-    }
-  })
-});
