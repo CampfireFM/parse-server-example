@@ -1,335 +1,230 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-   <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-      <title>Welcome to CampFire</title>
-      
-      <style type="text/css">
-         /* Client-specific Styles */
-         #outlook a {padding:0;} /* Force Outlook to provide a "view in browser" menu link. */
-         body{width:100% !important; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; margin:0; padding:0;}
-         /* Prevent Webkit and Windows Mobile platforms from changing default font sizes, while not breaking desktop design. */
-         .ExternalClass {width:100%;} /* Force Hotmail to display emails at full width */
-         .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div {line-height: 100%;} /* Force Hotmail to display normal line spacing.*/
-         #backgroundTable {margin:0; padding:0; width:100% !important; line-height: 100% !important;}
-         img {outline:none; text-decoration:none;border:none; -ms-interpolation-mode: bicubic;}
-         a img {border:none;}
-         .image_fix {display:block;}
-         p {margin: 0px 0px !important;}
-         table td {border-collapse: collapse;}
-         table { border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; }
-         a {color: #0a8cce;text-decoration: none;text-decoration:none!important;}
-         /*STYLES*/
-         table[class=full] { width: 100%; clear: both; }
-         /*IPAD STYLES*/
-         @media only screen and (max-width: 640px) {
-         a[href^="tel"], a[href^="sms"] {
-         text-decoration: none;
-         color: #0a8cce; /* or whatever your want */
-         pointer-events: none;
-         cursor: default;
-         }
-         .mobile_link a[href^="tel"], .mobile_link a[href^="sms"] {
-         text-decoration: default;
-         color: #0a8cce !important;
-         pointer-events: auto;
-         cursor: default;
-         }
-         table[class=devicewidth] {width: 440px!important;text-align:center!important;}
-         table[class=devicewidthinner] {width: 420px!important;text-align:center!important;}
-         img[class=banner] {width: 440px!important;height:220px!important;}
-         img[class=colimg2] {width: 440px!important;height:220px!important;}
-         
-         
-         }
-         /*IPHONE STYLES*/
-         @media only screen and (max-width: 480px) {
-         a[href^="tel"], a[href^="sms"] {
-         text-decoration: none;
-         color: #0a8cce; /* or whatever your want */
-         pointer-events: none;
-         cursor: default;
-         }
-         .mobile_link a[href^="tel"], .mobile_link a[href^="sms"] {
-         text-decoration: default;
-         color: #0a8cce !important; 
-         pointer-events: auto;
-         cursor: default;
-         }
-         table[class=devicewidth] {width: 280px!important;text-align:center!important;}
-         table[class=devicewidthinner] {width: 260px!important;text-align:center!important;}
-         img[class=banner] {width: 280px!important;height:140px!important;}
-         img[class=colimg2] {width: 280px!important;height:140px!important;}
-         td[class=mobile-hide]{display:none!important;}
-         td[class="padding-bottom25"]{padding-bottom:25px!important;}
-        
-         }
-      </style>
-   </head>
-   <body>
-<!-- Start of preheader -->
-<table width="100%" bgcolor="#ffffff" cellpadding="0" cellspacing="0" border="0" id="backgroundTable" st-sortable="preheader" >
-   <tbody>
-      <tr>
-         <td>
-            <table width="600" cellpadding="0" cellspacing="0" border="0" align="center" class="devicewidth">
-               <tbody>
-                  <tr>
-                     <td width="100%">
-                        <table width="600" cellpadding="0" cellspacing="0" border="0" align="center" class="devicewidth">
+<!DOCTYPE html>
 
-                           <tbody>
-                              <!-- Spacing -->
-                              <tr>
-                                 <td width="100%" height="10"></td>
-                              </tr>
-                              <!-- Spacing -->
-                              <tr>
-                                 <td>
-                                    <table width="100" align="left" border="0" cellpadding="0" cellspacing="0">
-                                       <tbody>
-                                          <tr>
-                                             <td align="left" valign="middle" style="font-family: Helvetica, arial, sans-serif; font-size: 14px;color: #666666" st-content="viewonline" class="mobile-hide">
-                                                <a href="#" style="text-decoration: none; color: #666666">View Online </a> 
-                                             </td>
-                                          </tr>
-                                       </tbody>
-                                    </table>
-                                    <table width="100" align="right" border="0" cellpadding="0" cellspacing="0" class="devicewidth">
-                                       <tbody>
-                                          <tr>
-                                             <td width="30" height="30" align="right">
-                                                <div class="imgpop">
-                                                   <a target="_blank" href="#">
-                                                      {{#wrapIconUrl}}
-                                                      {{serverUrl}}/public/assets/images/facebook.png
-                                                      {{/wrapIconUrl}}
-                                                   </a>
-                                                </div>
-                                             </td>
-                                             <td align="left" width="20" style="font-size:1px; line-height:1px;">&nbsp;</td>
-                                             <td width="30" height="30" align="center">
-                                                <div class="imgpop">
-                                                   <a target="_blank" href="#">
-                                                      {{#wrapIconUrl}}
-                                                      {{serverUrl}}/public/assets/images/twitter.png
-                                                      {{/wrapIconUrl}}
-                                                   </a>
-                                                </div>
-                                             </td>
-                                             <td align="left" width="20" style="font-size:1px; line-height:1px;">&nbsp;</td>
-                                             <td width="30" height="30" align="center">
-                                                <div class="imgpop">
-                                                   <a target="_blank" href="#">
-                                                      {{#wrapIconUrl}}
-                                                      {{serverUrl}}/public/assets/images/linkedin.png
-                                                      {{/wrapIconUrl}}
-                                                   </a>
-                                                </div>
-                                             </td>
-                                          </tr>
-                                       </tbody>
-                                    </table>
-                                 </td>
-                              </tr>
-                              <!-- Spacing -->
-                              <tr>
-                                 <td width="100%" height="10"></td>
-                              </tr>
-                              <!-- Spacing -->
-                           </tbody>
-                        </table>
-                     </td>
-                  </tr>
-               </tbody>
-            </table>
-         </td>
-      </tr>
-   </tbody>
-</table>
-<!-- End of preheader -->       
-<!-- Start of header -->
-<table width="100%" bgcolor="#ffffff" cellpadding="0" cellspacing="0" border="0" id="backgroundTable" st-sortable="header">
-   <tbody>
+<html>
+<head>
+   <meta content="text/html; charset=utf-8" http-equiv="content-type">
+   <meta content="width=device-width, initial-scale=1.0;" name="viewport">
+   <meta content="telephone=no" name="format-detection"><!-- Responsive Mobile-First Email Template by Konstantin Savchenko, 2015.
+    https://github.com/konsav/email-templates/  -->
+    
+    <link href='https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i' rel='stylesheet' type='text/css'>
+
+   <style>
+   /* Reset styles */
+   
+   body {
+      margin: 0;
+      padding: 0;
+      min-width: 100%;
+      width: 100% !important;
+      height: 100% !important;
+   }
+   body, table, td, div, p, a {
+      -webkit-font-smoothing: antialiased;
+      text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+      -webkit-text-size-adjust: 100%;
+      line-height: 100%;
+   }
+   table, td {
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+      border-collapse: collapse !important;
+      border-spacing: 0;
+   }
+   img {
+      border: 0;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+   }
+   #outlook a {
+      padding: 0;
+   }
+   .ReadMsgBody {
+      width: 100%;
+   }
+   .ExternalClass {
+      width: 100%;
+   }
+   .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div {
+      line-height: 100%;
+   }
+   /* Rounded corners for advanced mail clients only */
+   
+   @media all and (min-width: 560px) {
+      .container {
+         border-radius: 8px;
+         -webkit-border-radius: 8px;
+         -moz-border-radius: 8px;
+         -khtml-border-radius: 8px;
+      }
+   }
+   /* Set color for auto links (addresses, dates, etc.) */
+   
+   a, a:hover {
+      color: #F16F00;
+   }
+   .footer a{
+      color: #999999;
+   }
+   .footer a:hover{
+      color: #F16F00;
+   }
+   </style><!-- MESSAGE SUBJECT -->
+
+
+   <title>Get this responsive email template</title>
+</head><!-- BODY -->
+<!-- Set message background color (twice) and text color (twice) -->
+
+
+<body bgcolor="#F0F0F0" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; width: 100%; height: 100%; -webkit-font-smoothing: antialiased; text-size-adjust: 100%; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; line-height: 100%; background-color: #F0F0F0; color: #000000;" text="#000000">
+   <!-- SECTION / BACKGROUND -->
+   <!-- Set message background color one again -->
+
+
+   <table align="center" border="0" cellpadding="0" cellspacing="0" class="background" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; width: 100%;" width="100%">
       <tr>
-         <td>
-            <table width="600" cellpadding="0" cellspacing="0" border="0" align="center" class="devicewidth">
-               <tbody>
-                  <tr>
-                     <td width="100%">
-                        <table width="600" cellpadding="0" cellspacing="0" border="0" align="center" class="devicewidth">
-                           <tbody>
-                              <!-- Spacing -->
-                              <tr>
-                                 <td height="20" style="font-size:1px; line-height:1px; mso-line-height-rule: exactly;">&nbsp;</td>
-                              </tr>
-                              <!-- Spacing -->
-                              <tr>
-                                 <td>
-                                    <!-- logo -->
-                                    <table width="140" align="center" border="0" cellpadding="0" cellspacing="0" class="devicewidth">
-                                       <tbody>
-                                          <tr>
-                                             <td width="169" height="200" align="center">
-                                                <div class="imgpop">
-                                                   <a target="_blank" href="#">
-                                                   {{#wrapLogoUrl}}
-                                                      {{serverUrl}}/public/assets/images/siteLogo.png
-                                                   {{/wrapLogoUrl}}
-                                                   </a>
-                                                </div>
-                                             </td>
-                                          </tr>
-                                       </tbody>
-                                    </table>
-                                    <!-- end of logo -->
-                                 </td>
-                              </tr>
-                              <!-- Spacing -->
-                              <tr>
-                                 <td height="20" style="font-size:1px; line-height:1px; mso-line-height-rule: exactly;">&nbsp;</td>
-                              </tr>
-                              <!-- Spacing -->
-                           </tbody>
-                        </table>
-                     </td>
-                  </tr>
-               </tbody>
+         <td align="center" bgcolor="#F0F0F0" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0;" valign="top">
+            <!-- WRAPPER -->
+            <!-- Set wrapper width (twice) -->
+
+
+            <table align="center" border="0" cellpadding="0" cellspacing="0" class="wrapper" style="border-collapse: collapse; border-spacing: 0; padding: 0; width: inherit; max-width: 560px;" width="560">
+               <tr>
+                  <td align="center" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 10%; padding-right: 10%; width: 80%; padding-top: 20px; padding-bottom: 20px;" valign="top">
+                     <!-- PREHEADER -->
+                     <!-- Set text color to background color -->
+                  </td>
+               </tr>
+               <!-- End of WRAPPER -->
             </table>
+            
+            <!-- WRAPPER / CONTEINER -->
+            <table align="center" bgcolor="#FFFFFF" border="0" cellpadding="0" cellspacing="0" class="container" style="border-collapse: collapse; border-spacing: 0; padding: 0; width: inherit; max-width: 560px;" width="560">
+                
+               <tr>
+                  <td align="center" class="hero" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-top: 20px;" valign="top">
+                     <a href="https://github.com/konsav/email-templates/" style="text-decoration: none;" target="_blank"><img alt="Please enable images to view this content" border="0" hspace="0" src="img/campfire-waves.png" style=" width: 100%; max-width: 560px; color: #000000; font-size: 0.8rem; margin: 0; padding: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: block;" title="Hero Image" vspace="0" width="560"></a>
+                  </td>
+               </tr>
+               
+               <!-- TITLE -->
+               <tr>
+                  <td align="center" class="header" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 10%; padding-right: 10%; width: 80%; font-size: 2em; font-weight: 200; line-height: 130%; color: #000000; font-family: Nunito, Helvetica, sans-serif;" valign="top">Welcome to Campfire!</td>
+               </tr>
+
+               <!-- PARAGRAPH -->
+               <!-- Set text color and font family ("sans-serif" or "Georgia, serif"). Duplicate all text styles in links, including line-height -->
+               <tr>
+                  <td align="center" class="paragraph" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 10%; padding-right: 10%; width: 80%; font-size: 1.2rem; font-weight: 300; line-height: 160%; color: #000000; padding: 2.2rem 3.5rem; font-family: Nunito, Helvetica, sans-serif;" valign="top">Welcome to our vision of an internet where your voice has real value, value that can be used to change the world we live in.</td>
+               </tr>
+               
+               
+               <!-- LIST -->
+               <tr>
+                  <td align="center" class="list-item" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 10%; padding-right: 10%; padding: 0 3.5rem;" valign="top">
+                     <table align="center" border="0" cellpadding="0" cellspacing="0" style="width: inherit; margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;">
+                         
+                        <!-- LIST ITEM -->
+                        <tr>
+                           <!-- LIST ITEM IMAGE -->
+                           <!-- Image text color should be opposite to background color. Set your url, image src, alt and title. Alt text should fit the image size. Real image size should be x2 -->
+                           <td align="left" style="border-collapse: collapse; border-spacing: 0; padding: 1.3rem 1.3rem 0.2rem 0.9rem;" valign="top"><img alt="H" border="0" height="70" width="70" hspace="0" src="img/welcome-image1.png" style="padding: 0; margin: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: block; color: #000000;" title="Highly compatible" vspace="0" width="50">
+                           </td>
+                           <!-- LIST ITEM TEXT -->
+                           <!-- Set text color and font family ("sans-serif" or "Georgia, serif"). Duplicate all text styles in links, including line-height -->
+                           <td align="left" class="paragraph" style="font-size: 0.95rem; font-weight: 300; line-height: 160%; border-collapse: collapse; border-spacing: 0; margin: 0; padding: 1rem 0; color: #000000; font-family: Nunito, Helvetica, sans-serif;" valign="top"><b style="color: #000000; font-size:1rem;">Eavesdrop on Campfires</b><br>
+                           Check out the featured feed or discover new campfires to listen to by hitting the search tab.</td>
+                        </tr>
+
+                        <!-- LIST ITEM -->
+                        <tr>
+                           <!-- LIST ITEM IMAGE -->
+                           <!-- Image text color should be opposite to background color. Set your url, image src, alt and title. Alt text should fit the image size. Real image size should be x2 -->
+                           <td align="left" style="border-collapse: collapse; border-spacing: 0; padding: 1.3rem 1.3rem 0.2rem 0.9rem;" valign="top"><img alt="D" border="0" height="70" width="70" hspace="0" src="img/welcome-image2.png" style="padding: 0; margin: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: block; color: #000000;" title="Designer friendly" vspace="0" width="50">
+                           </td>
+                           <!-- LIST ITEM TEXT -->
+                           <!-- Set text color and font family ("sans-serif" or "Georgia, serif"). Duplicate all text styles in links, including line-height -->
+                           <td align="left" class="paragraph" style="font-size:0.95rem; font-weight: 300; line-height: 160%; border-collapse: collapse; border-spacing: 0; margin: 0; padding: 1rem 0; color: #000000; font-family: Nunito, Helvetica, sans-serif;" valign="top"><b style="color: #000000; font-size:1rem;">Follow your favorite people</b><br>
+                           Find the people you follow on Twitter and Facebook or search for new ones in the search tab..</td>
+                        </tr>
+                        
+                        <!-- LIST ITEM -->
+                        <tr>
+                           <!-- LIST ITEM IMAGE -->
+                           <!-- Image text color should be opposite to background color. Set your url, image src, alt and title. Alt text should fit the image size. Real image size should be x2 -->
+                           <td align="left" style="border-collapse: collapse; border-spacing: 0; padding: 1.3rem 1.3rem 0.2rem 0.9rem;" valign="top"><img alt="D" border="0" height="70" width="70" hspace="0" src="img/welcome-image3.png" style="padding: 0; margin: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: block; color: #000000;" title="Designer friendly" vspace="0" width="50">
+                           </td>
+                           <!-- LIST ITEM TEXT -->
+                           <!-- Set text color and font family ("sans-serif" or "Georgia, serif"). Duplicate all text styles in links, including line-height -->
+                           <td align="left" class="paragraph" style="font-size:0.95rem; font-weight: 300; line-height: 160%; border-collapse: collapse; border-spacing: 0; margin: 0; padding: 1rem 0; color: #000000; font-family: Nunito, Helvetica, sans-serif;" valign="top"><b style="color: #000000; font-size:1rem;">Ask anyone, anything.</b><br>
+                           Got a question for someone? Ask them by hitting the ask button. </td>
+                        </tr>
+                        
+                     </table>
+                  </td>
+               </tr>
+
+               <!-- PARAGRAPH -->
+               <!-- Set text color and font family ("sans-serif" or "Georgia, serif"). Duplicate all text styles in links, including line-height -->
+               <tr>
+                  <td align="center" class="paragraph" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 10%; padding-right: 10%; width: 80%; font-size: 1.2rem; font-weight: 300; line-height: 160%; padding-top: 20px; padding-bottom: 25px; color: #000000; font-family: Nunito, Helvetica, sans-serif; padding: 2.2rem 3.5rem;" valign="top">
+                     Campfire is currently in Beta. Please let us know if you have any problems, concerns or feedback by emailing <a href="mailto:feedback@campfire.fm" style="color: #F16F00; font-family: Nunito, Helvetica, sans-serif; font-size: 1.2rem; font-weight: 400; line-height: 160%;" target="_blank">feedback@campfire.fm</a></br></br>
+                  </td>
+               </tr>
+               <!-- End of WRAPPER -->
+            </table>
+            <!-- WRAPPER -->
+            <!-- Set wrapper width (twice) -->
+
+
+            <table align="center" border="0" cellpadding="0" cellspacing="0" class="wrapper" style="border-collapse: collapse; border-spacing: 0; padding: 0; width: inherit; max-width: 560px;" width="560">
+               <!-- SOCIAL NETWORKS -->
+               <!-- Image text color should be opposite to background color. Set your url, image src, alt and title. Alt text should fit the image size. Real image size should be x2 -->
+
+
+               <tr>
+                  <td align="center" class="social-icons" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 10%; padding-right: 10%; width: 80%; padding-top: 2rem;" valign="top">
+                     <table align="center" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border-spacing: 0; padding: 0;" width="256">
+                        <tr>
+                            
+                           <!-- ICON 1 -->
+                           <td align="center" style="margin: 0; padding: 0; padding-left: 10px; padding-right: 10px; border-collapse: collapse; border-spacing: 0;" valign="middle">
+                              <a href="https://raw.githubusercontent.com/konsav/email-templates/" style="text-decoration: none;" target="_blank"><img alt="G" border="0" height="44" hspace="0" src="img/social-campfire.png" style="padding: 0; margin: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: inline-block; color: #000000;" title="Google Plus" vspace="0" width="44"></a>
+                           </td>
+                           
+                           <!-- ICON 2 -->
+                           <td align="center" style="margin: 0; padding: 0; padding-left: 10px; padding-right: 10px; border-collapse: collapse; border-spacing: 0;" valign="middle">
+                              <a href="https://raw.githubusercontent.com/konsav/email-templates/" style="text-decoration: none;" target="_blank"><img alt="T" border="0" height="44" hspace="0" src="img/social-twitter.png" style="padding: 0; margin: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: inline-block; color: #000000;" title="Twitter" vspace="0" width="44"></a>
+                           </td>
+                           
+                           <!-- ICON 3 -->
+                           <td align="center" style="margin: 0; padding: 0; padding-left: 10px; padding-right: 10px; border-collapse: collapse; border-spacing: 0;" valign="middle">
+                              <a href="https://raw.githubusercontent.com/konsav/email-templates/" style="text-decoration: none;" target="_blank"><img alt="F" border="0" height="44" hspace="0" src="img/social-facebook.png" style="padding: 0; margin: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: inline-block; color: #000000;" title="Facebook" vspace="0" width="44"></a>
+                           </td>
+                           
+                        </tr>
+                     </table>
+                  </td>
+               </tr>
+               <!-- FOOTER -->
+               <!-- Set text color and font family ("sans-serif" or "Georgia, serif"). Duplicate all text styles in links, including line-height -->
+
+
+               <tr>
+                  <td align="center" class="footer" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 10%; padding-right: 10%; width: 80%; font-size: 0.8rem; font-weight: 400; line-height: 150%; padding-top: 20px; padding-bottom: 20px; color: #999999; font-family: Nunito, Helvetica, sans-serif;" valign="top">
+                     Don’t like the emails but the emails like you? </br> To stop receiving these emails
+ <a href="https://github.com/konsav/email-templates/" style="text-decoration: underline; color: #999999; font-family: Nunito, Helvetica, sans-serif; font-size: 0.8rem; font-weight: 400; line-height: 150%;" target="_blank">click here</a> <!-- ANALYTICS -->
+                  </td>
+               </tr>
+               <!-- End of WRAPPER -->
+            </table>
+            <!-- End of SECTION / BACKGROUND -->
          </td>
       </tr>
-   </tbody>
-</table>
-<!-- End of Header -->
-<!-- Start of main-banner -->
-<table width="100%" bgcolor="#ffffff" cellpadding="0" cellspacing="0" border="0" id="backgroundTable" st-sortable="banner">
-   <tbody>
-      <tr>
-         <td>
-            <table width="600" cellpadding="0" cellspacing="0" border="0" align="center" class="devicewidth">
-               <tbody>
-                  <tr>
-                     <td width="100%">
-                        <table width="600" align="center" cellspacing="0" cellpadding="0" border="0" class="devicewidth">
-                           <tbody>
-                              <tr>
-                                 <!-- start of image -->
-                                 <td align="center" st-image="banner-image">
-                                    <div class="imgpop">
-                                       <!--<a target="_blank" href="#"><img width="600" border="0" height="300" alt="" border="0" style="display:block; border:none; outline:none; text-decoration:none;" src="img/banner.png" class="banner"></a>-->
-                                    </div>
-                                 </td>
-                              </tr>
-                           </tbody>
-                        </table>
-                        <!-- end of image -->
-                     </td>
-                  </tr>
-               </tbody>
-            </table>
-         </td>
-      </tr>
-   </tbody>
-</table>
-<!-- End of main-banner --> 
-<!-- Start of seperator -->
-<table width="100%" bgcolor="#ffffff" cellpadding="0" cellspacing="0" border="0" id="backgroundTable" st-sortable="seperator">
-   <tbody>
-      <tr>
-         <td>
-            <table width="600" align="center" cellspacing="0" cellpadding="0" border="0" class="devicewidth">
-               <tbody>
-                  <tr>
-                     <td align="center" height="20" style="font-size:1px; line-height:1px;">&nbsp;</td>
-                  </tr>
-               </tbody>
-            </table>
-         </td>
-      </tr>
-   </tbody>
-</table>
-<!-- End of seperator -->   
-<!-- Start Full Text -->
-<table width="100%" bgcolor="#ffffff" cellpadding="0" cellspacing="0" border="0" id="backgroundTable" st-sortable="full-text">
-   <tbody>
-      <tr>
-         <td>
-            <table width="600" cellpadding="0" cellspacing="0" border="0" align="center" class="devicewidth">
-               <tbody>
-                  <tr>
-                     <td width="100%">
-                        <table width="600" cellpadding="0" cellspacing="0" border="0" align="center" class="devicewidth">
-                           <tbody>
-                              <!-- Spacing -->
-                              <tr>
-                                 <td height="20" style="font-size:1px; line-height:1px; mso-line-height-rule: exactly;">&nbsp;</td>
-                              </tr>
-                              <!-- Spacing -->
-                              <tr>
-                                 <td>
-                                    <table width="560" align="center" cellpadding="0" cellspacing="0" border="0" class="devicewidthinner">
-                                       <tbody>
-                                          <!-- Title -->
-                                          <tr>
-                                             <td style="font-family: Helvetica, arial, sans-serif; font-size: 18px; color: #333333; text-align:center; line-height: 30px;" st-title="fulltext-heading">
-                                                Welcome To CampFire
-                                             </td>
-                                          </tr>
-                                          <!-- End of Title -->
-                                          <!-- spacing -->
-                                          <tr>
-                                             <td width="100%" height="20" style="font-size:1px; line-height:1px; mso-line-height-rule: exactly;">&nbsp;</td>
-                                          </tr>
-                                          <!-- End of spacing -->
-                                          <!-- content -->
-                                          <tr>
-                                             <td style="font-family: Helvetica, arial, sans-serif; font-size: 16px; color: #666666; text-align:center; line-height: 30px;" st-content="fulltext-content">
-                                                Campfire welcome sentence here.
-                                             </td>
-                                          </tr>
-                                          <!-- End of content -->
-                                       </tbody>
-                                    </table>
-                                 </td>
-                              </tr>
-                              <!-- Spacing -->
-                              <tr>
-                                 <td height="20" style="font-size:1px; line-height:1px; mso-line-height-rule: exactly;">&nbsp;</td>
-                              </tr>
-                              <!-- Spacing -->
-                           </tbody>
-                        </table>
-                     </td>
-                  </tr>
-               </tbody>
-            </table>
-         </td>
-      </tr>
-   </tbody>
-</table>
-<!-- end of full text -->
-<!-- Start of seperator -->
-<table width="100%" bgcolor="#ffffff" cellpadding="0" cellspacing="0" border="0" id="backgroundTable" st-sortable="seperator">
-   <tbody>
-      <tr>
-         <td>
-            <table width="600" align="center" cellspacing="0" cellpadding="0" border="0" class="devicewidth">
-               <tbody>
-                  <tr>
-                     <td align="center" height="30" style="font-size:1px; line-height:1px;">&nbsp;</td>
-                  </tr>
-                  <tr>
-                     <td width="550" align="center" height="1" bgcolor="#d1d1d1" style="font-size:1px; line-height:1px;">&nbsp;</td>
-                  </tr>
-                  <tr>
-                     <td align="center" height="30" style="font-size:1px; line-height:1px;">&nbsp;</td>
-                  </tr>
-               </tbody>
-            </table>
-         </td>
-      </tr>
-   </tbody>
-</table>
+   </table>
 </body>
 </html>
