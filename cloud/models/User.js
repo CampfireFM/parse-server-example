@@ -1,5 +1,6 @@
 const mail = require('../../utils/mail');
 const config = require('../../config');
+var Twitter = require('twitter');
 var Mixpanel = require('mixpanel');
 var graph = require('fbgraph');
 var oldEmail = '';
@@ -35,6 +36,8 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
             isNewToCampfire = true;
             //Look for friends already signed up to campfire
             var authData = request.object.get('authData');
+
+            //Friends in facebook
             var facebookAuth = authData.facebook;
             if(facebookAuth != undefined){
                 graph.setAccessToken(facebookAuth.access_token);
@@ -86,6 +89,60 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
                     }
                 });
             }
+
+            //Friends in twitter
+            var twitterAuth = authData.twitter;
+            if(twitterAuth !== undefined){
+                var client = new Twitter({
+                    consumer_key: config.auth.twitter.consumer_key,
+                    consumer_secret: config.auth.twitter.consumer_secret,
+                    access_token_key: twitterAuth.auth_token,
+                    access_token_secret: twitterAuth.auth_token_secret
+                });
+
+
+                client.get('followers/ids.json', {stringify_ids : true}, function(error, tweets, response) {
+                    if (!error) {
+                        var ids = JSON.parse(response.body).ids;
+                        var friendIds = ids.map(function(id){
+                            return id.toString();
+                        });
+                        getUsersByTwitterIds(friendIds, function(err, campfireFriends){
+                            if(err){
+                                console.log(err);
+                            } else {
+                                campfireFriends.forEach(function(friend){
+                                    // setup a push to the question Answerer
+                                    var pushQuery = new Parse.Query(Parse.Installation);
+                                    pushQuery.equalTo('deviceType', 'ios');
+                                    pushQuery.equalTo('user', friend);
+
+                                    var alert = 'Your friend just joined campfire, you can ask him whatever interested';
+                                    if (request.object) {
+                                        alert = 'Your friend ' + request.object.get('fullName') + ' has joined Campfire \n You can ask him anything interested';
+                                    }
+
+                                    Parse.Push.send({
+                                        where: pushQuery,
+                                        data: {
+                                            alert: alert,
+                                            userId: request.user.id
+                                        }
+                                    }, {
+                                        useMasterKey: true,
+                                        success: function () {
+                                            // Push was successful
+                                        },
+                                        error: function (error) {
+                                            throw "PUSH: Got an error " + error.code + " : " + error.message;
+                                        }
+                                    });
+                                });
+                            }
+                        })
+                    }
+                });
+            }
         }
     }
 
@@ -117,6 +174,21 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
 function getUsersByFacebookIds(facebookIds, callback){
     var query = new Parse.Query(Parse.User);
     query.containedIn('authData.facebook.id', facebookIds);
+    query.find({useMasterKey : true}).then(function(users){
+        if(users.length > 0){
+            callback(null, users);
+        } else {
+            callback(null, []);
+        }
+    }, function(err){
+        console.log(err);
+        callback(err);
+    })
+}
+
+function getUsersByTwitterIds(twitterIds, callback){
+    var query = new Parse.Query(Parse.User);
+    query.containedIn('authData.twitter.id', twitterIds);
     query.find({useMasterKey : true}).then(function(users){
         if(users.length > 0){
             callback(null, users);
