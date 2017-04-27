@@ -833,20 +833,27 @@ Parse.Cloud.job("sendSummary", function(request, status){
 
 Parse.Cloud.define('getFriendsMatch', function(request, response){
     var facebookIds = request.params.fbUserIds;
+    var twitterIds = request.params.twUserIds;
     var emails = request.params.emails;
 
     if(facebookIds === undefined)
         facebookIds = [];
+    if(twitterIds === undefined)
+        twitterIds = [];
     if(emails === undefined)
         emails = [];
 
     var usersFBIdMatch = new Parse.Query(Parse.User);
     usersFBIdMatch.containedIn('authData.facebook.id', facebookIds);
 
+    var usersTWIdMatch = new Parse.Query(Parse.User);
+    usersTWIdMatch.containedIn('authData.twitter.id', twitterIds);
+
     var usersEmailMatch = new Parse.Query(Parse.User);
     usersEmailMatch.containedIn('email', emails);
 
-    var usersMatch = Parse.Query.or(usersFBIdMatch, usersEmailMatch);
+    var usersMatch = Parse.Query.or(usersFBIdMatch, usersTWIdMatch, usersEmailMatch);
+    
     usersMatch.find({useMasterKey : true}).then(function(users){
         if(users.length){
             //Send push notification to users
