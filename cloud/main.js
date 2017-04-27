@@ -15,6 +15,7 @@ require("./common");
 
 require("./category");
 require("./topic");
+require("./transcript");
 
 transactionPercentage = 2.9;
 transactionFee = 0.3;
@@ -400,7 +401,9 @@ Parse.Cloud.define('getCampfires', function(req, res) {
                                       date: date.toDateString(),
                                       eavesdrops: Cucount,
                                       likes: object.get('likeCount'),
-                                      charity: (charity) ? charity.get('name') : 'None'
+                                      charity: (charity) ? charity.get('name') : 'None',
+                                      transcription: object.get('transcription'),
+                                      recordingLength: object.get('recordingLength')
                                   });
 
                                   return Parse.Promise.as();
