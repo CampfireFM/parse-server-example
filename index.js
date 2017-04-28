@@ -111,6 +111,7 @@ var dashboard = new ParseDashboard({
 var app = express();
 
 app.all('*', function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Credentials', false);
   next();
 });
@@ -139,6 +140,19 @@ app.get('/test', function(req, res) {
 });
 
 app.get('/twitter/auth', function(req, res){
+  if (req.query.fromSite && req.query.fromSite == "admin") {
+    twitter = new Twitter({
+      consumerKey: config.auth.twitter.consumer_key,
+      consumerSecret: config.auth.twitter.consumer_secret,
+      callback: config.auth.twitter.admin_callback_url
+    });
+  } else {
+    twitter = new Twitter({
+      consumerKey: config.auth.twitter.consumer_key,
+      consumerSecret: config.auth.twitter.consumer_secret,
+      callback: config.auth.twitter.callback_url
+    });
+  }
   twitter.getRequestToken(function(err, requestToken, requestSecret) {
     if (err) {
       return res.status(401).json({
