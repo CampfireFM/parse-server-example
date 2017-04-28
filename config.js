@@ -15,6 +15,7 @@ configs = {
             twitter: {
                 consumer_key: "PxGZmDyQbD778kzrWmyyPXeIc", // Required
                 consumer_secret: "qBTm2TEkqnsc8WxrtkKzq0qDrOhFFTvALsDIo4cFhXmZEjN3ee", // Required
+                admin_callback_url: "http://admin.campfire.fm",
                 callback_url: "https://campfire.fm",
                 auth_url: "https://api.twitter.com/oauth/authenticate?oauth_token="
             }
@@ -47,6 +48,7 @@ configs = {
             twitter: {
                 consumer_key: "PxGZmDyQbD778kzrWmyyPXeIc", // Required
                 consumer_secret: "qBTm2TEkqnsc8WxrtkKzq0qDrOhFFTvALsDIo4cFhXmZEjN3ee", // Required
+                admin_callback_url: "http://admin.campfire.fm",
                 callback_url: "https://campfire.fm",
                 auth_url: "https://api.twitter.com/oauth/authenticate?oauth_token="
             }
