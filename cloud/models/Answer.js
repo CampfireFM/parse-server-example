@@ -3,6 +3,10 @@ const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 var answer_methods = {};
 
+var config = require('../../config');
+var algoliasearch = require('../algolia/algoliaSearch.parse.js');
+var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
+
 Parse.Cloud.beforeSave("Answer", function(request, response){
     if(request.object.get("liveDate") === undefined)
         request.object.set("liveDate", new Date());
@@ -27,6 +31,24 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 request.log.error("FAILED IN QUESTION DETAILS FETCH");
                 request.log.error(JSON.stringify(err_question));
             } else {
+
+                var index = client.initIndex('questions');
+                // Convert Parse.Object to JSON
+                var objectToSave = question.toJSON();
+                objectToSave.objectID = question.id;
+                // Add or update object
+                index.saveObject(objectToSave, function(err, content) {
+                    if (err) {
+                        throw err;
+                    }
+                });
+
+                var indexByUsername = client.initIndex('questions_by_username');
+                indexByUsername.saveObject(objectToSave, function(err, content){
+                    if (err) {
+                        throw err;
+                    }
+                });
 
                 //Check if the question is already answered.
                 //If not answered yet, this is first time for the question to be answered then charge user and split payment.

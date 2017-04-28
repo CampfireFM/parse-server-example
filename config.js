@@ -28,7 +28,11 @@ configs = {
             apiKey: 'key-8603e31c95f12cbd1ac969203c1ff7fe',
             listAddress: 'campfire_ios_users@mailgun.campfire.fm'
         },
-        mixpanelToken : 'a09156a83517cda592357ca818137887'
+        mixpanelToken : 'a09156a83517cda592357ca818137887',
+        algolia : {
+            app_id : 'SQIZQNTD1E',
+            api_key : '6063c6a1e68779c80c7965f85074148b'
+        }
     },
 	production : {
         appName: process.env.APP_NAME || 'campfiremedia',
@@ -56,7 +60,11 @@ configs = {
             apiKey: 'key-8603e31c95f12cbd1ac969203c1ff7fe',
             listAddress: 'campfire_ios_users@mailgun.campfire.fm'
         },
-        mixpanelToken : '09b2a637be266aeb72c61a05ea51e81d'
+        mixpanelToken : '09b2a637be266aeb72c61a05ea51e81d',
+        algolia : {
+            app_id : 'SQIZQNTD1E',
+            api_key : '6063c6a1e68779c80c7965f85074148b'
+        }
 	}
 };
 
