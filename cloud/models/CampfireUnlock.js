@@ -1,4 +1,4 @@
-const {sendPush} = require('../common');
+const {sendPush, addActivity} = require('../common');
 
 Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 
@@ -25,9 +25,11 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
                             answer.save();
 
                             splitUnlockEarnings(params);
-                            saveUnlockActivity(answer, complete_question, currentUser, complete_question.get('fromUser'), 'unlockToAsker');
-                            saveUnlockActivity(answer, complete_question, currentUser, complete_question.get('toUser'), 'unlockToAnswerer');
-                            sendPush(currentUser, [complete_question.get('fromUser'), complete_question.get('toUser')], "unlocks");
+                            const toUsers = [complete_question.get('fromUser'), complete_question.get('toUser')];
+                            //Create 'unlock' activity
+                            addActivity('unlock', currentUser, toUsers, complete_question, answer);
+                            //Send push notification to question asker and answerer
+                            sendPush(currentUser, toUsers, 'unlocks');
                         }
                 });
             },
@@ -39,25 +41,6 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
         });
     }
 });
-
-
-function saveUnlockActivity(answer, question, currentUser) {
-     // Create and save a new "Unlock" activity for the question Asker
-
-    var fromUser = question.get('fromUser')
-    var toUser = question.get('toUser')
-
-    var Activity = Parse.Object.extend("Activity");
-    var newActivity = new Activity();
-    newActivity.set("question", question);
-    newActivity.set("answer", answer);
-    newActivity.set("isRead", false);
-    newActivity.set("toUsers", [toUser, fromUser]);
-    newActivity.set("fromUser", currentUser);
-    newActivity.set("type", 'unlock');
-    newActivity.save(null, {useMasterKey: true});
-    
-}
 
 /*
 The below function calculates all the splits of money for asker and answerer

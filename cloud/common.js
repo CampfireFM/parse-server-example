@@ -11,6 +11,8 @@ const logTexts = {
 const subscriptionTypes = ['questions', 'unlocks', 'answers', 'likes', 'follows', 'earnings'];
 const campfireAutoPushTypes = ['friendMatch', 'joinCampfire'];
 
+const activityTypes = ['follow', 'unlock', 'like', 'answer'];
+
 function checkPushSubscription(user, type){
     var pushSubscriptions = user.get('pushSubscriptions');
 
@@ -105,4 +107,33 @@ function sendPush(currentUser, toUsers, type){
     });
 }
 
-module.exports = {checkPushSubscription, checkEmailSubscription, sendPush};
+/**
+ * @Description common function to add activities to Activity class
+ * @param type - One of 'follow', 'unlock', 'like', 'answer'
+ * @param question
+ * @param answer
+ * @param fromUser
+ * @param toUsers
+ */
+function addActivity(type, fromUser, toUsers, question, answer){
+
+    if(activityTypes.indexOf(type) === -1){
+        return console.log("Unknown action");
+    }
+
+    if(toUsers.length === undefined)
+        toUsers = [toUsers];
+    var Activity = Parse.Object.extend('Activity');
+
+    var newActivity = new Activity();
+    newActivity.set('isRead', false);
+    newActivity.set('toUsers', toUsers);
+    newActivity.set('fromUser', fromUser);
+    newActivity.set('type', type);
+    if(type !== 'follow'){
+        newActivity.set('question', question);
+        newActivity.set('answer', answer);
+    }
+    newActivity.save(null, {useMasterKey: true});
+}
+module.exports = {checkPushSubscription, checkEmailSubscription, sendPush, addActivity};

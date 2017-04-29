@@ -1,4 +1,4 @@
-const {sendPush} = require('../common');
+const {sendPush, addActivity} = require('../common');
 Parse.Cloud.afterSave("Like", function(request) {
 
     if (request.object.existed() == false) {
@@ -25,15 +25,9 @@ Parse.Cloud.afterSave("Like", function(request) {
                                 console.log('error fetching question info');
                                 throw "Error fetching question info";
                             }
-                            var Activity = Parse.Object.extend("Activity");
-                            var newActivity = new Activity();
-                            newActivity.set("question", question);
-                            newActivity.set("answer", answer);
-                            newActivity.set("isRead", false);
-                            newActivity.set("toUsers", users);
-                            newActivity.set("fromUser", request.user);
-                            newActivity.set("type", "like");
-                            newActivity.save(null, {useMasterKey: true});
+                            //Create 'like' Activity
+                            addActivity('like', currentUser, users, question, answer);
+                            //Send 'likes' push notification to question asker and answerer
                             sendPush(currentUser, users, 'likes');
 
                         }, function(error){

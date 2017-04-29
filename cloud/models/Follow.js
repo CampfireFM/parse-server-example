@@ -1,4 +1,4 @@
-const {checkEmailSubscription, sendPush} = require('../common');
+const {checkEmailSubscription, sendPush, addActivity} = require('../common');
 const mail = require('../../utils/mail');
 Parse.Cloud.afterSave("Follow", function(request) {
 
@@ -9,14 +9,8 @@ Parse.Cloud.afterSave("Follow", function(request) {
         ToUser.fetch({
             useMasterKey: true,
             success: function(toUser) {
-                // Create and save a new "Follow" activity for the question Asker
-                var Activity = Parse.Object.extend("Activity");
-                var newActivity = new Activity();
-                newActivity.set("isRead", false);
-                newActivity.set("toUsers", toUser);
-                newActivity.set("fromUser", request.user);
-                newActivity.set("type", "follow");
-                newActivity.save(null, { useMasterKey: true });
+                // Create and save a new "Follow" activity
+                addActivity('follow', currentUser, toUser);
 
                 //Send follows push notification to follow user
                 sendPush(request.user, toUser, 'follows');

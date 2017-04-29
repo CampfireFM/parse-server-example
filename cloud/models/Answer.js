@@ -1,4 +1,4 @@
-const {checkEmailSubscription, sendPush} = require('../common');
+const {checkEmailSubscription, sendPush, addActivity} = require('../common');
 const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 var answer_methods = {};
@@ -68,16 +68,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                     success : function(user) {
 
                         //Add answer acitity to Activity
-                        var Activity = Parse.Object.extend("Activity");
-                        var newActivity = new Activity();
-                        newActivity.set("question", question);
-                        newActivity.set("answer", answer);
-                        newActivity.set("isRead", false);
-                        newActivity.set("toUser", user);
-                        newActivity.set("fromUser", currentUser);
-
-                        newActivity.set("type", "answer");
-                        newActivity.save(null, { useMasterKey: true });
+                        addActivity('answer', currentUser, user, question, answer);
 
                         //Send answers push notification to question asker
                         sendPush(currentUser, user, 'answers');
