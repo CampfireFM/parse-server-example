@@ -1,4 +1,4 @@
-const {checkEmailSubscription, sendPush, addActivity} = require('../common');
+const {checkEmailSubscription, sendPush, addActivity, questionsToAlgoliaObjects} = require('../common');
 const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 var answer_methods = {};
@@ -34,8 +34,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
 
                 var index = client.initIndex('questions');
                 // Convert Parse.Object to JSON
-                var objectToSave = question.toJSON();
-                objectToSave.objectID = question.id;
+                var objectToSave = questionsToAlgoliaObjects(question)[0];
                 // Add or update object
                 index.saveObject(objectToSave, function(err, content) {
                     if (err) {

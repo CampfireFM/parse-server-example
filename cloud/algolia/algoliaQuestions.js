@@ -1,7 +1,7 @@
 var config = require('../../config');
 var algoliasearch = require('./algoliaSearch.parse.js');
 var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
-
+var {questionsToAlgoliaObjects} = require('../common');
 
 Parse.Cloud.job("Index Question", function(request, status){
 
@@ -12,18 +12,14 @@ Parse.Cloud.job("Index Question", function(request, status){
         } else {
             var index = client.initIndex('questions');
             var indexByUsername = client.initIndex('questions_by_username');
-            var objectsToIndex = questions.map(function (question) {
-                var object = question.toJSON();
-                object.objectID = question.id;
-                return object;
-            });
+            var objectsToIndex = questionsToAlgoliaObjects(questions);
             // Add or update new objects
             index.saveObjects(objectsToIndex, function (err, content) {
                 if (err) {
                     throw err;
                 }
                 console.log('index question by text<>Algolia import done');
-                indexByUsername.save(objectsToIndex, function (err, content){
+                indexByUsername.saveObjects(objectsToIndex, function (err, content){
                     if (err) {
                         throw err;
                     }
@@ -48,7 +44,7 @@ function retrieveAllQuestions(callback){
     };
     var process = function(skip) {
         var query = new Parse.Query('Question');
-        query.include('toUser');
+        query.include('toUser', 'fromUser');
         query.equalTo('isAnswered', true);
         if (skip) {
             query.greaterThan("objectId", skip);
@@ -79,11 +75,7 @@ Parse.Cloud.job("Reindex Question", function(request, status){
             status.error(err);
         } else {
             // prepare objects to index from contacts
-            objectsToIndex = questions.map(function(question) {
-                var object = question.toJSON();
-                object.objectID = question.id;
-                return object;
-            });
+            objectsToIndex = questionsToAlgoliaObjects(questions);
             // Add new objects to temp index
             tempIndex.saveObjects(objectsToIndex, function(err, content) {
                 if (err) {
@@ -111,5 +103,28 @@ Parse.Cloud.job("Reindex Question", function(request, status){
                 });
             });
         }
+    });
+});
+
+Parse.Cloud.define('searchQuestions', function(request, response){
+    const skip = request.params.skip ? request.params.skip : 0;
+    const limit = request.params.limit ? request.params.limit : 0;
+    const type = request.params.type ? 'questions' : 'usernames';
+    const indexName = type == 'questions' ? 'questions' : 'questions_by_username';
+    const index = client.initIndex(indexName);
+
+    const text = request.params.text ? request.params.text : '';
+
+    index.search({
+        query : text,
+        offset : skip,
+        length : limit < 1000 ? limit : 1000
+    }, function(err, results){
+        if(err){
+            console.log(err);
+            response.error(err);
+        }
+        console.log(results);
+        response.success(results);
     });
 });

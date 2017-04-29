@@ -136,4 +136,33 @@ function addActivity(type, fromUser, toUsers, question, answer){
     }
     newActivity.save(null, {useMasterKey: true});
 }
-module.exports = {checkPushSubscription, checkEmailSubscription, sendPush, addActivity};
+
+/**
+ * @Description Convert question parse object to algolia object
+ * @param questions
+ */
+function questionsToAlgoliaObjects(questions){
+    if(questions.length == undefined)
+        questions = [questions];
+    var algoliaObjects = questions.map(function(question){
+        var object = question.toJSON();
+        //Set only needed attributes to decrease latency and data size
+        var objectToSave = {};
+        objectToSave.objectID = question.id;
+        objectToSave.toUser = {};
+        objectToSave.toUser.objectId = object.toUser.objectId;
+        objectToSave.toUser.fullName = object.toUser.fullName;
+        objectToSave.toUser.coverPhoto = object.toUser.coverPhoto;
+        objectToSave.toUser.profilePhoto = object.toUser.profilePhoto;
+        objectToSave.toUser.isExpired = object.isExpired;
+        objectToSave.fromUser = {};
+        objectToSave.fromUser.objectId = object.fromUser.objectId;
+        objectToSave.createdAt = object.createdAt;
+        objectToSave.updatedAt = object.updatedAt;
+        objectToSave.text = object.text;
+
+        return objectToSave;
+    });
+    return algoliaObjects;
+}
+module.exports = {checkPushSubscription, checkEmailSubscription, sendPush, addActivity, questionsToAlgoliaObjects};

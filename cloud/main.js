@@ -11,6 +11,7 @@ require("./models/Follow.js");
 require("./models/Like.js");
 require("./models/Question.js");
 require("./models/User.js");
+require("./algolia/algoliaQuestions.js");
 require("./common");
 
 require("./category");
