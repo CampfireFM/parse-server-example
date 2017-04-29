@@ -4,42 +4,56 @@ var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
 var {questionsToAlgoliaObjects} = require('../common');
 
 Parse.Cloud.job("Index Question", function(request, status){
+    const index = client.initIndex('questions');
+    const indexByUsername = client.initIndex('questions_by_username');
 
-    retrieveAllQuestions(function(err, questions){
-        if(err){
+    //Set Index settings
+    index.setSettings({
+        searchableAttributes : ['text'],
+        customRanking : ['desc(createdAt)']
+    });
+    indexByUsername.setSettings({
+        searchableAttributes : ['toUser.fullName'],
+        customRanking : ['desc(createdAt)']
+    });
+    processAllQuestions(function(err) {
+        if (err) {
             console.log('An error occured while retrieving questions');
-            status.error(err);
-        } else {
-            var index = client.initIndex('questions');
-            var indexByUsername = client.initIndex('questions_by_username');
-            var objectsToIndex = questionsToAlgoliaObjects(questions);
-            // Add or update new objects
-            index.saveObjects(objectsToIndex, function (err, content) {
+            return status.error(err);
+        }
+        console.log('index questions Parse<>Algolia import done');
+        status.success();
+    }, function(questions){
+
+        const objectsToIndex = questionsToAlgoliaObjects(questions);
+        // Add or update new objects
+        index.saveObjects(objectsToIndex, function (err, content) {
+            if (err) {
+                throw err;
+            }
+            indexByUsername.saveObjects(objectsToIndex, function (err, content){
                 if (err) {
                     throw err;
                 }
-                console.log('index question by text<>Algolia import done');
-                indexByUsername.saveObjects(objectsToIndex, function (err, content){
-                    if (err) {
-                        throw err;
-                    }
-                    console.log('index question by username<>Algolia import done');
-                    status.success();
-                });
             });
-        }
+        });
     });
 });
 
-function retrieveAllQuestions(callback){
+function processAllQuestions(callback, fnAddIndex, processAtOnce){
     var result = [];
     var chunk_size = 1000;
+
     var processCallback = function(res) {
+        if(processAtOnce !== undefined || processAtOnce === false)
+            fnAddIndex(res);
         result = result.concat(res);
         if (res.length === chunk_size) {
             process(res[res.length-1].id);
         } else {
-            callback(null, result);
+            if(processAtOnce === true)
+                fnAddIndex(result);
+            callback(null);
         }
     };
     var process = function(skip) {
@@ -65,45 +79,52 @@ var mainIndexName = 'questions';
 var tempIndexUsername = 'questions_by_username_temp';
 var mainIndexUsername = 'questions_by_username';
 Parse.Cloud.job("Reindex Question", function(request, status){
-    var objectsToIndex = [];
-    // Create a temp index
-    var tempIndex = client.initIndex(tempIndexName);
-    var tempIndexByUsername = client.initIndex(tempIndexUsername);
-    retrieveAllQuestions(function(err, questions){
-        if(err){
+    const tempIndex = client.initIndex(tempIndexName);
+    const tempIndexByUsername = client.initIndex(tempIndexUsername);
+    processAllQuestions(function(err) {
+        if (err) {
             console.log('An error occured while retrieving questions');
-            status.error(err);
-        } else {
-            // prepare objects to index from contacts
-            objectsToIndex = questionsToAlgoliaObjects(questions);
-            // Add new objects to temp index
-            tempIndex.saveObjects(objectsToIndex, function(err, content) {
+            return status.error(err);
+        }
+        console.log('Reindexing questions Parse<>Algolia completed');
+        status.success();
+    }, function(questions){
+        // Create a temp index
+
+        // prepare objects to index from contacts
+        const objectsToIndex = questionsToAlgoliaObjects(questions);
+        // Add new objects to temp index
+        tempIndex.saveObjects(objectsToIndex, function(err, content) {
+            if (err) {
+                throw err;
+            }
+            // Overwrite main index with temp index
+            client.moveIndex(tempIndexName, mainIndexName, function(err, content) {
                 if (err) {
                     throw err;
                 }
-                // Overwrite main index with temp index
-                client.moveIndex(tempIndexName, mainIndexName, function(err, content) {
-                    if (err) {
+                client.initIndex(mainIndexName).setSettings({
+                    searchableAttributes : ['text'],
+                    customRanking : ['desc(createdAt)']
+                });
+                tempIndexByUsername.saveObjects(objectsToIndex, function(err, content){
+                    if(err){
                         throw err;
                     }
-                    tempIndexByUsername.saveObjects(objectsToIndex, function(err, content){
-                        if(err){
+                    // Overwrite main index by username with temp index by username
+                    client.moveIndex(tempIndexUsername, mainIndexUsername, function(err, content){
+                        if (err) {
                             throw err;
                         }
-                        // Overwrite main index by username with temp index by username
-                        client.moveIndex(tempIndexUsername, mainIndexUsername, function(err, content){
-                            if (err) {
-                                throw err;
-                            }
-                            status.success();
-                            console.log('Parse<>Algolia reimport done');
-                        })
-                    })
-
+                        client.initIndex(mainIndexUsername).setSettings({
+                            searchableAttributes : ['toUser.fullName'],
+                            customRanking : ['desc(createdAt)']
+                        });
+                    });
                 });
             });
-        }
-    });
+        });
+    }, true);
 });
 
 Parse.Cloud.define('searchQuestions', function(request, response){
