@@ -41,18 +41,22 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 });
 
 
-function saveUnlockActivity(answer, question, currentUser, toUser, type) {
+function saveUnlockActivity(answer, question, currentUser) {
      // Create and save a new "Unlock" activity for the question Asker
+
+    var fromUser = question.get('fromUser')
+    var toUser = question.get('toUser')
+
     var Activity = Parse.Object.extend("Activity");
     var newActivity = new Activity();
     newActivity.set("question", question);
     newActivity.set("answer", answer);
     newActivity.set("isRead", false);
-    newActivity.set("toUser", toUser);
+    newActivity.set("toUsers", [toUser, fromUser]);
     newActivity.set("fromUser", currentUser);
-    newActivity.set("type", type);
+    newActivity.set("type", 'unlock');
     newActivity.save(null, {useMasterKey: true});
-
+    
 }
 
 /*

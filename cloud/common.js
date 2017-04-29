@@ -105,39 +105,4 @@ function sendPush(currentUser, toUsers, type){
     });
 }
 
-// (function testPush(){
-//     var userQuery = new Parse.Query(Parse.User);
-//     userQuery.equalTo('email', 'ericwebb85@yahoo.com');
-//     userQuery.first({useMasterKey : true}).then(function(user){
-//         if(user === undefined)
-//             return console.log('Test user not found, test failed');
-//         const userQuery1 = new Parse.Query(Parse.User);
-//         userQuery1.equalTo('email', 'krittylor@gmail.com');
-//         userQuery1.first({useMasterKey : true}).then(function(toUser){
-//            if(toUser === undefined)
-//                return console.log('Test user as target not found, test failed');
-//             //Test for questions
-//             sendPush(user, toUser, 'questions');
-//
-//             //Test for answers
-//             sendPush(user, toUser, 'answers');
-//
-//             //Test for unlocks
-//             sendPush(user, [toUser, toUser], 'unlocks');
-//
-//             //Test for likes
-//             sendPush(user, [toUser, toUser], 'likes');
-//
-//             //Test for follows
-//             sendPush(user, toUser, 'follows');
-//
-//             //Test for friendMatch
-//             sendPush(user, toUser, 'friendMatch');
-//
-//             //Test for joinCampfire
-//             sendPush(user, toUser, 'joinCampfire');
-//         });
-//         //Test for questions, answers
-//     })
-// })();
 module.exports = {checkPushSubscription, checkEmailSubscription, sendPush};

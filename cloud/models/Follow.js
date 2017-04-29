@@ -8,15 +8,15 @@ Parse.Cloud.afterSave("Follow", function(request) {
         var ToUser = request.object.get("toUser");
         ToUser.fetch({
             useMasterKey: true,
-            success: function (toUser) {
+            success: function(toUser) {
                 // Create and save a new "Follow" activity for the question Asker
                 var Activity = Parse.Object.extend("Activity");
                 var newActivity = new Activity();
                 newActivity.set("isRead", false);
-                newActivity.set("toUser", toUser);
+                newActivity.set("toUsers", toUser);
                 newActivity.set("fromUser", request.user);
                 newActivity.set("type", "follow");
-                newActivity.save(null, {useMasterKey: true});
+                newActivity.save(null, { useMasterKey: true });
 
                 //Send follows push notification to follow user
                 sendPush(request.user, toUser, 'follows');

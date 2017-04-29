@@ -25,6 +25,15 @@ Parse.Cloud.afterSave("Like", function(request) {
                                 console.log('error fetching question info');
                                 throw "Error fetching question info";
                             }
+                            var Activity = Parse.Object.extend("Activity");
+                            var newActivity = new Activity();
+                            newActivity.set("question", question);
+                            newActivity.set("answer", answer);
+                            newActivity.set("isRead", false);
+                            newActivity.set("toUsers", users);
+                            newActivity.set("fromUser", request.user);
+                            newActivity.set("type", "like");
+                            newActivity.save(null, {useMasterKey: true});
                             sendPush(currentUser, users, 'likes');
 
                         }, function(error){
