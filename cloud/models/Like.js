@@ -34,7 +34,7 @@ Parse.Cloud.afterSave("Like", function(request) {
                                     newActivity.set("question", question);
                                     newActivity.set("answer", answer);
                                     newActivity.set("isRead", false);
-                                    newActivity.set("toUser", questionAskerUser);
+                                    newActivity.set("toUsers", questionAskerUser);
                                     newActivity.set("fromUser", request.user);
                                     newActivity.set("type", "likeToAsker");
                                     newActivity.save(null, {useMasterKey: true});

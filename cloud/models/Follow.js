@@ -13,7 +13,7 @@ Parse.Cloud.afterSave("Follow", function(request) {
             var Activity = Parse.Object.extend("Activity");
             var newActivity = new Activity();
             newActivity.set("isRead", false);
-            newActivity.set("toUser", toUser);
+            newActivity.set("toUsers", toUser);
             newActivity.set("fromUser", request.user);
             newActivity.set("type", "follow");
             newActivity.save(null, { useMasterKey: true });
