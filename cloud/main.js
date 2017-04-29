@@ -1,5 +1,5 @@
 const {sendSummaryEmail} = require('../utils/mail');
-const {checkPushSubscription, checkEmailSubscription} = require('./common');
+const {checkEmailSubscription, sendPush} = require('./common');
 const config = require('../config.js');
 const payment_methods = require("../utils/paymenthandler.js");
 const stripe = require('stripe')(config.stripe_test_key);
@@ -857,39 +857,11 @@ Parse.Cloud.define('getFriendsMatch', function(request, response){
     usersMatch.find({useMasterKey : true}).then(function(users){
         if(users.length){
             //Send push notification to users
-            users.forEach(function(user){
-
-                // setup a push to the question Answerer
-                var pushQuery = new Parse.Query(Parse.Installation);
-                pushQuery.equalTo('deviceType', 'ios');
-                pushQuery.equalTo('user', user);
-
-                var alert = 'Your friend is syncing you';
-                if (request.user) {
-                    alert = 'Your friend ' + request.user.get('fullName') + ' is syncing you.'
-                }
-
-                Parse.Push.send({
-                    where: pushQuery,
-                    data: {
-                        alert: alert,
-                        userId: request.user.id
-                    }
-                }, {
-                    useMasterKey: true,
-                    success: function () {
-                        // Push was successful
-                    },
-                    error: function (error) {
-                        throw "PUSH: Got an error " + error.code + " : " + error.message;
-                    }
-                });
-            });
+            sendPush(request.user, users, 'friendMatch');
             response.success(users);
         } else {
             response.success([]);
         }
-
     }, function(err){
         console.log(err);
         throw "Got an error " + error.code + " : " + error.message;

@@ -1,4 +1,4 @@
-const {checkPushSubscription, checkEmailSubscription} = require('../common');
+const {checkEmailSubscription, sendPush} = require('../common');
 const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 var answer_methods = {};
@@ -74,43 +74,13 @@ Parse.Cloud.afterSave("Answer", function(request) {
                         newActivity.set("answer", answer);
                         newActivity.set("isRead", false);
                         newActivity.set("toUser", user);
-                        newActivity.set("fromUser", request.user);
+                        newActivity.set("fromUser", currentUser);
 
                         newActivity.set("type", "answer");
                         newActivity.save(null, { useMasterKey: true });
 
-                        //Check for push subscription of answers
-                        if (!checkPushSubscription(user, 'answers')) {
-                            console.log('Question asker has not subscribed to receive answers notification yet');
-                        } else {
-                            // setup a push to the question Asker
-                            var pushQuery = new Parse.Query(Parse.Installation);
-                            pushQuery.equalTo('deviceType', 'ios');
-                            pushQuery.equalTo('user', fromUser);
-
-                            var alert = "";
-                            var firstName = currentUser.get('firstName');
-                            var lastName = currentUser.get('lastName');
-                            if (firstName) {
-                                alert = firstName + " " + lastName + " just answered your question!";
-                            }
-
-                            Parse.Push.send({
-                                where: pushQuery,
-                                data: {
-                                    alert: alert,
-                                    questionId: question.id
-                                }
-                            }, {
-                                useMasterKey: true,
-                                success: function () {
-                                    // Push was successful
-                                },
-                                error: function (error) {
-                                    throw "PUSH: Got an error " + error.code + " : " + error.message;
-                                }
-                            });
-                        }
+                        //Send answers push notification to question asker
+                        sendPush(currentUser, user, 'answers');
 
                         //Check for email subscription of questionAsker
                         if (!checkEmailSubscription(user, 'answers')){

@@ -1,4 +1,4 @@
-const {checkPushSubscription} = require('../common');
+const {sendPush} = require('../common');
 
 Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 
@@ -25,8 +25,9 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
                             answer.save();
 
                             splitUnlockEarnings(params);
-                            sendUnlockPushToAsker(answer, complete_question, currentUser);
-                            sendUnlockPushToAnswerer(answer, complete_question, currentUser);
+                            saveUnlockActivity(answer, complete_question, currentUser, complete_question.get('fromUser'), 'unlockToAsker');
+                            saveUnlockActivity(answer, complete_question, currentUser, complete_question.get('toUser'), 'unlockToAnswerer');
+                            sendPush(currentUser, [complete_question.get('fromUser'), complete_question.get('toUser')], "unlocks");
                         }
                 });
             },
@@ -51,99 +52,8 @@ function saveUnlockActivity(answer, question, currentUser, toUser, type) {
     newActivity.set("fromUser", currentUser);
     newActivity.set("type", type);
     newActivity.save(null, {useMasterKey: true});
-    
+
 }
-
-function sendUnlockPushToAsker(answer, question, currentUser) {
-    
-    saveUnlockActivity(answer, question, currentUser, question.get("fromUser"), "unlockToAsker");
-    
-    var fromUser = question.get('fromUser');
-    fromUser.fetch({
-        useMasterKey : true,
-        success : function(user){
-            //Check for push subscription of unlocks
-            if(!checkPushSubscription(user, 'unlocks')){
-                console.log('Question asker has not subscribed to receive unlocks notification yet');
-                return;
-            }
-            // setup a push to the question Asker
-            var pushQuery = new Parse.Query(Parse.Installation);
-            pushQuery.equalTo('deviceType', 'ios');
-            pushQuery.equalTo('user', fromUser);
-            var alert = "";
-            var firstName = currentUser.get('firstName');
-            var lastName = currentUser.get('lastName');
-            if (firstName) {
-                alert = firstName + " " + lastName + " unlocked your question.";
-            }
-
-            Parse.Push.send({
-                where: pushQuery,
-                data: {
-                    alert: alert,
-                    questionId: question.id
-                }
-            }, {
-                useMasterKey: true,
-                success: function () {
-                    // Push was successful
-                },
-                error: function (error) {
-                    throw "PUSH: Got an error " + error.code + " : " + error.message;
-                }
-            });
-        }
-    });
-}
-
-
-
-function sendUnlockPushToAnswerer(answer, question, currentUser) {
-    
-    saveUnlockActivity(answer, question, currentUser, question.get("toUser"), "unlockToAnswerer");
-
-    var toUser = question.get('toUser');
-    toUser.fetch({
-        useMasterKey : true,
-        success : function(user){
-            //Check for push subscription of unlocks
-            if(!checkPushSubscription(user, 'unlocks')){
-                console.log('Question answerer has not subscribed to receive unlocks notification yet');
-                return;
-            }
-
-            // setup a push to the question Answerer
-            var pushQuery = new Parse.Query(Parse.Installation);
-            pushQuery.equalTo('deviceType', 'ios');
-            pushQuery.equalTo('user', question.get("toUser"));
-
-            var alert = "";
-            var firstName = currentUser.get('firstName');
-            var lastName = currentUser.get('lastName');
-            if (firstName) {
-                alert = firstName + " " + lastName + " unlocked your answer";
-            }
-
-            Parse.Push.send({
-                where: pushQuery,
-                data: {
-                    alert: alert,
-                    questionId: question.id
-                }
-            }, {
-                useMasterKey: true,
-                success: function () {
-                    // Push was successful
-                },
-                error: function (error) {
-                    throw "PUSH: Got an error " + error.code + " : " + error.message;
-                }
-            });
-        }
-    });
-}
-
 
 /*
 The below function calculates all the splits of money for asker and answerer

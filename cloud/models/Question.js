@@ -1,4 +1,4 @@
-const {checkPushSubscription, checkEmailSubscription} = require('../common');
+const {checkEmailSubscription, sendPush} = require('../common');
 const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 
@@ -45,28 +45,10 @@ Parse.Cloud.afterSave("Question", function(request) {
                 createCharge(params, function(err_charge, res_charge){
                     if(res_charge){
 
-                        //Check for push subscription of question
-                        if(!checkPushSubscription(toUser, 'questions')){
-                            console.log('Question answerer has not subscribed to receive questions notification yet');
-                        } else {
-                            Parse.Push.send({
-                                where: pushQuery,
-                                data: {
-                                    alert: alert,
-                                    questionId: request.object.id
-                                }
-                            }, {
-                                useMasterKey: true,
-                                success: function () {
-                                            // Push was successful
-                                },
-                                error: function (error) {
-                                    throw "PUSH: Got an error " + error.code + " : " + error.message;
-                                }
-                            });
-                        }
+                        //Send push notification to answerer
+                        sendPush(request.user, toUser, 'questions');
 
-                        //Check for email subscription of email
+                        //Check for email subscription of questions
                         if(!checkEmailSubscription(toUser, 'questions')) {
                             console.log('Question answerer has not subscribed to receive question emails yet')
                         } else {
@@ -99,7 +81,7 @@ Parse.Cloud.afterSave("Question", function(request) {
     }
 });
 
-/*
+/**
 @Description - function to create a charge entry in Charge table
 @params object contains the below fields:
     @questionRef - reference to the Question table object

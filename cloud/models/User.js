@@ -1,5 +1,6 @@
 const mail = require('../../utils/mail');
 const config = require('../../config');
+const {sendPush} = require('../common');
 var Twitter = require('twitter');
 var Mixpanel = require('mixpanel');
 var graph = require('fbgraph');
@@ -52,36 +53,11 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
                                 return friend.id;
                             });
                             getUsersByFacebookIds(friendIds, function(err, campfireFriends){
-                                if(err){
+                                if (err) {
                                     console.log(err);
                                 } else {
-                                    campfireFriends.forEach(function(friend){
-                                        // setup a push to the question Answerer
-                                        var pushQuery = new Parse.Query(Parse.Installation);
-                                        pushQuery.equalTo('deviceType', 'ios');
-                                        pushQuery.equalTo('user', friend);
-
-                                        var alert = 'Your friend just joined campfire, you can ask him whatever interested';
-                                        if (request.user) {
-                                            alert = 'Your friend ' + request.user.get('fullName') + ' has joined Campfire \n You can ask him anything interested';
-                                        }
-
-                                        Parse.Push.send({
-                                            where: pushQuery,
-                                            data: {
-                                                alert: alert,
-                                                userId: request.user.id
-                                            }
-                                        }, {
-                                            useMasterKey: true,
-                                            success: function () {
-                                                // Push was successful
-                                            },
-                                            error: function (error) {
-                                                throw "PUSH: Got an error " + error.code + " : " + error.message;
-                                            }
-                                        });
-                                    });
+                                    //Send push notification to user's friends
+                                    sendPush(request.user, campfireFriends, 'joinCampfire');
                                 }
                             });
                         }
@@ -108,36 +84,11 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
                             return id.toString();
                         });
                         getUsersByTwitterIds(friendIds, function(err, campfireFriends){
-                            if(err){
+                            if (err) {
                                 console.log(err);
                             } else {
-                                campfireFriends.forEach(function(friend){
-                                    // setup a push to the question Answerer
-                                    var pushQuery = new Parse.Query(Parse.Installation);
-                                    pushQuery.equalTo('deviceType', 'ios');
-                                    pushQuery.equalTo('user', friend);
-
-                                    var alert = 'Your friend just joined campfire, you can ask him whatever interested';
-                                    if (request.object) {
-                                        alert = 'Your friend ' + request.object.get('fullName') + ' has joined Campfire \n You can ask him anything interested';
-                                    }
-
-                                    Parse.Push.send({
-                                        where: pushQuery,
-                                        data: {
-                                            alert: alert,
-                                            userId: request.user.id
-                                        }
-                                    }, {
-                                        useMasterKey: true,
-                                        success: function () {
-                                            // Push was successful
-                                        },
-                                        error: function (error) {
-                                            throw "PUSH: Got an error " + error.code + " : " + error.message;
-                                        }
-                                    });
-                                });
+                                //Send push notification to user's friend
+                                sendPush(request.user, campfireFriends, 'joinCampfire');
                             }
                         })
                     }
@@ -183,7 +134,7 @@ function getUsersByFacebookIds(facebookIds, callback){
     }, function(err){
         console.log(err);
         callback(err);
-    })
+    });
 }
 
 function getUsersByTwitterIds(twitterIds, callback){
@@ -198,5 +149,5 @@ function getUsersByTwitterIds(twitterIds, callback){
     }, function(err){
         console.log(err);
         callback(err);
-    })
+    });
 }
