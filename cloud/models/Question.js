@@ -17,13 +17,6 @@ Parse.Cloud.afterSave("Question", function(request) {
                 questCount++;
                 user.set("unansweredQuestionCount", questCount);
                 user.save(null, { useMasterKey: true });
-                var currentUser = request.user;
-                var pushQuery = new Parse.Query(Parse.Installation);
-                pushQuery.equalTo('deviceType', 'ios');
-                pushQuery.equalTo('user', user);
-                var alert = "";
-
-                alert = "Test";
 
                 var params = {
                     questionRef : request.object,
@@ -40,34 +33,48 @@ Parse.Cloud.afterSave("Question", function(request) {
                     console.log("got customerId from request.user");
                 }
 
+                if(request.object.get('price') == undefined || request.object.get('price') == 0){
+                    sendPush(request.user, toUser, 'questions');
 
-                //call the stripe api and create the Charge Object
-                createCharge(params, function(err_charge, res_charge){
-                    if(res_charge){
+                    //Check for email subscription of questions
+                    if(!checkEmailSubscription(toUser, 'questions')) {
+                        console.log('Question answerer has not subscribed to receive question emails yet')
+                    } else {
+                        mail.sendQuestionEmail(
+                            toUser.get('email'),
+                            request.user.get('profilePhoto')._name,
+                            request.user.get('fullName'),
+                            request.object.get('text')
+                        );
+                    }
+                } else {
+                    //call the stripe api and create the Charge Object
+                    createCharge(params, function (err_charge, res_charge) {
+                        if (res_charge) {
 
-                        //Send push notification to answerer
-                        sendPush(request.user, toUser, 'questions');
+                            //Send push notification to answerer
+                            sendPush(request.user, toUser, 'questions');
 
-                        //Check for email subscription of questions
-                        if(!checkEmailSubscription(toUser, 'questions')) {
-                            console.log('Question answerer has not subscribed to receive question emails yet')
+                            //Check for email subscription of questions
+                            if (!checkEmailSubscription(toUser, 'questions')) {
+                                console.log('Question answerer has not subscribed to receive question emails yet')
+                            } else {
+                                mail.sendQuestionEmail(
+                                    toUser.get('email'),
+                                    request.user.get('profilePhoto')._name,
+                                    request.user.get('fullName'),
+                                    request.object.get('text')
+                                );
+                            }
+
                         } else {
-                            mail.sendQuestionEmail(
-                                toUser.get('email'),
-                                request.user.get('profilePhoto')._name,
-                                request.user.get('fullName'),
-                                request.object.get('text')
-                            );
+                            //currently do nothing
+
                         }
 
-                    } else {
-                                //currently do nothing
-
-                    }
-
-                });
-                //end of create charge function call handling
-
+                    });
+                    //end of create charge function call handling
+                }
                 //removes the authToken from the question attributes
                 request.object.unset('chargeId');
                 request.object.save(null,{useMasterKey:true});
