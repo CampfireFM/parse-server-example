@@ -41,18 +41,15 @@ Parse.Cloud.job("Index Question", function(request, status){
 });
 
 function processAllQuestions(callback, fnAddIndex, processAtOnce){
-    var result = [];
+    
+    var totalCount;
     var chunk_size = 1000;
 
     var processCallback = function(res) {
-        if(processAtOnce !== undefined || processAtOnce === false)
-            fnAddIndex(res);
-        result = result.concat(res);
+        fnAddIndex(res, totalCount);
         if (res.length === chunk_size) {
             process(res[res.length-1].id);
         } else {
-            if(processAtOnce === true)
-                fnAddIndex(result);
             callback(null);
         }
     };
@@ -71,7 +68,18 @@ function processAllQuestions(callback, fnAddIndex, processAtOnce){
             callback(error);
         });
     };
-    process(false);
+    var query = new Parse.Query('Question');
+    query.include('toUser', 'fromUser');
+    query.equalTo('isAnswered', true);
+
+    query.count({useMasterKey : true}).then(function(count){
+        totalCount = count;
+        process(false);
+    }, function(err){
+        console.log(err);
+        throw 'An error occured while counting questions ' + err.code + ' : ' + err.message;
+    });
+
 }
 
 var tempIndexName = 'questions_temp';
@@ -81,6 +89,7 @@ var mainIndexUsername = 'questions_by_username';
 Parse.Cloud.job("Reindex Question", function(request, status){
     const tempIndex = client.initIndex(tempIndexName);
     const tempIndexByUsername = client.initIndex(tempIndexUsername);
+    var completedCount = 0;
     processAllQuestions(function(err) {
         if (err) {
             console.log('An error occured while retrieving questions');
@@ -88,43 +97,44 @@ Parse.Cloud.job("Reindex Question", function(request, status){
         }
         console.log('Reindexing questions Parse<>Algolia completed');
         status.success();
-    }, function(questions){
-        // Create a temp index
-
+    }, function(questions, totalCount) {
         // prepare objects to index from contacts
         const objectsToIndex = questionsToAlgoliaObjects(questions);
         // Add new objects to temp index
-        tempIndex.saveObjects(objectsToIndex, function(err, content) {
+        tempIndex.saveObjects(objectsToIndex, function (err, content) {
             if (err) {
                 throw err;
             }
-            // Overwrite main index with temp index
-            client.moveIndex(tempIndexName, mainIndexName, function(err, content) {
+            tempIndexByUsername.saveObjects(objectsToIndex, function (err, content) {
                 if (err) {
                     throw err;
                 }
-                client.initIndex(mainIndexName).setSettings({
-                    searchableAttributes : ['text'],
-                    customRanking : ['desc(createdAt)']
-                });
-                tempIndexByUsername.saveObjects(objectsToIndex, function(err, content){
-                    if(err){
-                        throw err;
-                    }
-                    // Overwrite main index by username with temp index by username
-                    client.moveIndex(tempIndexUsername, mainIndexUsername, function(err, content){
+                completedCount += questions.length;
+                if (completedCount >= totalCount) {
+                    // Overwrite main index with temp index
+                    client.moveIndex(tempIndexName, mainIndexName, function (err, content) {
                         if (err) {
                             throw err;
                         }
-                        client.initIndex(mainIndexUsername).setSettings({
-                            searchableAttributes : ['toUser.fullName'],
-                            customRanking : ['desc(createdAt)']
+                        client.initIndex(mainIndexName).setSettings({
+                            searchableAttributes: ['text'],
+                            customRanking: ['desc(createdAt)']
+                        });
+                        // Overwrite main index by username with temp index by username
+                        client.moveIndex(tempIndexUsername, mainIndexUsername, function (err, content) {
+                            if (err) {
+                                throw err;
+                            }
+                            client.initIndex(mainIndexUsername).setSettings({
+                                searchableAttributes: ['toUser.fullName'],
+                                customRanking: ['desc(createdAt)']
+                            });
                         });
                     });
-                });
+                }
             });
         });
-    }, true);
+    });
 });
 
 Parse.Cloud.define('searchQuestions', function(request, response){
