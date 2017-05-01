@@ -1,4 +1,4 @@
-var http = require("http");
+var https = require("https");
 var request = require('request');
 var fs = require('fs');
 const ffmpeg = require('fluent-ffmpeg');
@@ -40,7 +40,7 @@ Parse.Cloud.define('transcribeAudio', function(req, res){
         var tmpFileStream = fs.createWriteStream(filePath);
 
         tmpFileStream.on('open', function () {
-            http.get(audioUrl, function (response) {
+            https.get(audioUrl, function (response) {
                 response.on('error', function (err) {
                     res.error({message: 'Could not fetch audio file.'})
                 });
