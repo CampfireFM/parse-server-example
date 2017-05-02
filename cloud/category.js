@@ -5,28 +5,39 @@ Parse.Cloud.define('getCategories', function(req, res){
 
   var sortedBy = req.params.sortedBy || 'createdAt';
   var sortDir = req.params.sortDir || 'desc';
+  var page = req.params.currentPage || 1;
+  var limit = req.params.perPage || 6;
+  var skip = (page - 1) * limit;
 
-  sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy);
+  // totalpages count
+  var count;
+  query.count().then(function(result){
+    count = result;
+    sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy);
 
-  query.find({
-    success: function(objects) {
-      if (objects.length) {
-        for (var i = 0; i < objects.length; i++) {
-        var object = objects[i];
-          categories.push({
-            id: object.id,
-            name: object.get('name'),
-            desc: object.get('desc'),
-            image: object.get('image') ? (object.get('image')).toJSON().url : '',
-            isLive: object.get('isLive')
-          });
+    // pagination
+    query.limit(limit);
+    query.skip(skip);
+
+    query.find().then(function(objects) {
+        if (objects.length) {
+          for (var i = 0; i < objects.length; i++) {
+          var object = objects[i];
+            categories.push({
+              id: object.id,
+              name: object.get('name'),
+              desc: object.get('desc'),
+              image: object.get('image') ? (object.get('image')).toJSON().url : '',
+              isLive: object.get('isLive')
+            });
+          }
         }
-      }
-      res.success({categories: categories});
-    },
-    error: function(error) {
-      res.error(error);
-    }
+        res.success({categories: categories, totalItems: count});
+      },function(error) {
+        res.error(error.message);
+      })
+  },function(error) {
+    res.error(error.message);
   })
 });
 
