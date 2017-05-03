@@ -27,7 +27,7 @@ Parse.Cloud.define('transcribeAudio', function(req, res){
     filePath = 'public/' + filePath
 
     var bucketFile = bucket.file(fileName + '.flac');
-    
+
     var speechContexts = answerObj.answererAskerName.split(' ')
     var speechContexts = speechContexts.concat(answerObj.question.split(' '))
 
@@ -114,7 +114,7 @@ Parse.Cloud.define('transcribeAudio', function(req, res){
                 answer.save(null, {useMasterKey : true}).then(function(saved_answer){
                     res.success({transcript: transcript, answer_id: answerObj.id})
                 }, function(err){
-                    res.error(error.message)    
+                    res.error(error.message)
                 })
             }, function(err){
                 res.error(error.message)
