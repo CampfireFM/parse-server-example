@@ -355,6 +355,9 @@ Parse.Cloud.define('getCampfires', function(req, res) {
     if (req.params.likeCount) {
         query.greaterThanOrEqualTo("likeCount", parseInt(req.params.likeCount));
     }
+    if (req.params.likeCount) {
+        query.greaterThanOrEqualTo("unlockCount", parseInt(req.params.unlockCount));
+    }
     if (req.params.fromDate) {
         query.greaterThanOrEqualTo("createdAt", req.params.fromDate);
     }
@@ -397,10 +400,10 @@ Parse.Cloud.define('getCampfires', function(req, res) {
                                       answererCoverPhoto: (toUser.get('coverPhoto') && toUser.get('coverPhoto').url) ? (toUser.get('coverPhoto')).toJSON().url : '',
                                       answererProfileImage: (toUser.get('profilePhoto') && toUser.get('profilePhoto').url) ? (toUser.get('profilePhoto')).toJSON().url : '',
                                       answererName: toUser.get('fullName'),
-                                      answererAskerName: fromUser.get('fullName'),
+                                      answererAskerName: (fromUser) ? fromUser.get('fullName') : '',
                                       question: object.get('questionRef').get('text'),
                                       date: date.toDateString(),
-                                      eavesdrops: Cucount,
+                                      eavesdrops: object.get("unlockCount"),
                                       likes: object.get('likeCount'),
                                       charity: (charity) ? charity.get('name') : 'None',
                                       transcription: object.get('transcription'),
@@ -858,7 +861,7 @@ Parse.Cloud.define('getFriendsMatch', function(request, response){
     usersEmailMatch.containedIn('email', emails);
 
     var usersMatch = Parse.Query.or(usersFBIdMatch, usersTWIdMatch, usersEmailMatch);
-    
+
     usersMatch.find({useMasterKey : true}).then(function(users){
         if(users.length){
             //Send push notification to users
