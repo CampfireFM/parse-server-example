@@ -155,7 +155,7 @@ Parse.Cloud.define('searchQuestions', function(request, response){
             console.log(err);
             response.error(err);
         }
-        console.log(results);
-        response.success(results);
+        console.log(results.hits);
+        response.success(results.hits);
     });
 });
