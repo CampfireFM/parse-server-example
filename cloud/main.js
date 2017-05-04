@@ -337,9 +337,9 @@ Parse.Cloud.define('getCampfires', function(req, res) {
 
     var User = Parse.Object.extend('User');
     var UserQuery = new Parse.Query(User);
+    UserQuery.select("objectId", "fullName", "isTestUser", "isDummyUser");
     UserQuery.equalTo('isTestUser', false);
     UserQuery.equalTo('isDummyUser', false);
-    UserQuery.select("objectId", "fullName", "isTestUser", "isDummyUser");
     var Question = Parse.Object.extend("Question");
     var QuestionQuery = new Parse.Query(Question);
 
