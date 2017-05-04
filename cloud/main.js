@@ -335,16 +335,26 @@ Parse.Cloud.define('getCampfires', function(req, res) {
     query.include(['questionRef', 'questionRef.fromUser.fullName',
         'questionRef.toUser.fullName', 'questionRef.charity.name']);
 
+    var User = Parse.Object.extend('User');
+    var UserQuery = new Parse.Query(User);
+    UserQuery.equalTo('isTestUser', false);
+    UserQuery.equalTo('isDummyUser', false);
+    UserQuery.select("objectId", "fullName", "isTestUser", "isDummyUser");
+    var Question = Parse.Object.extend("Question");
+    var QuestionQuery = new Parse.Query(Question);
+
     // filtering
     if (req.params.answererName || req.params.answererAskerName) {
-        var User = Parse.Object.extend('User');
-        var UserQuery = new Parse.Query(User);
-        UserQuery.select("objectId", "fullName");
+        // var User = Parse.Object.extend('User');
+        // var UserQuery = new Parse.Query(User);
+        // UserQuery.select("objectId", "fullName");
         (req.params.answererAskerName) ? UserQuery.startsWith("fullName", req.params.answererAskerName) : UserQuery.startsWith("fullName", req.params.answererName);
-        var Question = Parse.Object.extend("Question");
-        var QuestionQuery = new Parse.Query(Question);
+        // var Question = Parse.Object.extend("Question");
+        // var QuestionQuery = new Parse.Query(Question);
         (req.params.answererAskerName) ? QuestionQuery.matchesQuery('fromUser', UserQuery) : QuestionQuery.matchesQuery('toUser', UserQuery)
         query.matchesQuery('questionRef', QuestionQuery);
+    } else {
+      query.matchesQuery('questionRef', QuestionQuery);
     }
     if (req.params.question) {
         var Question = Parse.Object.extend("Question");
