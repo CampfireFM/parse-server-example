@@ -155,7 +155,29 @@ Parse.Cloud.define('searchQuestions', function(request, response){
             console.log(err);
             response.error(err);
         }
-        console.log(results.hits);
-        response.success(results.hits);
+        // var Question = Parse.Object('Question');
+        var res = results.hits.map(function(question){
+            question.className = 'Question';
+            return Parse.Object.fromJSON(question);
+        });
+        console.log(res);
+        response.success(res);
+    });
+});
+
+Parse.Cloud.define('getTopQuestions', function(request, response){
+    const skip = request.params.skip ? request.params.skip : 0;
+    const limit = request.params.limit ? request.params.limit : 0;
+    Parse.Cloud.httpRequest({
+        url : 'https://analytics.algolia.com/1/searches/questions,questions_by_username/popular',
+        headers : {
+            'X-Algolia-API-Key' : '2607b6145c4ef1287f3427a764c3bb19',
+            'X-Algolia-Application-ID' : 'SQIZQNTD1E'
+        }
+    }).then(function(httpResponse) {
+        console.log(httpResponse.data);
+        response.success(httpResponse.data);
+    }, function(httpResponse) {
+        response.error('Request failed with response code ' + httpResponse.status);
     });
 });
