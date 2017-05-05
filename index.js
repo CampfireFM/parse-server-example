@@ -9,6 +9,12 @@ var config = require('./config.js');
 var cors = require('cors')
 const resolve = require('path').resolve;
 var Twitter = require("node-twitter-api");
+var MixpanelExport = require('mixpanel-data-export');
+
+panel = new MixpanelExport({
+  api_key: config.mixpanel.api_key,
+  api_secret: config.mixpanel.api_secret
+});
 
 var twitter = new Twitter({
   consumerKey: config.auth.twitter.consumer_key,
