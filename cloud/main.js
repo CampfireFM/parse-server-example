@@ -313,6 +313,23 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
   })
 });
 
+Parse.Cloud.define('getMixpanelData', function(req, res) {
+  var fromDate = new Date();
+  fromDate.setMonth(fromDate.getMonth());
+  fromDate = (fromDate.getFullYear() + "-" + fromDate.getMonth() + "-" + fromDate.getDate());
+  var toDate = new Date();
+  toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
+  panel.events({
+    event: ["Active Session", "Unlock", "Viewed: Ask - Question Submitted"],
+    type: "general",
+    unit: "day",
+    from_date: fromDate,
+    to_date: toDate
+  }).then(function(data) {
+    res.success(data);
+  });
+});
+
 Parse.Cloud.define('getCampfires', function(req, res) {
     var campfires = [];
     var sortedBy = req.params.sortedBy || 'createdAt';
