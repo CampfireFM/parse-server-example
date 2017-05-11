@@ -101,6 +101,7 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
         mail.sendWelcomeMail(userEmail);
         mail.updateMailingList(firstName, lastName, userEmail);
         //Add user to MixPanel
+        mixpanel.identify(request.object.id);
         mixpanel.people.set(request.object.get('username'), {
             $first_name: firstName,
             $last_name: lastName,

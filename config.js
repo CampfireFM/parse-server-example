@@ -29,6 +29,10 @@ configs = {
             apiKey: 'key-8603e31c95f12cbd1ac969203c1ff7fe',
             listAddress: 'campfire_ios_users@mailgun.campfire.fm'
         },
+        mixpanel: {
+            api_key: "a20f53207d150c2e7a293d9dfe62d6ae",
+            api_secret: "e2ce4394690de18852ceb8c18f852976"
+        },
         mixpanelToken : 'a09156a83517cda592357ca818137887',
         algolia : {
             app_id : 'SQIZQNTD1E',
@@ -65,6 +69,10 @@ configs = {
             fromAddress: 'Customer Service <postmaster@mailgun.campfire.fm>',
             apiKey: 'key-8603e31c95f12cbd1ac969203c1ff7fe',
             listAddress: 'campfire_ios_users@mailgun.campfire.fm'
+        },
+        mixpanel: {
+            api_key: "a20f53207d150c2e7a293d9dfe62d6ae",
+            api_secret: "e2ce4394690de18852ceb8c18f852976"
         },
         mixpanelToken : '09b2a637be266aeb72c61a05ea51e81d',
         algolia : {

@@ -314,6 +314,41 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
   })
 });
 
+Parse.Cloud.define('getMpActiveUsers', function(req, res) {
+  var fromDate = new Date();
+  fromDate.setMonth(fromDate.getMonth());
+  fromDate = (fromDate.getFullYear() + "-" + fromDate.getMonth() + "-" + fromDate.getDate());
+  var toDate = new Date();
+  toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
+  panel.segmentation({
+    event: "Active Session",
+    type: "unique",
+    unit: "day",
+    from_date: fromDate,
+    to_date: toDate,
+    where: 'properties["$duration"] > 15'
+  }).then(function(data) {
+    res.success(data);
+  });
+});
+
+Parse.Cloud.define('getMixpanelData', function(req, res) {
+  var fromDate = new Date();
+  fromDate.setMonth(fromDate.getMonth());
+  fromDate = (fromDate.getFullYear() + "-" + fromDate.getMonth() + "-" + fromDate.getDate());
+  var toDate = new Date();
+  toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
+  panel.events({
+    event: ["Unlock", "Viewed: Ask - Question Submitted"],
+    type: "unique",
+    unit: "day",
+    from_date: fromDate,
+    to_date: toDate
+  }).then(function(data) {
+    res.success(data);
+  });
+});
+
 Parse.Cloud.define('getCampfires', function(req, res) {
     var campfires = [];
     var sortedBy = req.params.sortedBy || 'createdAt';
@@ -336,23 +371,35 @@ Parse.Cloud.define('getCampfires', function(req, res) {
     query.include(['questionRef', 'questionRef.fromUser.fullName',
         'questionRef.toUser.fullName', 'questionRef.charity.name']);
 
+    var fromUser = Parse.Object.extend('User');
+    var fromUserQuery = new Parse.Query(fromUser);
+    fromUserQuery.select("objectId", "fullName", "isTestUser", "isDummyUser");
+    fromUserQuery.notEqualTo('isTestUser', true);
+    fromUserQuery.notEqualTo('isDummyUser', true);
+    var toUser = Parse.Object.extend('User');
+    var toUserQuery = new Parse.Query(toUser);
+    toUserQuery.select("objectId", "fullName", "isTestUser", "isDummyUser");
+    toUserQuery.notEqualTo('isTestUser', true);
+    toUserQuery.notEqualTo('isDummyUser', true);
+    var Question = Parse.Object.extend("Question");
+    var QuestionQuery = new Parse.Query(Question);
+
     // filtering
-    if (req.params.answererName || req.params.answererAskerName) {
-        var User = Parse.Object.extend('User');
-        var UserQuery = new Parse.Query(User);
-        UserQuery.select("objectId", "fullName");
-        (req.params.answererAskerName) ? UserQuery.startsWith("fullName", req.params.answererAskerName) : UserQuery.startsWith("fullName", req.params.answererName);
-        var Question = Parse.Object.extend("Question");
-        var QuestionQuery = new Parse.Query(Question);
-        (req.params.answererAskerName) ? QuestionQuery.matchesQuery('fromUser', UserQuery) : QuestionQuery.matchesQuery('toUser', UserQuery)
-        query.matchesQuery('questionRef', QuestionQuery);
+    if (req.params.answererName) {
+      toUserQuery.startsWith("fullName", req.params.answererName);
+    }
+    if (req.params.answererAskerName) {
+      fromUserQuery.startsWith("fullName", req.params.answererAskerName)
     }
     if (req.params.question) {
-        var Question = Parse.Object.extend("Question");
-        var QuestionQuery = new Parse.Query(Question);
-        QuestionQuery.startsWith('text', req.params.question)
-        query.matchesQuery('questionRef', QuestionQuery);
+      QuestionQuery.startsWith('text', req.params.question)
     }
+
+    // Exclude test data
+    QuestionQuery.matchesQuery('toUser', toUserQuery);
+    QuestionQuery.matchesQuery('fromUser', fromUserQuery);
+    query.matchesQuery('questionRef', QuestionQuery);
+
     if (req.params.likeCount) {
         query.greaterThanOrEqualTo("likeCount", parseInt(req.params.likeCount));
     }
