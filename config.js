@@ -33,6 +33,10 @@ configs = {
         algolia : {
             app_id : 'SQIZQNTD1E',
             api_key : '6063c6a1e68779c80c7965f85074148b'
+        },
+        paypal : {
+            client_id : 'Af_15KlMYpYaejaj9jggpmX5woRXprvdi_pkaulc0oXVx5XNY5_vut7LleFUsuQquSN3WsllmlpyVKXv',
+            client_secret : 'EObAHnUatUChH3LZKsusmS2zLpbnC-kq-ibCX3fouDm4_e6ggHbzXk9HYDkgBjtWgxliYh-brGJJMvHk'
         }
     },
 	production : {
@@ -66,6 +70,10 @@ configs = {
         algolia : {
             app_id : 'SQIZQNTD1E',
             api_key : '6063c6a1e68779c80c7965f85074148b'
+        },
+        paypal : {
+            client_id : 'Af_15KlMYpYaejaj9jggpmX5woRXprvdi_pkaulc0oXVx5XNY5_vut7LleFUsuQquSN3WsllmlpyVKXv',
+            client_secret : 'EObAHnUatUChH3LZKsusmS2zLpbnC-kq-ibCX3fouDm4_e6ggHbzXk9HYDkgBjtWgxliYh-brGJJMvHk'
         }
 	}
 };

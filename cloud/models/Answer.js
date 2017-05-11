@@ -51,14 +51,15 @@ Parse.Cloud.afterSave("Answer", function(request) {
 
                 //Check if the question is already answered.
                 //If not answered yet, this is first time for the question to be answered then charge user and split payment.
-                if(question.get('isAnswered') == false){
+                if(question.get('isAnswered') == false && question.get('price') > 0){
                     question.set("isAnswered", true);
                     question.save(null, { useMasterKey: true });
                     //Charge user and split payment.
-                    chargeUserAndSplitPayment(request, question, function(e,r){
-                        console.log(e);
-                        console.log(r);
-                    });
+                    if(question.price != undefined && question.price != 0)
+                        chargeUserAndSplitPayment(request, question, function(e,r){
+                            console.log(e);
+                            console.log(r);
+                        });
                 }
 
                 var fromUser = question.get('fromUser');
@@ -209,18 +210,21 @@ function splitAndMakePayments(question, charge, callback){
         console.log();
     });
 
-    var donation_params = {
-        amount: split_charity,
-        charityRef: charity,
-        questionRef: question,
-        userRef : toUser,
-        isPaid: false
-    };
+    if(split_charity > 0){
+        var donation_params = {
+            amount: split_charity,
+            charityRef: charity,
+            questionRef: question,
+            userRef : toUser,
+            isPaid: false
+        };
 
-    createDonation(donation_params, function(e,r){
-        console.log(e);
-        console.log();
-    });
+        createDonation(donation_params, function(e,r){
+            console.log(e);
+            console.log();
+        });
+    }
+
 
     var user_earning_increment = split_charity + split_answerer;
 
