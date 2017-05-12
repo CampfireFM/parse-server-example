@@ -26,7 +26,7 @@
     "parse-dashboard": "^1.0.25",
     "parse-server": "^2.3.8",
     "parse-server-mailgun": "^2.4.3",
-    "paypal-rest-sdk": "^1.7.1",
+    "paypal-rest-sdk": "git://github.com/prosunshining/PayPal-node-SDK.git",
     "request": "^2.81.0",
     "stripe": "^4.12.0",
     "twitter": "^1.7.0"

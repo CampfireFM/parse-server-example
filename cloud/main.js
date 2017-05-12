@@ -972,27 +972,41 @@ Parse.Cloud.define('withdraw', function(request, response){
             console.log(payout);
 
             //Create payout object in parse
-            var Payout = Parse.Object.extend('Payout');
+            var Payout = Parse.Object.extend('Withdrawal');
             var newPayout = new Payout();
 
             newPayout.set('paypalPayoutBatchId', payout.items[0].payout_batch_id);
             newPayout.set('paypalPayoutItemId', payout.items[0].payout_item_id);
             newPayout.set('payoutItemFee', payout.items[0].payout_item_fee.value);
-            newPayout.set('amount', payout.items[0].payout_item.amount.value);
+            newPayout.set('amount', parseFloat(payout.items[0].payout_item.amount.value));
             newPayout.set('transactionStatus', payout.items[0].transaction_status);
             newPayout.set('userRef', request.user);
 
-            if(errors.length){
-                var error = error[0];
+            if(errors){
                 //Check error message
-                console.log(error.message);
-                newPayout.set('errorMessage', error.message);
+                console.log(errors.message);
+                newPayout.set('errorMessage', errors.message);
             } else {
                 newPayout.set('transactionId', payout.items[0].transaction_id);
             }
 
-            newPayout.save(null, {useMasterKey : true});
-            response.success(newPayout);
+            if(payout.items[0].transaction_status === 'UNCLAIMED'){
+                paypal.payout.cancel(payout.items[0].payout_item_id, function(error){
+                    if(error){
+                        console.log(error);
+                    } else {
+                        console.log(`successfully canceled unclaimed payout #${payout.items[0].payout_item_id}`);
+                    }
+                })
+            }
+
+            newPayout.save(null, {useMasterKey : true}).then(function(newPayout){
+                response.success(newPayout);
+            }, function(error){
+                console.log('Got an error ' + error.code + ' : ' + error.message);
+                response.error(error);
+            });
+
         }
     });
 });
@@ -1019,6 +1033,8 @@ Parse.Cloud.define('checkWithdrawalStatus', function(request, response){
             paypal.payout.get(payoutId, function (error, payout) {
                 if (error) {
                     console.log(error);
+                    //Check errors
+
                     throw error;
                 } else {
                     console.log("Get Payout Response");
