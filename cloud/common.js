@@ -1,4 +1,5 @@
-
+var Twilio = require('twilio');
+const config = require('../config');
 const logTexts = {
     questions : 'Question answerer has not subscribed to receive questions notification yet',
     unlocks : 'Question asker/answerer has not subscribed to receive unlocks notification yet',
@@ -90,20 +91,45 @@ function sendPush(currentUser, toUsers, type){
                 break;
         }
 
-        Parse.Push.send({
-            where: pushQuery,
-            data: {
-                alert: alert
+        //Send push notification to ios devices if server's set to send push
+        if(config.notificationType === 'push'){
+            Parse.Push.send({
+                where: pushQuery,
+                data: {
+                    alert: alert
+                }
+            }, {
+                useMasterKey: true,
+                success: function () {
+                    // Push was successful
+                },
+                error: function (error) {
+                    throw "PUSH: Got an error " + error.code + " : " + error.message;
+                }
+            });
+        } else if(config.notificationType === 'twilio'){
+            // Twilio Credentials
+            var accountSid = config.twilio.accountSid;
+            var authToken = config.twilio.authToken;
+
+            //require the Twilio module and create a REST client
+            var client = Twilio(config.twilio.accountSid, config.twilio.authToken);
+
+            if(user.get('phoneNumber') === undefined){
+                console.log('User has not registerd phone number yet');
+            } else {
+                client.messages.create({
+                    to: user.get('phoneNumber'),
+                    from: config.twilio.number,
+                    body: alert
+                }, function(err, message) {
+                    if(err)
+                        console.log(err.message);
+                    else
+                        console.log(message.sid);
+                });
             }
-        }, {
-            useMasterKey: true,
-            success: function () {
-                // Push was successful
-            },
-            error: function (error) {
-                throw "PUSH: Got an error " + error.code + " : " + error.message;
-            }
-        });
+        }
     });
 }
 

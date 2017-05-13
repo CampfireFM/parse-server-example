@@ -9,7 +9,6 @@ configs = {
         appId: process.env.APP_ID || 'maryhadalittlelamb',
         masterKey: process.env.MASTER_KEY || 'whosefleecewaswhiteassnow',
         serverURL: process.env.SERVER_URL || process.env.serverURL || 'http://localhost:1337/parse',
-        baseURL: process.env.BASE_URL || process.env.baseURL || 'http://192.168.1.142:1337',
         facebookAppIds: ["984145855062964"],
         auth: {
             twitter: {
@@ -41,7 +40,13 @@ configs = {
         paypal : {
             client_id : 'Af_15KlMYpYaejaj9jggpmX5woRXprvdi_pkaulc0oXVx5XNY5_vut7LleFUsuQquSN3WsllmlpyVKXv',
             client_secret : 'EObAHnUatUChH3LZKsusmS2zLpbnC-kq-ibCX3fouDm4_e6ggHbzXk9HYDkgBjtWgxliYh-brGJJMvHk'
-        }
+        },
+        twilio : {
+            number : '14844168181',
+            accountSid : 'AC5d07bea4ae1346c5143af33ec13f074d',
+            authToken : '8961a3e9ba921dc52ee5d385ea9771f3'
+        },
+        notificationType : 'twilio'
     },
 	production : {
         appName: process.env.APP_NAME || 'campfiremedia',
@@ -50,7 +55,6 @@ configs = {
         appId: process.env.APP_ID || 'maryhadalittlelamb',
         masterKey: process.env.MASTER_KEY || 'whosefleecewaswhiteassnow',
         serverURL: process.env.SERVER_URL || process.env.serverURL || 'http://localhost:1337/parse',
-        baseURL: process.env.BASE_URL || process.env.baseURL || 'https://campfiremedia.herokuapp.com',
         facebookAppIds: ["984145855062964"],
         auth: {
             twitter: {
@@ -82,7 +86,13 @@ configs = {
         paypal : {
             client_id : 'Af_15KlMYpYaejaj9jggpmX5woRXprvdi_pkaulc0oXVx5XNY5_vut7LleFUsuQquSN3WsllmlpyVKXv',
             client_secret : 'EObAHnUatUChH3LZKsusmS2zLpbnC-kq-ibCX3fouDm4_e6ggHbzXk9HYDkgBjtWgxliYh-brGJJMvHk'
-        }
+        },
+        twilio : {
+            number : '14844168181',
+            accountSid : 'AC5d07bea4ae1346c5143af33ec13f074d',
+            authToken : '8961a3e9ba921dc52ee5d385ea9771f3'
+        },
+        notificationType : 'twilio'
 	}
 };
 

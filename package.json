@@ -29,6 +29,7 @@
     "paypal-rest-sdk": "git://github.com/xcraftdev/PayPal-node-SDK.git",
     "request": "^2.81.0",
     "stripe": "^4.12.0",
+    "twilio": "^3.0.0",
     "twitter": "^1.7.0"
   },
   "scripts": {
