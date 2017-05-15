@@ -3,7 +3,7 @@ const config = require('../config');
 const logTexts = {
     questions : 'Question answerer has not subscribed to receive questions notification yet',
     unlocks : 'Question asker/answerer has not subscribed to receive unlocks notification yet',
-    answers : 'Question asker has not subscribed to receive questions notification yet',
+    answers : 'Question asker has not subscribed to receive answers sms yet',
     likes : 'Question ansker/answerer has not subscribed to receive likes notification yet',
     follows : 'The user has not subscribed to receive follows notification yet',
     earnings : 'The user has not subscribed to receive earnings notification yet'
@@ -23,6 +23,14 @@ function checkPushSubscription(user, type){
     return true;
 }
 
+function checkSMSSubscription(user, type){
+    var smsSubscriptions = user.get('smsSubscriptions');
+
+    //Search subscription type in array
+    if(smsSubscriptions == undefined || smsSubscriptions.indexOf(type) == -1)
+        return false;
+    return true;
+}
 function checkEmailSubscription(user, type){
     var emailSubscriptions = user.get('emailSubscriptions');
 
@@ -39,7 +47,7 @@ function checkEmailSubscription(user, type){
  * @param type - subscription type of 'questions','answers','unlocks','likes','follows','earnings', campfire push notification of
  *               'friendMatch', 'joinCampfire'
  */
-function sendPush(currentUser, toUsers, type){
+function sendPushOrSMS(currentUser, toUsers, type){
     if(toUsers.length === undefined){
         toUsers = [toUsers];
     }
@@ -51,7 +59,7 @@ function sendPush(currentUser, toUsers, type){
     toUsers.forEach(function(user){
 
         if (subscriptionTypes.indexOf(type) !== -1) {
-            if (!checkPushSubscription(user, type))
+            if (!checkPushSubscription(user, type) && !checkSMSSubscription(user, type))
                 return console.log(logTexts[type]);
         } else if(campfireAutoPushTypes.indexOf(type) === -1){
             return console.log('Unknown push type, no push notification sent');
@@ -69,7 +77,7 @@ function sendPush(currentUser, toUsers, type){
                 alert = fullName + ' asked you a new question';
                 break;
             case 'answers' :
-                alert = fullName + ' answered to your question';
+                alert = fullName + ' answered your question on Campfire!';
                 break;
             case 'unlocks' :
                 alert = fullName + ' unlocked your answer/question';
@@ -91,8 +99,8 @@ function sendPush(currentUser, toUsers, type){
                 break;
         }
 
-        //Send push notification to ios devices if server's set to send push
-        if(config.notificationType === 'push'){
+        //Send push notification to ios devices
+        if(checkPushSubscription(user, type)) {
             Parse.Push.send({
                 where: pushQuery,
                 data: {
@@ -107,7 +115,8 @@ function sendPush(currentUser, toUsers, type){
                     throw "PUSH: Got an error " + error.code + " : " + error.message;
                 }
             });
-        } else if(config.notificationType === 'twilio'){
+        }
+        if(checkSMSSubscription(user, type)) {
             // Twilio Credentials
             var accountSid = config.twilio.accountSid;
             var authToken = config.twilio.authToken;
@@ -178,4 +187,4 @@ function questionsToAlgoliaObjects(questions){
     });
     return algoliaObjects;
 }
-module.exports = {checkPushSubscription, checkEmailSubscription, sendPush, addActivity, questionsToAlgoliaObjects};
+module.exports = {checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, questionsToAlgoliaObjects};

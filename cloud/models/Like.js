@@ -1,4 +1,4 @@
-const {sendPush, addActivity} = require('../common');
+const {sendPushOrSMS, addActivity} = require('../common');
 Parse.Cloud.afterSave("Like", function(request) {
 
     if (request.object.existed() == false) {
@@ -28,7 +28,7 @@ Parse.Cloud.afterSave("Like", function(request) {
                             //Create 'like' Activity
                             addActivity('like', currentUser, users, question, answer);
                             //Send 'likes' push notification to question asker and answerer
-                            sendPush(currentUser, users, 'likes');
+                            sendPushOrSMS(currentUser, users, 'likes');
 
                         }, function(error){
                             console.log(error);

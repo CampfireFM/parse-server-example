@@ -1,4 +1,4 @@
-const {sendPush, addActivity} = require('../common');
+const {sendPushOrSMS, addActivity} = require('../common');
 
 Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 
@@ -29,7 +29,7 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
                             //Create 'unlock' activity
                             addActivity('unlock', currentUser, toUsers, complete_question, answer);
                             //Send push notification to question asker and answerer
-                            sendPush(currentUser, toUsers, 'unlocks');
+                            sendPushOrSMS(currentUser, toUsers, 'unlocks');
                         }
                 });
             },

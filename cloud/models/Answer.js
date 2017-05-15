@@ -1,4 +1,4 @@
-const {checkEmailSubscription, sendPush, addActivity, questionsToAlgoliaObjects} = require('../common');
+const {checkEmailSubscription, sendPushOrSMS, addActivity, questionsToAlgoliaObjects} = require('../common');
 const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 var answer_methods = {};
@@ -67,11 +67,11 @@ Parse.Cloud.afterSave("Answer", function(request) {
                     useMasterKey : true,
                     success : function(user) {
 
-                        //Add answer acitity to Activity
+                        //Add answer activity to Activity
                         addActivity('answer', currentUser, user, question, answer);
 
                         //Send answers push notification to question asker
-                        sendPush(currentUser, user, 'answers');
+                        sendPushOrSMS(currentUser, user, 'answers');
 
                         //Check for email subscription of questionAsker
                         if (!checkEmailSubscription(user, 'answers')){

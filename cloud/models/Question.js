@@ -1,4 +1,4 @@
-const {checkEmailSubscription, sendPush} = require('../common');
+const {checkEmailSubscription, sendPushOrSMS} = require('../common');
 const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 
@@ -34,7 +34,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                 }
 
                 if(request.object.get('price') == undefined || request.object.get('price') == 0){
-                    sendPush(request.user, toUser, 'questions');
+                    sendPushOrSMS(request.user, toUser, 'questions');
 
                     //Check for email subscription of questions
                     if(!checkEmailSubscription(toUser, 'questions')) {
@@ -53,7 +53,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                         if (res_charge) {
 
                             //Send push notification to answerer
-                            sendPush(request.user, toUser, 'questions');
+                            sendPushOrSMS(request.user, toUser, 'questions');
 
                             //Check for email subscription of questions
                             if (!checkEmailSubscription(toUser, 'questions')) {

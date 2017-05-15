@@ -1,4 +1,4 @@
-const {checkEmailSubscription, sendPush, addActivity} = require('../common');
+const {checkEmailSubscription, sendPushOrSMS, addActivity} = require('../common');
 const mail = require('../../utils/mail');
 Parse.Cloud.afterSave("Follow", function(request) {
 
@@ -13,7 +13,7 @@ Parse.Cloud.afterSave("Follow", function(request) {
                 addActivity('follow', currentUser, toUser);
 
                 //Send follows push notification to follow user
-                sendPush(request.user, toUser, 'follows');
+                sendPushOrSMS(request.user, toUser, 'follows');
 
                 //Send follows email to follow user
                 if (!checkEmailSubscription(toUser, 'follows')) {

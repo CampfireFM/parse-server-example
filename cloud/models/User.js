@@ -1,6 +1,6 @@
 const mail = require('../../utils/mail');
 const config = require('../../config');
-const {sendPush} = require('../common');
+const {sendPushOrSMS} = require('../common');
 var Twitter = require('twitter');
 var Mixpanel = require('mixpanel');
 var graph = require('fbgraph');
@@ -58,7 +58,7 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
                                     console.log(err);
                                 } else {
                                     //Send push notification to user's friends
-                                    sendPush(request.user, campfireFriends, 'joinCampfire');
+                                    sendPushOrSMS(request.user, campfireFriends, 'joinCampfire');
                                 }
                             });
                         }
@@ -89,7 +89,7 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
                                 console.log(err);
                             } else {
                                 //Send push notification to user's friend
-                                sendPush(request.user, campfireFriends, 'joinCampfire');
+                                sendPushOrSMS(request.user, campfireFriends, 'joinCampfire');
                             }
                         })
                     }
