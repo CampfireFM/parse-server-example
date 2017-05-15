@@ -155,7 +155,7 @@ Parse.Cloud.define('validateWvSession', function(req, res){
 Parse.Cloud.define('getWebViewToken', function(req, res){
     var wvUser = Parse.Object.extend('User');
     var wvUserQuery = new Parse.Query(wvUser);
-    wvUserQuery.get(req.userId, {
+    wvUserQuery.get(req.params.userId, {
       success: function(user) {
         var userObjId = user.id;
         var newToken = uniqid(userObjId+'-');
