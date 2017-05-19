@@ -32,7 +32,7 @@ Parse.Cloud.define('getFeaturedTopics', function(req, res) {
     success: function(topics) {
       res.success(topics);
     },
-    error: function(error) {
+    error: function(error) { 
       response.error(error);
     }
   })
