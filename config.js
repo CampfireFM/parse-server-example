@@ -66,7 +66,7 @@ configs = {
         },
         dashboardusers: [{"user": "user", "pass": "password"}],
         stripe_test_key: 'sk_test_dI6EuGEjaEwNrBLMKlcS84lq',
-        stripe_live_key: 'sk_test_7D6yb4r&^U2?QCj/u4i}CFE+',
+        stripe_live_key: 'sk_live_cU2jNLmlWcY2i0Hh8Oh526Cu', //'sk_test_7D6yb4r&^U2?QCj/u4i}CFE+',
         mailgun: {
             domain: 'mailgun.campfire.fm',
             fromAddress: 'Customer Service <postmaster@mailgun.campfire.fm>',
