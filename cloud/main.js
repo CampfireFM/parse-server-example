@@ -2,7 +2,7 @@ const {sendSummaryEmail} = require('../utils/mail');
 const {checkEmailSubscription, sendPushOrSMS} = require('./common');
 const config = require('../config.js');
 const payment_methods = require("../utils/paymenthandler.js");
-const stripe = require('stripe')(config.stripe_test_key);
+const stripe = require('stripe')(config.stripe_live_key);
 var paypal = require('paypal-rest-sdk');
 //include the JS files which represent each classes (models), and contains their operations
 require("./models/Answer.js");
