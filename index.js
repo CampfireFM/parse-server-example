@@ -6,12 +6,13 @@ var ParseServer = require('parse-server').ParseServer;
 var path = require('path');
 var ParseDashboard = require('parse-dashboard');
 var config = require('./config.js');
-var cors = require('cors')
+var cors = require('cors');
 const resolve = require('path').resolve;
 var Twitter = require("node-twitter-api");
 var MixpanelExport = require('mixpanel-data-export');
 var uniqid = require('uniqid');
-
+var ipn = require('express-ipn');
+var bodyParser = require('body-parser');
 panel = new MixpanelExport({
   api_key: config.mixpanel.api_key,
   api_secret: config.mixpanel.api_secret
@@ -354,6 +355,80 @@ app.get('/meta/*', function(req, res) {
     }
 });
 
+
+app.use(bodyParser.urlencoded({extended: false}));
+app.post('/ipn', ipn.validator(validationHandler));
+
+function validationHandler(err, ipnContent){
+    if(err){
+        console.log('IPN INVALID');
+        console.log(err);
+    } else {
+        console.log(ipnContent);
+        //In case of Mass payout, record appropriate datas in Withdraw Class
+        if(ipnContent.txn_type == 'masspay') {
+            //Save IPN object to database
+            var IPN = Parse.Object.extend('IPN');
+            var ipn = new IPN();
+            ipn.set('masspayTransactionId', ipnContent.masspay_txn_id_0);
+            ipn.set('currency', ipnContent.mc_currency_0);
+            ipn.set('fee', ipnContent.mc_fee_0);
+            ipn.set('gross', ipnContent.mc_gross_0);
+            ipn.set('paymentDate', ipnContent.payment_date);
+            ipn.set('paymentStatus', ipnContent.payment_status);
+            ipn.set('status', ipnContent.status_0);
+            ipn.set('receiverEmail', ipnContent.receiver_email_0);
+            ipn.set('uniqueId', ipnContent.uniqueId);
+            if(ipnContent.status_0 == 'Failed')
+                ipn.set('reasonCode', ipnContent.reason_code_0);
+            ipn.save(null, {useMasterKey : true});
+            // Create payout object in parse
+            var Payout = Parse.Object.extend('Withdrawal');
+            var newPayout = new Payout();
+            switch(ipnContent.status_0) {
+                case 'Failed' :
+                    // newPayout.set('paypalPayoutBatchId', payout.items[0].payout_batch_id);
+                    // newPayout.set('paypalPayoutItemId', payout.items[0].payout_item_id);
+                    newPayout.set('payoutItemFee', ipnContent.payment_fee_1);
+                    newPayout.set('amount', parseFloat(ipnContent.payment_gross_1));
+                    newPayout.set('transactionStatus', ipnContent.payment_status);
+                    newPayout.set('userEmail', ipnContent.receiver_email_1);
+                    newPayout.set('paymentDate', ipnContent.paymentDate);
+                    newPayout.set('transactionId', ipnContent.masspay_txn_id_1);
+
+                    newPayout.save(null, {useMasterKey: true}).then(function (newPayout) {
+                        console.log('Mass payout saved');
+                    }, function (error) {
+                        console.log('Got an error ' + error.code + ' : ' + error.message);
+                    });
+                    break;
+                case 'Failed':
+                    var reasonCode = ipnContent.reason_code_0;
+                    switch(reasonCode){
+                        case '14767':
+                            //Receiver is unregistered
+                            break;
+                        case '14769':
+                            //Receiver is unconfirmed
+                            break;
+                    }
+                    break;
+                case 'Returned':
+                    break;
+                case 'Reversed':
+                    break;
+                case 'Unclaimed':
+                    break;
+                case 'Pending':
+                    break;
+                case 'Blocked':
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+}
 var port = process.env.PORT || 1337;
 var httpServer = require('http').createServer(app);
 

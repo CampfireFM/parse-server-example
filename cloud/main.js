@@ -3,7 +3,8 @@ const {checkEmailSubscription, sendPushOrSMS} = require('./common');
 const config = require('../config.js');
 const payment_methods = require("../utils/paymenthandler.js");
 const stripe = require('stripe')(config.stripe_test_key);
-var paypal = require('paypal-rest-sdk');
+// var paypal = require('paypal-rest-sdk');
+var Paypal = require('paypal-nvp-api');
 //include the JS files which represent each classes (models), and contains their operations
 require("./models/Answer.js");
 require("./models/Campfire.js");
@@ -928,86 +929,42 @@ Parse.Cloud.define('withdraw', function(request, response){
     var currentUser = request.user;
     var earningsBalance = currentUser.get('earningsBalance');
     var email = currentUser.get('email');
-    paypal.configure({
-        'mode': 'sandbox', //sandbox or live
-        'client_id': config.paypal.client_id,
-        'client_secret': config.paypal.client_secret,
-        'headers' : {
-        }
-    });
+    var paypalConfig = config.paypal;
+    var paypal = Paypal(paypalConfig);
 
     var sender_batch_id = Math.random().toString(36).substring(9);
-
+    var amount = currentUser.get('earningsBalance');
     var create_payout_json = {
-        "sender_batch_header": {
-            "sender_batch_id": sender_batch_id,
-            "email_subject": "You have received money from Campfire"
-        },
-        "items": [
-            {
-                "recipient_type": "EMAIL",
-                "amount": {
-                    "value": 0.1,
-                    "currency": "USD"
-                },
-                "receiver": 'krittylasdfsdfasdfor@gmail.xom',
-                "note": "Thank you.",
-                "sender_item_id": "item_3"
-            }
-        ]
+        'RECEIVER_TYPE' : 'EmailAddress',
+        'L_EMAIL0' : 'krittylor@gmail.xom',
+        'L_AMT0' : 0.1,
+        'CURRENCYCODE' : 'USD'
     };
 
-    var sync_mode = 'true';
+    paypal.request('MassPay', create_payout_json).then(function(payout) {
+        //Get Payout Item
 
-    paypal.payout.create(create_payout_json, sync_mode, function (error, payout) {
-        if (error) {
-            console.log(error.response);
-            response.error(error);
-            throw 'Got an error ' + error.code + ' : ' + error.message;
-        } else {
-            //Get Payout Item
-            var errors = payout.items[0].errors;
-
-            console.log("Create Single Payout Response");
-            console.log(payout);
-
-            //Create payout object in parse
-            var Payout = Parse.Object.extend('Withdrawal');
-            var newPayout = new Payout();
-
-            newPayout.set('paypalPayoutBatchId', payout.items[0].payout_batch_id);
-            newPayout.set('paypalPayoutItemId', payout.items[0].payout_item_id);
-            newPayout.set('payoutItemFee', payout.items[0].payout_item_fee.value);
-            newPayout.set('amount', parseFloat(payout.items[0].payout_item.amount.value));
-            newPayout.set('transactionStatus', payout.items[0].transaction_status);
-            newPayout.set('userRef', request.user);
-
-            if(errors){
-                //Check error message
-                console.log(errors.message);
-                newPayout.set('errorMessage', errors.message);
-            } else {
-                newPayout.set('transactionId', payout.items[0].transaction_id);
-            }
-
-            if(payout.items[0].transaction_status === 'UNCLAIMED'){
-                paypal.payout.cancel(payout.items[0].payout_item_id, function(error){
-                    if(error){
-                        console.log(error);
-                    } else {
-                        console.log(`successfully canceled unclaimed payout #${payout.items[0].payout_item_id}`);
-                    }
-                })
-            }
-
-            newPayout.save(null, {useMasterKey : true}).then(function(newPayout){
-                response.success(newPayout);
+        console.log("Created Single Payout");
+        console.log(payout);
+        if(payout.ACK == 'SUCCESS'){
+            currentUser.set('earningsBalance', 0);
+            currentUser.save(null, {useMasterKey : true}).then(function(user){
+                console.log(`Updated balance of ${user.get('earningsBalance')}`);
+                response.success(payout);
             }, function(error){
-                console.log('Got an error ' + error.code + ' : ' + error.message);
-                response.error(error);
+                console.log(error);
+                response.success(payout);
             });
-
+        } else {
+            response.error(payout);
+            var errorCode = payout.L_ERRORCODE0;
+            console.log(`Something went wrong with payout`);
+            console.log(`ErrorCode : ${payout.L_ERRORCODE0}, ${payout.L_SHORTMESSAGE}`)
         }
+    }).catch(function(err){
+        console.log(error.response);
+        response.error(error);
+        throw 'Got an error ' + error.code + ' : ' + error.message;
     });
 });
 
@@ -1021,30 +978,13 @@ Parse.Cloud.define('checkWithdrawalStatus', function(request, response){
     query.equalTo('objectId', withdrawalId);
     query.first({useMasterKey : true}).then(function(withdrawal){
         if(withdrawal){
-            paypal.configure({
-                'mode': 'sandbox', //sandbox or live
-                'client_id': config.paypal.client_id,
-                'client_secret': config.paypal.client_secret,
-                'headers' : {
-                }
-            });
-            var payoutId = withdrawal.get('paypalPayoutItemId');
-
-            paypal.payout.get(payoutId, function (error, payout) {
-                if (error) {
-                    console.log(error);
-                    //Check errors
-
-                    throw error;
-                } else {
-                    console.log("Get Payout Response");
-                    console.log(JSON.stringify(payout));
-                    response.success(payout);
-                }
-            });
+            console.log(response);
+            response.success(withdrawal);
         }
     }, function(err){
         console.log(err);
-        throw 'Got an error while looking for withdrawal object ' + error.code + ':' + error.message;
+        response.error(err);
+
+        throw 'Got an error while looking for withdrawal object ' + err.code + ' : ' + err.message;
     });
 });

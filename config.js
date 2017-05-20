@@ -39,7 +39,10 @@ configs = {
         },
         paypal : {
             client_id : 'Af_15KlMYpYaejaj9jggpmX5woRXprvdi_pkaulc0oXVx5XNY5_vut7LleFUsuQquSN3WsllmlpyVKXv',
-            client_secret : 'EObAHnUatUChH3LZKsusmS2zLpbnC-kq-ibCX3fouDm4_e6ggHbzXk9HYDkgBjtWgxliYh-brGJJMvHk'
+            client_secret : 'EObAHnUatUChH3LZKsusmS2zLpbnC-kq-ibCX3fouDm4_e6ggHbzXk9HYDkgBjtWgxliYh-brGJJMvHk',
+            username : 'krittylor_api1.gmail.com',
+            password : 'BYCWV2VU28KB2HNY',
+            signature : 'AFcWxV21C7fd0v3bYYYRCpSSRl31AuraD5cTzzXb5d5E1cYd314F6yhT'
         },
         twilio : {
             number : '14844168181',
@@ -84,7 +87,10 @@ configs = {
         },
         paypal : {
             client_id : 'Af_15KlMYpYaejaj9jggpmX5woRXprvdi_pkaulc0oXVx5XNY5_vut7LleFUsuQquSN3WsllmlpyVKXv',
-            client_secret : 'EObAHnUatUChH3LZKsusmS2zLpbnC-kq-ibCX3fouDm4_e6ggHbzXk9HYDkgBjtWgxliYh-brGJJMvHk'
+            client_secret : 'EObAHnUatUChH3LZKsusmS2zLpbnC-kq-ibCX3fouDm4_e6ggHbzXk9HYDkgBjtWgxliYh-brGJJMvHk',
+            username : 'krittylor_api1.gmail.com',
+            password : 'BYCWV2VU28KB2HNY',
+            signature : 'AFcWxV21C7fd0v3bYYYRCpSSRl31AuraD5cTzzXb5d5E1cYd314F6yhT'
         },
         twilio : {
             number : '14844168181',
