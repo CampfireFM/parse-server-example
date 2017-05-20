@@ -1,7 +1,7 @@
 
 
 var config = require('../config.js');
-var stripe = require('stripe')(config.stripe_test_key);
+var stripe = require('stripe')(config.stripe_live_key);
 
 var payment_methods = {};
 
