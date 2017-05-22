@@ -176,7 +176,7 @@ app.get('/twitter/auth', function(req, res){
       });
     }
   });
-})
+});
 
 app.get("/access-token", function(req, res) {
   var requestToken = req.query.oauth_token,
@@ -225,7 +225,7 @@ app.get("/access-token", function(req, res) {
               // for twitter provided data, use 'user' variable
               if (!twitterUser.existed()) {
                 var first_name = '';
-                var last_name = ''
+                var last_name = '';
                 var name_array = user.name.split(' ');
 
                 first_name = name_array[0];
@@ -370,40 +370,35 @@ function validationHandler(err, ipnContent){
             //Save IPN object to database
             var IPN = Parse.Object.extend('IPN');
             var ipn = new IPN();
-            ipn.set('masspayTransactionId', ipnContent.masspay_txn_id_0);
-            ipn.set('currency', ipnContent.mc_currency_0);
-            ipn.set('fee', ipnContent.mc_fee_0);
-            ipn.set('gross', ipnContent.mc_gross_0);
+            ipn.set('masspayTransactionId', ipnContent.masspay_txn_id_1);
+            ipn.set('currency', ipnContent.mc_currency_1);
+            ipn.set('fee', ipnContent.mc_fee_1);
+            ipn.set('gross', ipnContent.mc_gross_1);
             ipn.set('paymentDate', ipnContent.payment_date);
             ipn.set('paymentStatus', ipnContent.payment_status);
-            ipn.set('status', ipnContent.status_0);
-            ipn.set('receiverEmail', ipnContent.receiver_email_0);
-            ipn.set('uniqueId', ipnContent.uniqueId);
-            if(ipnContent.status_0 == 'Failed')
-                ipn.set('reasonCode', ipnContent.reason_code_0);
+            ipn.set('status', ipnContent.status_1);
+            ipn.set('receiverEmail', ipnContent.receiver_email_1);
+            ipn.set('uniqueId', ipnContent.unique_id_1);
+            ipn.set('testIpn', ipnContent.test_ipn == '1');
+            if(ipnContent.status_1 == 'Failed')
+                ipn.set('reasonCode', ipnContent.reason_code_1);
             ipn.save(null, {useMasterKey : true});
             // Create payout object in parse
             var Payout = Parse.Object.extend('Withdrawal');
             var newPayout = new Payout();
-            switch(ipnContent.status_0) {
-                case 'Failed' :
-                    // newPayout.set('paypalPayoutBatchId', payout.items[0].payout_batch_id);
-                    // newPayout.set('paypalPayoutItemId', payout.items[0].payout_item_id);
-                    newPayout.set('payoutItemFee', ipnContent.payment_fee_1);
-                    newPayout.set('amount', parseFloat(ipnContent.payment_gross_1));
-                    newPayout.set('transactionStatus', ipnContent.payment_status);
-                    newPayout.set('userEmail', ipnContent.receiver_email_1);
-                    newPayout.set('paymentDate', ipnContent.paymentDate);
-                    newPayout.set('transactionId', ipnContent.masspay_txn_id_1);
-
-                    newPayout.save(null, {useMasterKey: true}).then(function (newPayout) {
-                        console.log('Mass payout saved');
-                    }, function (error) {
-                        console.log('Got an error ' + error.code + ' : ' + error.message);
-                    });
-                    break;
+            var reverseEarnings = function(email, earnings){
+                var userQuery = new Parse.Query(Parse.User);
+                userQuery.equalTo('email', ipnContent.email);
+                userQuery.first({useMasterKey : true}).then(function(user){
+                    if(user){
+                        user.set('earningsBalance', user.get('earningsBalance') + ipnContent.earnings);
+                        user.save(null, {useMasterKey : true});
+                    }
+                });
+            };
+            switch(ipnContent.status_1) {
                 case 'Failed':
-                    var reasonCode = ipnContent.reason_code_0;
+                    var reasonCode = ipnContent.reason_code_1;
                     switch(reasonCode){
                         case '14767':
                             //Receiver is unregistered
@@ -412,16 +407,24 @@ function validationHandler(err, ipnContent){
                             //Receiver is unconfirmed
                             break;
                     }
+                    reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
                     break;
                 case 'Returned':
+                    reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
                     break;
                 case 'Reversed':
+                    reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
                     break;
                 case 'Unclaimed':
+                    console.log('Receiver is unregistered');
+                    //Reverse transaction
+                    reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
+
                     break;
                 case 'Pending':
                     break;
                 case 'Blocked':
+                    reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
                     break;
                 default:
                     break;

@@ -862,11 +862,11 @@ function runSummaryUpdate(){
                 //Generate email with template
 
                 //send to test email in development
-                var testEmail = process.env.TEST_EMAIL ? process.env.TEST_EMAIL : 'krittylor@gmail.com';
-                if (process.env.NODE_ENV == 'production' && process.env.IS_TEST == false)
+                // var testEmail = process.env.TEST_EMAIL ? process.env.TEST_EMAIL : 'krittylor@gmail.com';
+                if (process.env.NODE_ENV == 'production')
                     sendSummaryEmail(user.get('email'), summaries);
                 else
-                    sendSummaryEmail(testEmail, summaries);
+                    sendSummaryEmail('eric@campfire.fm', summaries);
             });
         });
     }, {useMasterKey : true})
@@ -934,9 +934,16 @@ Parse.Cloud.define('withdraw', function(request, response){
 
     var sender_batch_id = Math.random().toString(36).substring(9);
     var amount = currentUser.get('earningsBalance');
+    // var create_payout_json = {
+    //     'RECEIVER_TYPE' : 'EmailAddress',
+    //     'L_EMAIL0' : 'krittylor@gmaiasdfafsl.xom',
+    //     'L_AMT0' : 0.1,
+    //     'CURRENCYCODE' : 'USD'
+    // };
+
     var create_payout_json = {
-        'RECEIVER_TYPE' : 'EmailAddress',
-        'L_EMAIL0' : 'krittylor@gmail.xom',
+        'RECEIVER_TYPE' : 'PhoneNumber',
+        'L_RECEIVERPHONE0' : '',
         'L_AMT0' : 0.1,
         'CURRENCYCODE' : 'USD'
     };
@@ -946,7 +953,7 @@ Parse.Cloud.define('withdraw', function(request, response){
 
         console.log("Created Single Payout");
         console.log(payout);
-        if(payout.ACK == 'SUCCESS'){
+        if(payout.ACK == 'Success'){
             currentUser.set('earningsBalance', 0);
             currentUser.save(null, {useMasterKey : true}).then(function(user){
                 console.log(`Updated balance of ${user.get('earningsBalance')}`);

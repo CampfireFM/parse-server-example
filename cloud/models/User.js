@@ -40,8 +40,9 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
             var authData = request.object.get('authData');
 
             //Friends in facebook
-            var facebookAuth = authData.facebook;
-            if(facebookAuth != undefined){
+
+            if(authData && authData.facebook){
+                var facebookAuth = authData.facebook;
                 graph.setAccessToken(facebookAuth.access_token);
                 graph.get(facebookAuth.id + '/friends', function(err, friends){
                     if(err)
@@ -68,8 +69,9 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
             }
 
             //Friends in twitter
-            var twitterAuth = authData.twitter;
-            if(twitterAuth !== undefined){
+
+            if(authData && authData.twitter){
+                var twitterAuth = authData.twitter;
                 var client = new Twitter({
                     consumer_key: config.auth.twitter.consumer_key,
                     consumer_secret: config.auth.twitter.consumer_secret,
