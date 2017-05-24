@@ -24,7 +24,7 @@ configs = {
         stripe_live_key: 'sk_live_cU2jNLmlWcY2i0Hh8Oh526Cu', //'sk_test_7D6yb4r&^U2?QCj/u4i}CFE+',
         mailgun: {
             domain: 'mailgun.campfire.fm',
-            fromAddress: 'Customer Service <postmaster@mailgun.campfire.fm>',
+            fromAddress: 'Campfire <postmaster@mailgun.campfire.fm>',
             apiKey: 'key-8603e31c95f12cbd1ac969203c1ff7fe',
             listAddress: 'campfire_ios_users@mailgun.campfire.fm'
         },
@@ -72,7 +72,7 @@ configs = {
         stripe_live_key: 'sk_live_cU2jNLmlWcY2i0Hh8Oh526Cu', //'sk_test_7D6yb4r&^U2?QCj/u4i}CFE+',
         mailgun: {
             domain: 'mailgun.campfire.fm',
-            fromAddress: 'Customer Service <postmaster@mailgun.campfire.fm>',
+            fromAddress: 'Campfire <postmaster@mailgun.campfire.fm>',
             apiKey: 'key-8603e31c95f12cbd1ac969203c1ff7fe',
             listAddress: 'campfire_ios_users@mailgun.campfire.fm'
         },
