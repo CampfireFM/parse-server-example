@@ -19,7 +19,7 @@ Parse.Cloud.afterSave("Follow", function(request) {
                 if (!checkEmailSubscription(toUser, 'follows')) {
                     console.log('The user to follow has not subscribed to receive follow emails yet');
                 } else {
-                    mail.sendFollowEmail(toUser.get('email'), request.user.get('profilePhoto')._name, request.user.get('fullName'));
+                    mail.sendFollowEmail(toUser.get('email'), request.user.get('profilePhoto').url(), request.user.get('fullName'));
                 }
             },
             error: function (object, error) {

@@ -100,7 +100,7 @@ function sendFollowEmail(recipient, followerProfilePhoto, followerUsername){
             followerUsername,
             buildUserProfilePhoto : function(){
                 return function(text, render){
-                    return `<div class="profile-photo" background-image="${render(text)}" style="background-image: url(&quot;${render(text)}&quot;); background-repeat: no-repeat;"></div>`
+                    return `<img height="100" width="100" alt="Please enable images to view this content" border="0" hspace="0" src="${render(text)}" style="border-radius: 20rem; color: #000000; font-size: 0.8rem; margin: 0; padding: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: 3px solid white; margin-top:3rem; display: block;" title="New Follower image" vspace="0" width="560">`
                     //return `<img style="float: top;" class="profile-photo" src="${render(text)}" alt="interactive connection" width="45" />`
                 }
             }
