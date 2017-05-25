@@ -1,4 +1,4 @@
-const {checkEmailSubscription, sendPushOrSMS} = require('../common');
+const {checkEmailSubscription, sendPushOrSMS, addActivity} = require('../common');
 const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 
@@ -17,7 +17,10 @@ Parse.Cloud.afterSave("Question", function(request) {
                 questCount++;
                 user.set("unansweredQuestionCount", questCount);
                 user.save(null, { useMasterKey: true });
-
+                
+                //Add question activity to Activity
+                addActivity('question', request.user, user, request.object, null);
+                
                 var params = {
                     questionRef : request.object,
                     userRef : request.user,

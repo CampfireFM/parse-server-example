@@ -12,7 +12,7 @@ const logTexts = {
 const subscriptionTypes = ['questions', 'unlocks', 'answers', 'likes', 'follows', 'earnings'];
 const campfireAutoPushTypes = ['friendMatch', 'joinCampfire'];
 
-const activityTypes = ['follow', 'unlock', 'like', 'answer'];
+const activityTypes = ['follow', 'unlock', 'like', 'answer', 'question'];
 
 function checkPushSubscription(user, type){
     var pushSubscriptions = user.get('pushSubscriptions');
@@ -144,7 +144,7 @@ function sendPushOrSMS(currentUser, toUsers, type){
 
 /**
  * @Description common function to add activities to Activity class
- * @param type - One of 'follow', 'unlock', 'like', 'answer'
+ * @param type - One of 'follow', 'unlock', 'like', 'answer', 'question'
  * @param question
  * @param answer
  * @param fromUser
