@@ -107,7 +107,11 @@
                 
                <tr>
                   <td align="center" class="hero" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-top: 20px;" valign="top">
-                     <a href="https://campfire.fm" style="text-decoration: none;" target="_blank"><img height="100" width="100" alt="Please enable images to view this content" border="0" hspace="0" src="https://campfiremedia.herokuapp.com/parse/files/maryhadalittlelamb/cd9702349f0658fa19adf2b4c58677da_file.jpeg" style="border-radius: 20rem; color: #000000; font-size: 0.8rem; margin: 0; padding: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: 3px solid white;  margin-top:3rem; display: block;" title="New Follower image" vspace="0" width="560"></a>
+                     <a href="https://campfire.fm" style="text-decoration: none;" target="_blank">
+                        {{#buildUserProfilePhoto}}
+                           {{questionAnswererProfilePhoto}}
+                        {{/buildUserProfilePhoto}}
+                     </a>
                   </td>
                </tr>
                

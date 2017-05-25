@@ -79,7 +79,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                         } else {
                             mail.sendAnswerEmail(
                                 user.get('email'),
-                                request.user.get('profilePhoto')._name,
+                                request.user.get('profilePhoto').url(),
                                 request.user.get('fullName'),
                                 question.get('text')
                             )
