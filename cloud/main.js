@@ -819,7 +819,6 @@ function getQuestions(questionIds, callback){
 
 function runSummaryUpdate(){
     var query = new Parse.Query(Parse.User);
-    var limitExceed = false;
     return query.each(function(user){
         //Cancel getting summary if user has not subscribed to receive summary email
         if(checkEmailSubscription(user, 'summary') == false)
@@ -842,8 +841,7 @@ function runSummaryUpdate(){
                 }
                 if(answers.length == 0)
                     return;
-                if(answers.length > 5)
-                    limitExceed = true;
+                const moreAnswersCount = answers.length > 5 ? answers.length - 5 : 0;
                 answers = answers.slice(0, 5);
 
                 var summaries = answers.reduce(function(pre, answer){
@@ -852,8 +850,8 @@ function runSummaryUpdate(){
                         answerId : answer.id,
                         questionId : answer.get('questionRef').id,
                         question : answer.get('questionRef').get('text'),
-                        username : answer.get('userRef').get('fullName'),
-                        profilePhoto : answer.get('userRef').get('profilePhoto')._name
+                        userName : answer.get('userRef').get('fullName'),
+                        profilePhoto : answer.get('userRef').get('profilePhoto').url()
                     });
                     return pre;
                 }, []);
@@ -864,9 +862,9 @@ function runSummaryUpdate(){
                 //send to test email in development
                 // var testEmail = process.env.TEST_EMAIL ? process.env.TEST_EMAIL : 'krittylor@gmail.com';
                 if (process.env.NODE_ENV == 'production')
-                    sendSummaryEmail(user.get('email'), summaries);
+                    sendSummaryEmail(user.get('email'), summaries, moreAnswersCount);
                 else
-                    sendSummaryEmail('eric@campfire.fm', summaries);
+                    sendSummaryEmail('ericwebb85@yahoo.com', summaries, moreAnswersCount);
             });
         });
     }, {useMasterKey : true})
