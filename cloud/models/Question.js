@@ -42,9 +42,10 @@ Parse.Cloud.afterSave("Question", function(request) {
                     } else {
                         mail.sendQuestionEmail(
                             toUser.get('email'),
-                            request.user.get('profilePhoto')._name,
-                            request.user.get('fullName'),
-                            request.object.get('text')
+                            request.user.get('profilePhoto').url(),
+                            request.user.get('firstName'),
+                            request.object.get('text'),
+                            request.object.get('price')
                         );
                     }
                 } else {
@@ -61,9 +62,10 @@ Parse.Cloud.afterSave("Question", function(request) {
                             } else {
                                 mail.sendQuestionEmail(
                                     toUser.get('email'),
-                                    request.user.get('profilePhoto')._name,
-                                    request.user.get('fullName'),
-                                    request.object.get('text')
+                                    request.user.get('profilePhoto').url(),
+                                    request.user.get('firstName'),
+                                    request.object.get('text'),
+                                    request.object.get('price')
                                 );
                             }
 
