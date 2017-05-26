@@ -57,6 +57,7 @@ function processAllQuestions(callback, fnAddIndex, processAtOnce){
         var query = new Parse.Query('Question');
         query.include('toUser', 'fromUser');
         query.equalTo('isAnswered', true);
+        query.equalTo('isTest', false);
         if (skip) {
             query.greaterThan("objectId", skip);
         }
@@ -71,7 +72,7 @@ function processAllQuestions(callback, fnAddIndex, processAtOnce){
     var query = new Parse.Query('Question');
     query.include('toUser', 'fromUser');
     query.equalTo('isAnswered', true);
-
+    query.equalTo('isTest', false);
     query.count({useMasterKey : true}).then(function(count){
         totalCount = count;
         process(false);

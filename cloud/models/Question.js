@@ -10,11 +10,11 @@ Parse.Cloud.afterSave("Question", function(request) {
         toUser.fetch({
             useMasterKey: true,
             success: function(user) {
+                //set isTest attribute according to isTestUser of fromUser/toUser
+                const isTest = request.user.get('isTestUser') === true || toUser.get('isTestUser') === true;
+                request.object.set('isTest', isTest);
+                request.object.save(null, {useMasterKey : true});
 
-                if(request.user.get('isTestUser') === true || toUser.get('isTestUser') === true){
-                    request.object.set('isTest', true);
-                    request.object.save(null, {useMasterKey : true});
-                }
                 var questCount = user.get("unansweredQuestionCount");
                 if (questCount == null) {
                     questCount = 0;

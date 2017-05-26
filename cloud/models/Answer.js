@@ -31,23 +31,24 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 request.log.error("FAILED IN QUESTION DETAILS FETCH");
                 request.log.error(JSON.stringify(err_question));
             } else {
+                if(question.get('isTest') !== true) {
 
-                var index = client.initIndex('questions');
-                // Convert Parse.Object to JSON
-                var objectToSave = questionsToAlgoliaObjects(question)[0];
-                // Add or update object
-                index.saveObject(objectToSave, function(err, content) {
-                    if (err) {
-                        throw err;
-                    }
-                });
-
-                var indexByUsername = client.initIndex('questions_by_username');
-                indexByUsername.saveObject(objectToSave, function(err, content){
-                    if (err) {
-                        throw err;
-                    }
-                });
+                    var index = client.initIndex('questions');
+                    // Convert Parse.Object to JSON
+                    var objectToSave = questionsToAlgoliaObjects(question)[0];
+                    // Add or update object
+                    index.saveObject(objectToSave, function (err, content) {
+                        if (err) {
+                            throw err;
+                        }
+                    });
+                    var indexByUsername = client.initIndex('questions_by_username');
+                    indexByUsername.saveObject(objectToSave, function (err, content) {
+                        if (err) {
+                            throw err;
+                        }
+                    });
+                }
 
                 //Check if the question is already answered.
                 //If not answered yet, this is first time for the question to be answered then charge user and split payment.
