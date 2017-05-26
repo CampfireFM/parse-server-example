@@ -322,7 +322,7 @@ app.get('/meta/*', function(req, res) {
             }
             answer = answerObj;
 
-            desc = answer.to.name + "responds to " + answer.from.firstName + "'s" + ' question: "' + answer.question + '" on Campfire.';
+            desc = answer.to.name + " responds to " + answer.from.firstName + "'s" + ' question: "' + answer.question + '" on Campfire.';
             title = "Eavesdrop on " + answer.to.name + " - Campfire";
 
             return res.render('eavesdrop_meta',{
