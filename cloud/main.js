@@ -993,3 +993,85 @@ Parse.Cloud.define('checkWithdrawalStatus', function(request, response){
         throw 'Got an error while looking for withdrawal object ' + err.code + ' : ' + err.message;
     });
 });
+
+Parse.Cloud.define('getHottestCamps', function(request, response){
+    var List = Parse.Object.extend('List');
+    var Question = Parse.Object.extend('Question');
+
+    var listQuery = new Parse.Query(List);
+
+    var completed = function(countMap){
+        if(countMap.length > 0)
+            countMap.sort(function(a, b){
+                if(a.count < b.count)
+                    return 1;
+                if(a.count > b.count)
+                    return -1;
+                return 0;
+            });
+        response.success(countMap);
+    };
+
+    listQuery.find({useMasterKey: true}).then(function(lists){
+        if(lists.length === 0)
+            return completed([]);
+        const listCount = lists.length;
+        const countMap = [];
+        var processed = 0;
+        lists.forEach(function(list){
+            var questionQuery = new Parse.Query(Question);
+            questionQuery.equalTo('list', list);
+            questionQuery.count().then(function(count){
+                countMap.push({
+                    list: list,
+                    count: count
+                });
+                processed++;
+                if(listCount === processed){
+                    completed(countMap);
+                }
+            });
+        })
+    })
+});
+
+Parse.Cloud.define('getHottestCategories', function(request, response){
+    var Category = Parse.Object.extend('Category');
+    var Question = Parse.Object.extend('Question');
+
+    var categoryQuery = new Parse.Query(Category);
+
+    var completed = function(countMap){
+        if(countMap.length > 0)
+            countMap.sort(function(a, b){
+                if(a.count < b.count)
+                    return 1;
+                if(a.count > b.count)
+                    return -1;
+                return 0;
+            });
+        response.success(countMap);
+    };
+
+    categoryQuery.find({useMasterKey: true}).then(function(categories){
+        if(categories.length === 0)
+            return completed([]);
+        const categoryCount = categories.length;
+        const countMap = [];
+        var processed = 0;
+        categories.forEach(function(category){
+            var questionQuery = new Parse.Query(Question);
+            questionQuery.equalTo('category', category);
+            questionQuery.count().then(function(count){
+                countMap.push({
+                    category: category,
+                    count: count
+                });
+                processed++;
+                if(categoryCount === processed){
+                    completed(countMap);
+                }
+            });
+        })
+    })
+});
