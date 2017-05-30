@@ -108,7 +108,7 @@ function sendFollowEmail(recipient, followerProfilePhoto, followerUsername){
     });
 }
 
-function sendQuestionEmail(recipient, questionAskerProfilePhoto, questionAskerUsername, questionText, questionPrice){
+function sendQuestionEmail(recipient, questionAskerProfilePhoto, questionAnswererUsername, questionText, questionPrice){
     const { AppCache } = require('parse-server/lib/cache');
     // Get a reference to the MailgunAdapter
     // NOTE: It's best to do this inside the Parse.Cloud.define(...) method body and not at the top of your file with your other imports. This gives Parse Server time to boot, setup cloud code and the email adapter.
@@ -120,7 +120,7 @@ function sendQuestionEmail(recipient, questionAskerProfilePhoto, questionAskerUs
         recipient: recipient,
         variables: {
             questionAskerProfilePhoto,
-            questionAskerUsername,
+            questionAnswererUsername,
             questionText,
             questionPrice,
             buildUserProfilePhoto : function(){

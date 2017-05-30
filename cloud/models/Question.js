@@ -51,7 +51,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                         mail.sendQuestionEmail(
                             toUser.get('email'),
                             request.user.get('profilePhoto').url(),
-                            request.user.get('firstName'),
+                            toUser.get('firstName'),
                             request.object.get('text'),
                             request.object.get('price')
                         );
@@ -71,7 +71,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                                 mail.sendQuestionEmail(
                                     toUser.get('email'),
                                     request.user.get('profilePhoto').url(),
-                                    request.user.get('firstName'),
+                                    toUser.get('firstName'),
                                     request.object.get('text'),
                                     request.object.get('price')
                                 );
