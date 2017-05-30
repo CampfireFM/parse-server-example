@@ -24,6 +24,13 @@ Parse.Cloud.afterSave("Answer", function(request) {
         var answer = request.object;
 
         var currentUser = request.user;
+        currentUser.increment('answerCount', 1);
+        currentUser.save(null, {useMasterKey: true}).then(function(count){
+            console.log(`${currentUser.get('fullName')} has answered ${count} questions so far.`);
+        }, function(err){
+            console.log(err);
+            console.log(`Failed to increase the number of ansewr of ${currentUser.get('fullName')}.`);
+        });
 
         var questionRef = answer.get("questionRef");
         getQuestionAndItsPointers(questionRef.id, function(err_question, question) {
@@ -322,7 +329,3 @@ function createPayout(params, callback){
     });
     //end of save operation code block
 }
-
-
-
-

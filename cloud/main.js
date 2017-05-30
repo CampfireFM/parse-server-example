@@ -1076,3 +1076,35 @@ Parse.Cloud.define('getHottestCategories', function(request, response){
         })
     })
 });
+
+Parse.Cloud.define('getSuggestedUsers', function(request, response){
+    //Get suggested users ranked by the number of answers to question
+    var userQuery = new Parse.Query(Parse.User);
+    userQuery.notEqualTo('isTestUser', true);
+    userQuery.descending('answerCount').limit(20);
+
+    userQuery.find({useMasterKey: true}).then(function(suggestedUsers){
+        console.log(suggestedUsers);
+        response.success(suggestedUsers);
+    }, function(err){
+        console.log(err);
+        throw new Error(`Got an error while getting suggested users. ErrorCode: ${err.code}, ErrorMessage: ${err.message}`);
+    });
+});
+
+// //Add answerCount to all users
+// (function(){
+//     const Question = Parse.Object.extend('Question');
+//     var query = new Parse.Query(Question);
+//     query.equalTo('isTest', false);
+//     query.equalTo('isAnswered', true);
+//     query.include('toUser');
+//     query.count({useMasterKey: true}).then(function(count){
+//         console.log(count);
+//     });
+//     query.each(function(question){
+//         const toUser = question.get('toUser');
+//         toUser.increment('answerCount', 1);
+//         toUser.save(null, {useMasterKey: true});
+//     }, {useMasterKey: true});
+// })();
