@@ -941,7 +941,7 @@ Parse.Cloud.define('withdraw', function(request, response){
     // };
 
     var create_payout_json = {
-        'RECEIVER_TYPE' : 'PhoneNumber',
+        'RECEIVERTYPE' : 'PhoneNumber',
         'L_RECEIVERPHONE0' : '',
         'L_AMT0' : 0.1,
         'CURRENCYCODE' : 'USD'
@@ -965,7 +965,7 @@ Parse.Cloud.define('withdraw', function(request, response){
             response.error(payout);
             var errorCode = payout.L_ERRORCODE0;
             console.log(`Something went wrong with payout`);
-            console.log(`ErrorCode : ${payout.L_ERRORCODE0}, ${payout.L_SHORTMESSAGE}`)
+            console.log(`ErrorCode : ${payout.L_ERRORCODE0}, ${payout.L_SHORTMESSAGE0}`)
         }
     }).catch(function(err){
         console.log(error.response);

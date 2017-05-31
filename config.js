@@ -21,7 +21,7 @@ configs = {
         },
         dashboardusers: [{"user": "user", "pass": "password"}],
         stripe_test_key: 'sk_test_dI6EuGEjaEwNrBLMKlcS84lq',
-        stripe_live_key: 'sk_live_cU2jNLmlWcY2i0Hh8Oh526Cu', //'sk_test_7D6yb4r&^U2?QCj/u4i}CFE+',
+        stripe_live_key: process.env.STRIPE_KEY, //'sk_test_7D6yb4r&^U2?QCj/u4i}CFE+',
         mailgun: {
             domain: 'mailgun.campfire.fm',
             fromAddress: 'Campfire <postmaster@mailgun.campfire.fm>',
@@ -38,11 +38,10 @@ configs = {
             api_key : '6063c6a1e68779c80c7965f85074148b'
         },
         paypal : {
-            client_id : 'Af_15KlMYpYaejaj9jggpmX5woRXprvdi_pkaulc0oXVx5XNY5_vut7LleFUsuQquSN3WsllmlpyVKXv',
-            client_secret : 'EObAHnUatUChH3LZKsusmS2zLpbnC-kq-ibCX3fouDm4_e6ggHbzXk9HYDkgBjtWgxliYh-brGJJMvHk',
-            username : 'krittylor_api1.gmail.com',
-            password : 'BYCWV2VU28KB2HNY',
-            signature : 'AFcWxV21C7fd0v3bYYYRCpSSRl31AuraD5cTzzXb5d5E1cYd314F6yhT'
+            mode: process.env.PAYPAL_MODE,
+            username : process.env.PAYPAL_USERNAME,
+            password : process.env.PAYPAL_PASSWORD,
+            signature : process.env.PAYPAL_SIGNATURE,
         },
         twilio : {
             number : '14844168181',
@@ -69,7 +68,7 @@ configs = {
         },
         dashboardusers: [{"user": "user", "pass": "password"}],
         stripe_test_key: 'sk_test_dI6EuGEjaEwNrBLMKlcS84lq',
-        stripe_live_key: 'sk_live_cU2jNLmlWcY2i0Hh8Oh526Cu', //'sk_test_7D6yb4r&^U2?QCj/u4i}CFE+',
+        stripe_live_key: process.env.STRIPE_KEY,
         mailgun: {
             domain: 'mailgun.campfire.fm',
             fromAddress: 'Campfire <postmaster@mailgun.campfire.fm>',
@@ -86,11 +85,10 @@ configs = {
             api_key : '6063c6a1e68779c80c7965f85074148b'
         },
         paypal : {
-            client_id : 'Af_15KlMYpYaejaj9jggpmX5woRXprvdi_pkaulc0oXVx5XNY5_vut7LleFUsuQquSN3WsllmlpyVKXv',
-            client_secret : 'EObAHnUatUChH3LZKsusmS2zLpbnC-kq-ibCX3fouDm4_e6ggHbzXk9HYDkgBjtWgxliYh-brGJJMvHk',
-            username : 'krittylor_api1.gmail.com',
-            password : 'BYCWV2VU28KB2HNY',
-            signature : 'AFcWxV21C7fd0v3bYYYRCpSSRl31AuraD5cTzzXb5d5E1cYd314F6yhT'
+            mode: process.env.PAYPAL_MODE,
+            username : process.env.PAYPAL_USERNAME,
+            password : process.env.PAYPAL_PASSWORD,
+            signature : process.env.PAYPAL_SIGNATURE,
         },
         twilio : {
             number : '14844168181',

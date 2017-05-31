@@ -29,7 +29,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
             console.log(`${currentUser.get('fullName')} has answered ${count} questions so far.`);
         }, function(err){
             console.log(err);
-            console.log(`Failed to increase the number of ansewr of ${currentUser.get('fullName')}.`);
+            console.log(`Failed to increase the number of answer of ${currentUser.get('fullName')}.`);
         });
 
         var questionRef = answer.get("questionRef");
