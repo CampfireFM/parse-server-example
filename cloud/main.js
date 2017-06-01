@@ -14,6 +14,7 @@ require("./models/Like.js");
 require("./models/Question.js");
 require("./models/User.js");
 require("./models/List.js");
+require("./models/Activity");
 require("./algolia/algoliaQuestions.js");
 require("./common");
 

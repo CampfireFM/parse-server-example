@@ -25,8 +25,8 @@ Parse.Cloud.afterSave("Answer", function(request) {
 
         var currentUser = request.user;
         currentUser.increment('answerCount', 1);
-        currentUser.save(null, {useMasterKey: true}).then(function(count){
-            console.log(`${currentUser.get('fullName')} has answered ${count} questions so far.`);
+        currentUser.save(null, {useMasterKey: true}).then(function(user){
+            console.log(`${currentUser.get('fullName')} has answered ${user.get('answerCount')} questions so far.`);
         }, function(err){
             console.log(err);
             console.log(`Failed to increase the number of answer of ${currentUser.get('fullName')}.`);
