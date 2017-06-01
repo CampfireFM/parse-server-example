@@ -111,6 +111,9 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
             $created: (new Date()).toISOString()
         });
         request.object.set('isWelcomeEmailSent', true);
+        //Set default values
+        request.object.set('emailSubscriptions', ["earnings","unlocks","questions","summary", "likes"]);
+        request.object.set('pushSubscriptions', ["likes","questions","unlocks","earnings"]);
         request.object.save(null, {useMasterKey : true});
     } else {
         mail.updateMailingList(firstName, lastName, oldEmail, userEmail);
