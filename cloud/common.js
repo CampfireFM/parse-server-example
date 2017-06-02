@@ -47,7 +47,7 @@ function checkEmailSubscription(user, type){
  * @param type - subscription type of 'questions','answers','unlocks','likes','follows','earnings', campfire push notification of
  *               'friendMatch', 'joinCampfire'
  */
-function sendPushOrSMS(currentUser, toUsers, type){
+function sendPushOrSMS(currentUser, toUsers, type, additionalData){
     if(toUsers.length === undefined){
         toUsers = [toUsers];
     }
@@ -127,6 +127,7 @@ function sendPushOrSMS(currentUser, toUsers, type){
             if(user.get('phoneNumber') === undefined){
                 console.log('User has not registerd phone number yet');
             } else {
+                alert += `\n https://campfire.fm/eavesdrop/${additionalData}`;
                 client.messages.create({
                     to: user.get('phoneNumber'),
                     from: config.twilio.number,

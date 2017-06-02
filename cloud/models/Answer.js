@@ -79,7 +79,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                         addActivity('answer', currentUser, user, question, answer);
 
                         //Send answers push notification to question asker
-                        sendPushOrSMS(currentUser, user, 'answers');
+                        sendPushOrSMS(currentUser, user, 'answers', answer.id);
 
                         //Check for email subscription of questionAsker
                         if (!checkEmailSubscription(user, 'answers')){
