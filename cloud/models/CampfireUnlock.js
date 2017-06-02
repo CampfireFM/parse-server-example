@@ -25,11 +25,7 @@ Parse.Cloud.afterSave("CampfireUnlock", function(request) {
                         answer.save();
 
                         splitUnlockEarnings(params);
-                        var toUsers = [];
-                        if(complete_question.get('fromUser').id !== request.user.id)
-                            toUsers.push(complete_question.get('fromUser'));
-                        if(complete_question.get('toUser').id != request.user.id)
-                            toUsers.push(complete_question.get('toUser'));
+                        var toUsers = [complete_question.get('fromUser'), complete_question.get('toUser')];
                         //Create 'unlock' activity
                         addActivity('unlock', currentUser, toUsers, complete_question, answer);
                         //Send push notification to question asker and answerer
