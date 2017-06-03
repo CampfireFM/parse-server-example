@@ -39,14 +39,3 @@ Parse.Cloud.afterSave('List', function(request) {
         });
     }
 });
-
-(function test(){
-    var Question = Parse.Object.extend('Question');
-    var query = new Parse.Query(Question);
-    query.equalTo('objectId', 'VAHNyJMLZj');
-    query.first({useMasterKey: true}).then(function(res){
-        res.set('list', null);
-        res.save(null, {useMasterKey: true});
-    })
-
-})();
