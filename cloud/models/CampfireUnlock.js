@@ -70,7 +70,7 @@ function splitUnlockEarnings(params){
     var split_answerer_final = split_answerer - split_answerer_charity;
 
     var payout_asker_params = {
-        amount: split_asker_final,
+        matchesCount: split_asker_final,
         userRef: fromUser,
         unlockRef: params.campfireunlock,
         type: 'unlockAsker',
@@ -84,7 +84,7 @@ function splitUnlockEarnings(params){
     });
 
     var payout_answerer_params = {
-        amount: split_answerer_final,
+        matchesCount: split_answerer_final,
         userRef: toUser,
         unlockRef: params.campfireunlock,
         type: 'unlockAnswerer',
@@ -97,7 +97,7 @@ function splitUnlockEarnings(params){
     });
 
     var donation_answerer_params = {
-        amount: split_answerer_charity,
+        matchesCount: split_answerer_charity,
         charityRef: question.get("charity"),
         questionRef: question,
         userRef: toUser,
@@ -109,7 +109,7 @@ function splitUnlockEarnings(params){
     });
 
     var donation_asker_params = {
-        amount: split_asker_charity,
+        matchesCount: split_asker_charity,
         charityRef: asker_charity,
         questionRef: question,
         userRef: fromUser,
@@ -126,12 +126,12 @@ function splitUnlockEarnings(params){
 
     fromUser.increment("earningsTotal", split_asker);
     fromUser.increment("earningsBalance", split_asker);
-    fromUser.increment("earningsDonated", donation_asker_params["amount"]);
+    fromUser.increment("earningsDonated", donation_asker_params["matchesCount"]);
     fromUser.save(null, {useMasterKey: true});
 
     toUser.increment("earningsTotal", split_answerer);
     toUser.increment("earningsBalance", split_answerer);
-    toUser.increment("earningsDonated", donation_answerer_params["amount"]);
+    toUser.increment("earningsDonated", donation_answerer_params["matchesCount"]);
     toUser.save(null, {useMasterKey: true});
 }
 

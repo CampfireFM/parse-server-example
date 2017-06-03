@@ -29,17 +29,9 @@ Parse.Cloud.afterSave("Question", function(request) {
                 var params = {
                     questionRef : request.object,
                     userRef : request.user,
-                    amount : request.object.get("price"),
-                    isExpired : false,
-                    authToken : request.object.get("authToken"),
-                    customerId : request.object.get("customerId"),
-                    chargeId : request.object.get("chargeId")
+                    matchesCount : request.object.get("price"),
+                    isExpired : false
                 };
-
-                if(!params.customerId){
-                    params.customerId = request.user.get("customerId");
-                    console.log("got customerId from request.user");
-                }
 
                 if(request.object.get('price') == undefined || request.object.get('price') == 0){
                     sendPushOrSMS(request.user, toUser, 'questions');
@@ -113,9 +105,8 @@ function createCharge(params, callback){
     var Charge = Parse.Object.extend("Charge");
     var charge = new Charge();
     for(key in params){
-        charge.set(key,params[key]);
+        charge.set(key, params[key]);
     }
-    charge.set('status_createcharge','success');
     charge.set('isExpired',false);
     //update the charge with the charging status
     charge.save(null, {

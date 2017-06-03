@@ -125,7 +125,7 @@ function getQuestionAndItsPointers(questionId,callback){
 }
 
 /*
- @Description - This function takes the money from the user by charging his card, and split
+ @Description - This function takes the matches from the question asker, and split
  the amount between campfire, answerer, and donation
  Important - Call this function only if the question is not expired (compare against default expire time)
  @question - instace of Question object
@@ -136,34 +136,12 @@ function chargeUserAndSplitPayment(request, question, callback){
     //first find the charge details for the question
     getChargeDetails(question,function(err_charge, charge){
         if(charge){
-            var chargeId = charge.get("chargeId");
-            request.log.info("The charge ID that we are sending is "+chargeId);
             request.log.info("The question ID that we are sending is "+question.id);
 
-            if(!chargeId){
-                return callback("No ChargeId found in the charge table",null);
-            }
+            //calls the function to split the payment to stake holders based
+            //on properties of the question
+            splitAndMakePayments(question, charge, function(error, result){
 
-            //if chargeId exists
-            paymenthandler.capturePayment(chargeId, question.id, function(err, res_payment){
-                if(err){
-                    //update the charge object
-                    //throw an exception here to let the Campfire team know of the charging failure
-                    charge.set("statusCaptureCharge","failure");
-                    charge.set("responseStripeCapture",err);
-                    charge.save(null, {useMasterKey: true});
-                    return callback(err, null);
-                }else{
-                    charge.set("statusCaptureCharge","success");
-                    charge.set("responseStripeCapture",res_payment);
-                    charge.save(null, {useMasterKey: true});
-                    //calls the function to split the payment to stake holders based
-                    //on properties of the question
-                    splitAndMakePayments(question, charge, function(error, result){
-
-                    });
-                }
-                //updates the charge object with the fields set above
             });
         }
     });
@@ -191,10 +169,9 @@ function splitAndMakePayments(question, charge, callback){
     var fromUser = qAsker;
 
     var payout_params = {
-        amount : split_answerer,
+        matchesCount : split_answerer,
         userRef : toUser,
         questionRef : question,
-        chargeRef : charge,
         type : 'answer',
         isPaid : false
     };
@@ -206,11 +183,10 @@ function splitAndMakePayments(question, charge, callback){
 
     var deposit_params = {
         transactionPercentage: transactionPercentage,
-        amount: price,
+        matchesCount: price,
         transactionFee : transactionFee,
         userRef : fromUser,
-        questionRef : question,
-        chargeRef : charge
+        questionRef : question
     };
 
     createDeposit(deposit_params, function(e,r){
@@ -220,8 +196,7 @@ function splitAndMakePayments(question, charge, callback){
 
     if(split_charity > 0){
         var donation_params = {
-            amount: split_charity,
-            charityRef: charity,
+            matchesCount: split_charity,
             questionRef: question,
             userRef : toUser,
             isPaid: false
