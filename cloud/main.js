@@ -26,7 +26,7 @@ transactionPercentage = 2.9;
 transactionFee = 0.3;
 answerPercentageToCampfire = 0.2;
 campfireUnlockValue = 0.12;
-
+matchValue = 0.1;
 (function loadDefaultSettings(){
     var Defaults = Parse.Object.extend('Defaults');
     var default_values = null;
@@ -38,12 +38,14 @@ campfireUnlockValue = 0.12;
         transactionFee = defaults[0].get('transactionFee');
         answerPercentageToCampfire = defaults[0].get('answerPercentageToCampfire');
         campfireUnlockValue = defaults[0].get('campfireUnlockValue');
+        matchValue = defaults[0].get('matchValue');
     }, function(err){
         //set to default value
         transactionFee = 0.3;
         transactionPercentage = 2.9;
         answerPercentageToCampfire = 0.2;
         campfireUnlockValue = 0.12;
+        matchValue = 0.1;
         console.log(err);
     })
 })();
@@ -53,6 +55,7 @@ Parse.Cloud.afterSave('Defaults', function(request){
     transactionFee = request.object.get('transactionFee');
     answerPercentageToCampfire = request.object.get('answerPercentageToCampfire');
     campfireUnlockValue = request.object.get('campfireUnlockValue');
+    matchValue = request.object.get('matchValue');
     if(!transactionPercentage)
         transactionPercentage = 2.9;
     if(!transactionFee)
@@ -61,6 +64,8 @@ Parse.Cloud.afterSave('Defaults', function(request){
         answerPercentageToCampfire = 0.2;
     if(!campfireUnlockValue)
         campfireUnlockValue = 0.12;
+    if(!matchValue)
+        matchValue = 0.1;
 });
 
 //the below function is just to test if everything is working fine
