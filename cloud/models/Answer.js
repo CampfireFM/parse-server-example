@@ -169,7 +169,7 @@ function splitAndMakePayments(question, charge, callback){
     var fromUser = qAsker;
 
     var payout_params = {
-        matchesCount : split_answerer,
+        amount : split_answerer,
         userRef : toUser,
         questionRef : question,
         type : 'answer',
@@ -183,7 +183,7 @@ function splitAndMakePayments(question, charge, callback){
 
     var deposit_params = {
         transactionPercentage: transactionPercentage,
-        matchesCount: price,
+        amount: price,
         transactionFee : transactionFee,
         userRef : fromUser,
         questionRef : question
@@ -196,7 +196,7 @@ function splitAndMakePayments(question, charge, callback){
 
     if(split_charity > 0){
         var donation_params = {
-            matchesCount: split_charity,
+            amount: split_charity,
             questionRef: question,
             userRef : toUser,
             isPaid: false

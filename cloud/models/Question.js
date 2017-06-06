@@ -29,7 +29,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                 var params = {
                     questionRef : request.object,
                     userRef : request.user,
-                    matchesCount : request.object.get("price"),
+                    matchesCount : request.object.get("price") / matchValue,
                     isExpired : false
                 };
 
