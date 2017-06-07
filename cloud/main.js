@@ -1054,6 +1054,8 @@ Parse.Cloud.define('getHottestCamps', function(request, response){
         lists.forEach(function(list){
             var questionQuery = new Parse.Query(Question);
             questionQuery.equalTo('list', list);
+            questionQuery.greaterThanOrEqualTo('updatedAt', list.get('liveDate'));
+            questionQuery.lessThanOrEqualTo('updatedAt', list.get('endDate'));
             questionQuery.count().then(function(count){
                 countMap.push({
                     list: list,
