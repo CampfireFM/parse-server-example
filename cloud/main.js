@@ -322,6 +322,32 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
   })
 });
 
+Parse.Cloud.define('getMFeaturedCampfire', function(req, res){
+  var campfires = [];
+  var limit = req.params.limit || 6;
+  var skip =  req.params.skip || 0;
+
+  var Answer = Parse.Object.extend('Answer');
+  var query = new Parse.Query(Answer);
+  //query.equalTo('isDummyData', false);
+
+  query.include(['questionRef', 'questionRef.toUser',
+    'questionRef.fromUser', 'questionRef.charity', 'questionRef.list', 'userRef']);
+  query.notEqualTo('isTest', true);
+  query.descending('liveDate');
+  query.limit(limit);
+  query.skip(skip);
+
+  query.find({
+    success: function(objects) {
+      res.success(objects);
+    },
+    error: function(error) {
+      res.error(error);
+    }
+  })
+});
+
 Parse.Cloud.define('getMpActiveUsers', function(req, res) {
   var fromDate = new Date();
   fromDate.setMonth(fromDate.getMonth());
