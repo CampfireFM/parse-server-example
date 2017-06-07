@@ -8,7 +8,7 @@ const logTexts = {
     follows : 'The user has not subscribed to receive follows notification yet',
     earnings : 'The user has not subscribed to receive earnings notification yet'
 };
-
+const branch = require('node-branch-io');
 const subscriptionTypes = ['questions', 'unlocks', 'answers', 'likes', 'follows', 'earnings'];
 const campfireAutoPushTypes = ['friendMatch', 'joinCampfire'];
 
@@ -127,17 +127,29 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
             if(user.get('phoneNumber') === undefined){
                 console.log('User has not registerd phone number yet');
             } else {
-                alert += `\n https://campfire.fm/eavesdrop/${additionalData}`;
-                client.messages.create({
-                    to: user.get('phoneNumber'),
-                    from: config.twilio.number,
-                    body: alert
-                }, function(err, message) {
-                    if(err)
-                        console.log(err.message);
-                    else
-                        console.log(message.sid);
-                });
+                //Build deep link
+                branch.link.create(config.branchKey, {
+                    channel: '',
+                    feature: '',
+                    data: {
+                        answerId: additionalData
+                    }
+                }).then(function(link) {
+                    alert += `\n ${link}`;
+                    client.messages.create({
+                        to: user.get('phoneNumber'),
+                        from: config.twilio.number,
+                        body: alert
+                    }, function (err, message) {
+                        if (err)
+                            console.log(err.message);
+                        else
+                            console.log(message.sid);
+                    });
+                }).catch(function(err){
+                    console.log('Failed to create deep link for answer : ', err);
+                    throw 'Got an error while looking for withdrawal object ' + err.code + ' : ' + err.message;
+                })
             }
         }
     });
