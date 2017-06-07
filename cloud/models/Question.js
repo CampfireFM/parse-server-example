@@ -42,6 +42,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                     } else {
                         mail.sendQuestionEmail(
                             toUser.get('email'),
+                            request.object.id,
                             request.user.get('profilePhoto').url(),
                             toUser.get('firstName'),
                             request.object.get('text'),
@@ -62,6 +63,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                             } else {
                                 mail.sendQuestionEmail(
                                     toUser.get('email'),
+                                    request.object.id,
                                     request.user.get('profilePhoto').url(),
                                     toUser.get('firstName'),
                                     request.object.get('text'),

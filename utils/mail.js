@@ -1,6 +1,6 @@
 var config = require('../config.js');
 var mailgun = require('mailgun-js');
-
+const branch = require('node-branch-io');
 function sendWelcomeMail(userEmail){
     // Get access to Parse Server's cache
     const { AppCache } = require('parse-server/lib/cache');
@@ -108,27 +108,42 @@ function sendFollowEmail(recipient, followerProfilePhoto, followerUsername){
     });
 }
 
-function sendQuestionEmail(recipient, questionAskerProfilePhoto, questionAnswererUsername, questionText, questionPrice){
+function sendQuestionEmail(recipient, questionId, questionAskerProfilePhoto, questionAnswererUsername, questionText, questionPrice){
     const { AppCache } = require('parse-server/lib/cache');
     // Get a reference to the MailgunAdapter
     // NOTE: It's best to do this inside the Parse.Cloud.define(...) method body and not at the top of your file with your other imports. This gives Parse Server time to boot, setup cloud code and the email adapter.
     const MailgunAdapter = AppCache.get(config.appId)['userController']['adapter'];
 
-    // Invoke the send method with an options object
-    MailgunAdapter.send({
-        templateName: 'questionEmail',
-        recipient: recipient,
-        variables: {
-            questionAskerProfilePhoto,
-            questionAnswererUsername,
-            questionText,
-            questionPrice,
-            buildUserProfilePhoto : function(){
-                return function(text, render){
-                    return `<img height="100" width="100" alt="Please enable images to view this content" border="0" hspace="0" src="${render(text)}" style="border-radius: 20rem; color: #000000; font-size: 0.8rem; margin: 0; padding: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: 3px solid white; margin-top:3rem; display: block;" title="Hero Image" vspace="0" width="560">`
+    //Build deep link
+    branch.link.create(config.branchKey, {
+        channel: '',
+        feature: '',
+        data: {
+            questionId: questionId
+        }
+    }).then(function(link){
+        // Invoke the send method with an options object
+        MailgunAdapter.send({
+            templateName: 'questionEmail',
+            recipient: recipient,
+            variables: {
+                questionAskerProfilePhoto,
+                questionAnswererUsername,
+                questionText,
+                questionPrice,
+                questionId,
+                buildUserProfilePhoto : function(){
+                    return function(text, render){
+                        return `<img height="100" width="100" alt="Please enable images to view this content" border="0" hspace="0" src="${render(text)}" style="border-radius: 20rem; color: #000000; font-size: 0.8rem; margin: 0; padding: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: 3px solid white; margin-top:3rem; display: block;" title="Hero Image" vspace="0" width="560">`
+                    }
+                },
+                buildDeepLink: function(){
+                    return function(text, render){
+                        return `<a href="${link.url}" style="color: #F16F00; font-family: Nunito, Helvetica, sans-serif; font-size: 1.1rem; font-weight: 400; line-height: 160%;" target="_blank">`
+                    }
                 }
             }
-        }
+        });
     });
 }
 

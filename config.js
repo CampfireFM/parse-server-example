@@ -47,7 +47,8 @@ configs = {
             number : '14844168181',
             accountSid : 'AC5d07bea4ae1346c5143af33ec13f074d',
             authToken : '8961a3e9ba921dc52ee5d385ea9771f3'
-        }
+        },
+        branchKey: 'key_live_edqtcFM19DZEOY1Mk2wMimjptFfWP3dv'
     },
 	production : {
         appName: process.env.APP_NAME || 'campfiremedia',
@@ -94,7 +95,8 @@ configs = {
             number : '14844168181',
             accountSid : 'AC5d07bea4ae1346c5143af33ec13f074d',
             authToken : '8961a3e9ba921dc52ee5d385ea9771f3'
-        }
+        },
+        branchKey: 'key_live_edqtcFM19DZEOY1Mk2wMimjptFfWP3dv'
 	}
 };
 
