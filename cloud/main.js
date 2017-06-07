@@ -321,31 +321,35 @@ Parse.Cloud.define('getFeaturedCampfire', function(req, res){
     }
   })
 });
+function pointerTo(objectId, klass) {
 
-Parse.Cloud.define('getMFeaturedCampfire', function(req, res){
-  var campfires = [];
-  var limit = req.params.limit || 6;
-  var skip =  req.params.skip || 0;
+    return { __type:"Pointer", className:klass, objectId:objectId };
+}
+Parse.Cloud.define('getFeaturedAnswers', function(req, res) {
+    var campfires = [];
+    var limit = req.params.limit || 6;
+    var skip = req.params.skip || 0;
 
-  var Answer = Parse.Object.extend('Answer');
-  var query = new Parse.Query(Answer);
-  //query.equalTo('isDummyData', false);
+    var Answer = Parse.Object.extend('Answer');
+    var query = new Parse.Query(Answer);
+    //query.equalTo('isDummyData', false);
 
-  query.include(['questionRef', 'questionRef.toUser',
-    'questionRef.fromUser', 'questionRef.charity', 'questionRef.list', 'userRef']);
-  query.notEqualTo('isTest', true);
-  query.descending('liveDate');
-  query.limit(limit);
-  query.skip(skip);
+    query.include(['questionRef', 'questionRef.toUser',
+        'questionRef.fromUser', 'questionRef.charity', 'questionRef.list', 'userRef']);
+    query.notEqualTo('isTest', true);
+    query.containsAll('lists', [pointerTo('CTsXJi51Qc', 'List')]);
+    query.descending('liveDate');
+    query.limit(limit);
+    query.skip(skip);
 
-  query.find({
-    success: function(objects) {
-      res.success(objects);
-    },
-    error: function(error) {
-      res.error(error);
-    }
-  })
+    query.find({
+        success: function (objects) {
+            res.success(objects);
+        },
+        error: function (error) {
+            res.error(error);
+        }
+    })
 });
 
 Parse.Cloud.define('getMpActiveUsers', function(req, res) {
