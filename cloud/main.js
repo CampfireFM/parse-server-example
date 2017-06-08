@@ -962,6 +962,7 @@ Parse.Cloud.define('getFriendsMatch', function(request, response){
 
 Parse.Cloud.define('withdraw', function(request, response){
     var currentUser = request.user;
+    var paypalEmail = request.params.paypalEmail;
     var earningsBalance = currentUser.get('earningsBalance');
     var email = currentUser.get('email');
     var paypalConfig = config.paypal;
@@ -969,6 +970,7 @@ Parse.Cloud.define('withdraw', function(request, response){
 
     var sender_batch_id = Math.random().toString(36).substring(9);
     var amount = currentUser.get('earningsBalance');
+    // response.success("OK");
     // var create_payout_json = {
     //     'RECEIVER_TYPE' : 'EmailAddress',
     //     'L_EMAIL0' : 'krittylor@gmaiasdfafsl.xom',
@@ -977,8 +979,9 @@ Parse.Cloud.define('withdraw', function(request, response){
     // };
 
     var create_payout_json = {
-        'RECEIVERTYPE' : 'PhoneNumber',
-        'L_RECEIVERPHONE0' : '',
+        'RECEIVERTYPE' : 'Email',
+        // 'L_RECEIVERPHONE0' : '+14846024929',
+        'L_EMAIL0': 'test_test_test_test_test@test.com',
         'L_AMT0' : 0.1,
         'CURRENCYCODE' : 'USD'
     };
@@ -1004,9 +1007,9 @@ Parse.Cloud.define('withdraw', function(request, response){
             console.log(`ErrorCode : ${payout.L_ERRORCODE0}, ${payout.L_SHORTMESSAGE0}`)
         }
     }).catch(function(err){
-        console.log(error.response);
-        response.error(error);
-        throw 'Got an error ' + error.code + ' : ' + error.message;
+        console.log(err.response);
+        response.error(err);
+        throw 'Got an error ' + err.code + ' : ' + err.message;
     });
 });
 
@@ -1032,6 +1035,8 @@ Parse.Cloud.define('checkWithdrawalStatus', function(request, response){
 });
 
 Parse.Cloud.define('getHottestCamps', function(request, response){
+
+    return response.success([]);
     var List = Parse.Object.extend('List');
     var Question = Parse.Object.extend('Question');
 
@@ -1080,6 +1085,7 @@ Parse.Cloud.define('getHottestCamps', function(request, response){
 });
 
 Parse.Cloud.define('getHottestCategories', function(request, response){
+    return response.success([]);
     var Category = Parse.Object.extend('Category');
     var Question = Parse.Object.extend('Question');
 
@@ -1135,19 +1141,21 @@ Parse.Cloud.define('getSuggestedUsers', function(request, response){
     });
 });
 
-// //Add answerCount to all users
-// (function(){
-//     const Question = Parse.Object.extend('Question');
-//     var query = new Parse.Query(Question);
-//     query.equalTo('isTest', false);
-//     query.equalTo('isAnswered', true);
-//     query.include('toUser');
-//     query.count({useMasterKey: true}).then(function(count){
-//         console.log(count);
-//     });
-//     query.each(function(question){
-//         const toUser = question.get('toUser');
-//         toUser.increment('answerCount', 1);
-//         toUser.save(null, {useMasterKey: true});
-//     }, {useMasterKey: true});
-// })();
+//Schedule Refund Strategy every 5 minutes
+(function scheduleRefund(){
+    setInterval(function(){
+        var Question = Parse.Object.extend('Question');
+        var query = new Parse.Query(Question);
+        var currentDate = new Date();
+        var start = new Date();
+        var end = new Date();
+        start.setDate(start.getDate() - 4);
+        end.setDate(end.getDate() - 3);
+        query.greaterThanOrEqual('createdAt', start);
+        query.lessThanOrEqual('createdAt', end);
+        query.find({useMasterKey: true}).then(function(questions){
+            if(questions.length)
+        })
+
+    }, 60 * 5 * 1000);
+})();
