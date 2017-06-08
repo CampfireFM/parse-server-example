@@ -1037,9 +1037,6 @@ Parse.Cloud.define('getHottestCamps', function(request, response){
 
     var listQuery = new Parse.Query(List);
 
-    // added temporarily so we show no categories
-    listQuery.limit = 0
-
     var currentDate = new Date();
     listQuery.greaterThanOrEqualTo('endDate', currentDate);
     listQuery.lessThanOrEqualTo('liveDate', currentDate);
@@ -1087,9 +1084,6 @@ Parse.Cloud.define('getHottestCategories', function(request, response){
     var Question = Parse.Object.extend('Question');
 
     var categoryQuery = new Parse.Query(Category);
-
-    // added temporarily so we show no categories
-    categoryQuery.limit = 0
 
     var completed = function(countMap){
         if(countMap.length > 0)
