@@ -1037,6 +1037,9 @@ Parse.Cloud.define('getHottestCamps', function(request, response){
 
     var listQuery = new Parse.Query(List);
 
+    // added temporarily so we show no categories
+    listQuery.limit = 0
+
     var currentDate = new Date();
     listQuery.greaterThanOrEqualTo('endDate', currentDate);
     listQuery.lessThanOrEqualTo('liveDate', currentDate);
@@ -1085,6 +1088,9 @@ Parse.Cloud.define('getHottestCategories', function(request, response){
 
     var categoryQuery = new Parse.Query(Category);
 
+    // added temporarily so we show no categories
+    categoryQuery.limit = 0
+
     var completed = function(countMap){
         if(countMap.length > 0)
             countMap.sort(function(a, b){
@@ -1125,6 +1131,22 @@ Parse.Cloud.define('getSuggestedUsers', function(request, response){
     var userQuery = new Parse.Query(Parse.User);
     userQuery.notEqualTo('isTestUser', true);
     userQuery.descending('answerCount').limit(20);
+
+    userQuery.find({useMasterKey: true}).then(function(suggestedUsers){
+        console.log(suggestedUsers);
+        response.success(suggestedUsers);
+    }, function(err){
+        console.log(err);
+        throw new Error(`Got an error while getting suggested users. ErrorCode: ${err.code}, ErrorMessage: ${err.message}`);
+    });
+});
+
+
+Parse.Cloud.define('getHottestUsers', function(request, response){
+    //Get suggested users ranked by the number of answers to question
+    var userQuery = new Parse.Query(Parse.User);
+    userQuery.notEqualTo('isTestUser', true);
+    userQuery.descending('answerCount').limit(6);
 
     userQuery.find({useMasterKey: true}).then(function(suggestedUsers){
         console.log(suggestedUsers);
