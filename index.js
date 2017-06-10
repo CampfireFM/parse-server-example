@@ -357,7 +357,7 @@ app.get('/meta/*', function(req, res) {
 
 
 app.use(bodyParser.urlencoded({extended: false}));
-app.post('/ipn', ipn.validator(validationHandler));
+app.post('/ipn', ipn.validator(validationHandler, process.env.NODE_ENV === 'production'));
 
 function validationHandler(err, ipnContent){
     if(err){
