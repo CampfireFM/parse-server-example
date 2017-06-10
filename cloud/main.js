@@ -5,6 +5,7 @@ const payment_methods = require("../utils/paymenthandler.js");
 const stripe = require('stripe')(config.stripe_live_key);
 // var paypal = require('paypal-rest-sdk');
 var Paypal = require('paypal-nvp-api');
+const wrapper = require('co-express');
 //include the JS files which represent each classes (models), and contains their operations
 require("./models/Answer.js");
 require("./models/Campfire.js");
@@ -15,6 +16,7 @@ require("./models/Question.js");
 require("./models/User.js");
 require("./models/List.js");
 require("./models/Activity");
+require("./models/ProductPurchase");
 require("./algolia/algoliaQuestions.js");
 require("./common");
 
@@ -27,6 +29,8 @@ transactionFee = 0.3;
 answerPercentageToCampfire = 0.2;
 campfireUnlockValue = 0.12;
 matchValue = 0.1;
+unlockCostMatches = 25;
+unlockMatchValue = 0.002475;
 (function loadDefaultSettings(){
     var Defaults = Parse.Object.extend('Defaults');
     var default_values = null;
@@ -39,6 +43,8 @@ matchValue = 0.1;
         answerPercentageToCampfire = defaults[0].get('answerPercentageToCampfire');
         campfireUnlockValue = defaults[0].get('campfireUnlockValue');
         matchValue = defaults[0].get('matchValue');
+        unlockCostMatches = defaults[0].get('unlockCostMatches');
+        unlockMatchValue = defaults[0].get('unlockMatchValue');
     }, function(err){
         //set to default value
         transactionFee = 0.3;
@@ -46,6 +52,8 @@ matchValue = 0.1;
         answerPercentageToCampfire = 0.2;
         campfireUnlockValue = 0.12;
         matchValue = 0.1;
+        unlockCostMatches = 25;
+        unlockMatchValue = 0.002475;
         console.log(err);
     })
 })();
@@ -56,6 +64,8 @@ Parse.Cloud.afterSave('Defaults', function(request){
     answerPercentageToCampfire = request.object.get('answerPercentageToCampfire');
     campfireUnlockValue = request.object.get('campfireUnlockValue');
     matchValue = request.object.get('matchValue');
+    unlockCostMatches = request.get('unlockCostMatches');
+    unlockMatchValue = request.get('unlockMatchValue');
     if(!transactionPercentage)
         transactionPercentage = 2.9;
     if(!transactionFee)
@@ -66,6 +76,10 @@ Parse.Cloud.afterSave('Defaults', function(request){
         campfireUnlockValue = 0.12;
     if(!matchValue)
         matchValue = 0.1;
+    if(!unlockCostMatches)
+        unlockCostMatches = 25;
+    if(!unlockMatchValue)
+        unlockMatchValue = 0.002475;
 });
 
 //the below function is just to test if everything is working fine
@@ -1142,24 +1156,33 @@ Parse.Cloud.define('getSuggestedUsers', function(request, response){
 });
 
 
-//Schedule Refund Strategy every 5 minutes
-// (function scheduleRefund(){
-//     setInterval(function(){
-//         var Question = Parse.Object.extend('Question');
-//         var query = new Parse.Query(Question);
-//         var currentDate = new Date();
-//         var start = new Date();
-//         var end = new Date();
-//         start.setDate(start.getDate() - 4);
-//         end.setDate(end.getDate() - 3);
-//         query.greaterThanOrEqual('createdAt', start);
-//         query.lessThanOrEqual('createdAt', end);
-//         query.find({useMasterKey: true}).then(function(questions){
-//             if(questions.length)
-//         })
-//
-//     }, 60 * 5 * 1000);
-// })();
+// Schedule Refund Strategy every 5 minutes
+(function scheduleRefund(){
+    setInterval(function(){
+        var Question = Parse.Object.extend('Question');
+        var query = new Parse.Query(Question);
+        var currentDate = new Date();
+        var start = new Date();
+        var end = new Date();
+        start.setDate(start.getDate() - 4);
+        end.setDate(end.getDate() - 3);
+        query.greaterThanOrEqualTo('createdAt', start);
+        query.lessThanOrEqualTo('createdAt', end);
+        query.equalTo('isAnswered', false);
+        query.include('fromUser');
+        query.find({useMasterKey: true}).then(function(questions){
+            if(questions.length){
+                questions.forEach(function(question){
+                    question.set('isExpired', true);
+                    question.save(null, {useMasterkey: true});
+                    const fromUser = question.get('fromUser');
+                    fromUser.increment('matchCount', question.price / matchValue);
+                    fromUser.save(null, {useMasterKey : true});
+                });
+            }
+        });
+    }, 60 * 5 * 1000);
+})();
 
 Parse.Cloud.define('getHottestUsers', function(request, response){
     //Get suggested users ranked by the number of answers to question

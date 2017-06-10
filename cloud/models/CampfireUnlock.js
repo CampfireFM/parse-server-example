@@ -50,41 +50,68 @@ function splitUnlockEarnings(params){
 
     console.log("reached here11");
     var question = params.question;
-    var total_unlock_earnings = campfireUnlockValue;
+    var total_unlock_earnings = unlockCostMatches * unlockMatchValue;
     
     var fromUser = question.get("fromUser");
     var toUser   = question.get("toUser");
 
     var split_asker = total_unlock_earnings / 2;
     var split_answerer = total_unlock_earnings / 2;
+    if(question.get('type') !== 'user'){
+        split_asker = 0;
+        split_answerer = total_unlock_earnings;
+    }
+
+    if(question.get('type') === 'user'){
+        var asker_charity_percentage = fromUser.get("donationPercentage") ? fromUser.get("donationPercentage") : 0;
+        var split_asker_charity = split_asker * ( asker_charity_percentage / 100);
+
+        var asker_charity = fromUser.get("charityRef");
+
+        var split_asker_final = split_asker - split_asker_charity;
+        var payout_asker_params = {
+            amount: split_asker_final,
+            userRef: fromUser,
+            unlockRef: params.campfireunlock,
+            type: 'unlockAsker',
+            isPaid: false
+        };
+
+        console.log(payout_asker_params);
+
+        createPayoutForUnlock(payout_asker_params, function(e,r) {
+            console.log(e);
+        });
+
+        var donation_asker_params = {
+            amount: split_asker_charity,
+            charityRef: asker_charity,
+            questionRef: question,
+            userRef: fromUser,
+            isPaid: false
+        };
+
+        createDonationForUnlock(donation_asker_params, function (e, r) {
+            console.log(e);
+            console.log();
+        });
+
+
+        // The following should probably go inside a payout or donation success block
+
+        fromUser.increment("earningsTotal", split_asker);
+        fromUser.increment("earningsBalance", split_asker);
+        fromUser.increment("earningsDonated", donation_asker_params["matchesCount"]);
+        fromUser.save(null, {useMasterKey: true});
+    }
 
     var answerer_charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
     var split_answerer_charity = split_answerer * ( answerer_charity_percentage / 100);
 
-    var asker_charity_percentage = fromUser.get("donationPercentage") ? fromUser.get("donationPercentage") : 0;
-    var split_asker_charity = split_asker * ( asker_charity_percentage / 100);
-
-    var asker_charity = fromUser.get("charityRef");
-
-    var split_asker_final = split_asker - split_asker_charity;
     var split_answerer_final = split_answerer - split_answerer_charity;
 
-    var payout_asker_params = {
-        matchesCount: split_asker_final,
-        userRef: fromUser,
-        unlockRef: params.campfireunlock,
-        type: 'unlockAsker',
-        isPaid: false
-    };
-
-    console.log(payout_asker_params);
-
-    createPayoutForUnlock(payout_asker_params, function(e,r) {
-        console.log(e);
-    });
-
     var payout_answerer_params = {
-        matchesCount: split_answerer_final,
+        amount: split_answerer_final,
         userRef: toUser,
         unlockRef: params.campfireunlock,
         type: 'unlockAnswerer',
@@ -97,7 +124,7 @@ function splitUnlockEarnings(params){
     });
 
     var donation_answerer_params = {
-        matchesCount: split_answerer_charity,
+        amount: split_answerer_charity,
         charityRef: question.get("charity"),
         questionRef: question,
         userRef: toUser,
@@ -107,27 +134,6 @@ function splitUnlockEarnings(params){
         console.log(e);
         console.log();
     });
-
-    var donation_asker_params = {
-        matchesCount: split_asker_charity,
-        charityRef: asker_charity,
-        questionRef: question,
-        userRef: fromUser,
-        isPaid: false
-    };
-
-    createDonationForUnlock(donation_asker_params, function (e, r) {
-        console.log(e);
-        console.log();
-    });
-
-
-    // The following should probably go inside a payout or donation success block
-
-    fromUser.increment("earningsTotal", split_asker);
-    fromUser.increment("earningsBalance", split_asker);
-    fromUser.increment("earningsDonated", donation_asker_params["matchesCount"]);
-    fromUser.save(null, {useMasterKey: true});
 
     toUser.increment("earningsTotal", split_answerer);
     toUser.increment("earningsBalance", split_answerer);
@@ -143,6 +149,8 @@ function createDonationForUnlock(params, callback) {
     var Donation = Parse.Object.extend("Donation");
     var donation = new Donation();
 
+    if(params.amount === 0)
+        return callback(null);
     for (key in params) {
         donation.set(key, params[key]);
     }
