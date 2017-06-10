@@ -372,8 +372,8 @@ function validationHandler(err, ipnContent){
             var ipn = new IPN();
             ipn.set('masspayTransactionId', ipnContent.masspay_txn_id_1);
             ipn.set('currency', ipnContent.mc_currency_1);
-            ipn.set('fee', ipnContent.mc_fee_1);
-            ipn.set('gross', ipnContent.mc_gross_1);
+            ipn.set('fee', parseFloat(ipnContent.mc_fee_1));
+            ipn.set('gross', parseFloat(ipnContent.mc_gross_1));
             ipn.set('paymentDate', ipnContent.payment_date);
             ipn.set('paymentStatus', ipnContent.payment_status);
             ipn.set('status', ipnContent.status_1);
@@ -382,7 +382,11 @@ function validationHandler(err, ipnContent){
             ipn.set('testIpn', ipnContent.test_ipn == '1');
             if(ipnContent.status_1 == 'Failed')
                 ipn.set('reasonCode', ipnContent.reason_code_1);
-            ipn.save(null, {useMasterKey : true});
+            ipn.save(null, {useMasterKey : true}).then(function(res){
+                console.log(res);
+            }, function(err){
+                console.log(err);
+            });
             // Create payout object in parse
             var Payout = Parse.Object.extend('Withdrawal');
             var newPayout = new Payout();
