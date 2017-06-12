@@ -1169,13 +1169,14 @@ Parse.Cloud.define('getSuggestedUsers', function(request, response){
         query.greaterThanOrEqualTo('createdAt', start);
         query.lessThanOrEqualTo('createdAt', end);
         query.equalTo('isAnswered', false);
-        query.equalTo('isExpired', false);
+        query.notEqualTo('isRefunded', true);
         query.include('fromUser');
         query.find({useMasterKey: true}).then(function(questions){
             if(questions.length){
                 questions.forEach(function(question){
                     console.log('Refunding money for question ', question.get('text'));
                     question.set('isExpired', true);
+                    question.set('isRefunded', true);
                     question.save(null, {useMasterkey: true});
                     const fromUser = question.get('fromUser');
                     fromUser.increment('matchCount', question.get('price') / matchValue);
