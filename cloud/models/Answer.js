@@ -64,7 +64,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                     question.save(null, { useMasterKey: true });
                     //Charge user and split payment.
                     if(question.get('price') != undefined && question.get('price') != 0)
-                        chargeUserAndSplitPayment(request, question, function(e,r){
+                        splitAndMakePayments(question, function(e,r){
                             console.log(e);
                             console.log(r);
                         });
@@ -124,31 +124,8 @@ function getQuestionAndItsPointers(questionId,callback){
     });
 }
 
-/*
- @Description - This function takes the matches from the question asker, and split
- the amount between campfire, answerer, and donation
- Important - Call this function only if the question is not expired (compare against default expire time)
- @question - instace of Question object
- @
- */
-function chargeUserAndSplitPayment(request, question, callback){
-
-    //first find the charge details for the question
-    getChargeDetails(question,function(err_charge, charge){
-        if(charge){
-            request.log.info("The question ID that we are sending is "+question.id);
-
-            //calls the function to split the payment to stake holders based
-            //on properties of the question
-            splitAndMakePayments(question, charge, function(error, result){
-
-            });
-        }
-    });
-}
-
 //This function calculates the payments for user, donation and creates payouts
-function splitAndMakePayments(question, charge, callback){
+function splitAndMakePayments(question, callback){
 
     var qAsker = question.get("fromUser");
     var qAnswerer = question.get("toUser");
@@ -218,22 +195,6 @@ function splitAndMakePayments(question, charge, callback){
     qAnswerer.increment("earningsDonated", split_charity);
     qAnswerer.save(null, {useMasterKey: true});
 
-}
-
-//this function gets the charge details from the Charge table for the given question
-function getChargeDetails(question,callback){
-
-    var Charge = Parse.Object.extend("Charge");
-    var query = new Parse.Query(Charge);
-    query.equalTo("questionRef",question);
-    query.find({
-        success: function(charges) {
-            return callback(null,charges[0]);
-        },
-        error: function(object, error) {
-            return callback(error,null);
-        }
-    });
 }
 
 /*
