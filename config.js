@@ -5,7 +5,6 @@ configs = {
     development: {
         appName: process.env.APP_NAME || 'campfiremedia',
         databaseURI: process.env.DATABASE_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/dev',
-        // databaseURI :'mongodb://heroku_3t2m0sw8:js2nq3l7o4cqk2hoshjmj2tj6a@ds139728-a0.mlab.com:39728,ds139728-a1.mlab.com:39728/heroku_3t2m0sw8?replicaSet=rs-ds139728',
         appId: process.env.APP_ID || 'maryhadalittlelamb',
         masterKey: process.env.MASTER_KEY || 'whosefleecewaswhiteassnow',
         serverURL: process.env.SERVER_URL || process.env.serverURL || 'http://localhost:1337/parse',
@@ -53,7 +52,6 @@ configs = {
 	production : {
         appName: process.env.APP_NAME || 'campfiremedia',
         databaseURI: process.env.DATABASE_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/dev',
-        // databaseURI :'mongodb://heroku_3t2m0sw8:js2nq3l7o4cqk2hoshjmj2tj6a@ds139728-a0.mlab.com:39728,ds139728-a1.mlab.com:39728/heroku_3t2m0sw8?replicaSet=rs-ds139728',
         appId: process.env.APP_ID || 'maryhadalittlelamb',
         masterKey: process.env.MASTER_KEY || 'whosefleecewaswhiteassnow',
         serverURL: process.env.SERVER_URL || process.env.serverURL || 'http://localhost:1337/parse',
