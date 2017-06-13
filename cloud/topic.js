@@ -27,7 +27,7 @@ Parse.Cloud.define('getFeaturedTopics', function(req, res) {
   // var topics = [];
   var List = Parse.Object.extend('List');
   var query = new Parse.Query(List);
-  query.equalTo("objectId",'mNXEwS7uo2');
+  query.equalTo("objectId",'inTo8rprhE');
   query.find({
     success: function(topics) {
       res.success(topics);
