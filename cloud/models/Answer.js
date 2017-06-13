@@ -158,19 +158,6 @@ function splitAndMakePayments(question, callback){
         console.log();
     });
 
-    var deposit_params = {
-        transactionPercentage: transactionPercentage,
-        amount: price,
-        transactionFee : transactionFee,
-        userRef : fromUser,
-        questionRef : question
-    };
-
-    createDeposit(deposit_params, function(e,r){
-        console.log(e);
-        console.log();
-    });
-
     if(split_charity > 0){
         var donation_params = {
             amount: split_charity,
@@ -195,29 +182,6 @@ function splitAndMakePayments(question, callback){
     qAnswerer.increment("earningsDonated", split_charity);
     qAnswerer.save(null, {useMasterKey: true});
 
-}
-
-/*
- @Description : Function to createDeposit record
- */
-function createDeposit(params, callback){
-
-    var Deposit = Parse.Object.extend("Deposit");
-    var deposit = new Deposit();
-
-    for(key in params){
-        deposit.set(key,params[key]);
-    }
-
-    deposit.save(null, {
-        useMasterKey: true,
-        success: function(depositrecord){
-            return callback(null,depositrecord);
-        },error : function(err){
-            return callback(err,null);
-        }
-    });
-    //end of save operation code block
 }
 
 /*

@@ -26,13 +26,6 @@ Parse.Cloud.afterSave("Question", function(request) {
                 //Add question activity to Activity
                 addActivity('question', request.user, user, request.object, null);
                 
-                var params = {
-                    questionRef : request.object,
-                    userRef : request.user,
-                    matchesCount : request.object.get("price") / matchValue,
-                    isExpired : false
-                };
-                
                 sendPushOrSMS(request.user, toUser, 'questions');
 
                 //Check for email subscription of questions
