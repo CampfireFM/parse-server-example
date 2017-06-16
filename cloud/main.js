@@ -990,8 +990,8 @@ Parse.Cloud.define('withdraw', function(request, response){
     //     'L_AMT0' : 0.1,
     //     'CURRENCYCODE' : 'USD'
     // };
-    if(process.env.NODE_ENV !== 'production')
-      paypalEmail = 'krittylor@gmail.xom';
+    // if(process.env.NODE_ENV !== 'production')
+    //   paypalEmail = 'krittylor@gmail.xom';
     var create_payout_json = {
         'RECEIVERTYPE' : 'Email',
         'L_EMAIL0': paypalEmail,
@@ -1023,27 +1023,6 @@ Parse.Cloud.define('withdraw', function(request, response){
         console.log(err.response);
         response.error(err);
         throw 'Got an error ' + err.code + ' : ' + err.message;
-    });
-});
-
-Parse.Cloud.define('checkWithdrawalStatus', function(request, response){
-    var currentUser = request.user;
-    var withdrawalId = request.params.withdrawalId;
-
-    var Withdrawal = Parse.Object.extend('Withdrawal');
-    var query = new Parse.Query(Withdrawal);
-
-    query.equalTo('objectId', withdrawalId);
-    query.first({useMasterKey : true}).then(function(withdrawal){
-        if(withdrawal){
-            console.log(response);
-            response.success(withdrawal);
-        }
-    }, function(err){
-        console.log(err);
-        response.error(err);
-
-        throw 'Got an error while looking for withdrawal object ' + err.code + ' : ' + err.message;
     });
 });
 

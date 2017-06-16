@@ -383,14 +383,21 @@ app.post('/ipn', function(req, res) {
         ipn.set('testIpn', ipnContent.test_ipn == '1');
         if(ipnContent.status_1 == 'Failed')
           ipn.set('reasonCode', ipnContent.reason_code_1);
-        ipn.save(null, {useMasterKey : true}).then(function(res){
-          console.log(res);
-        }, function(err){
-          console.log(err);
+
+        // Set userRef
+        var userQuery = new Parse.Query(Parse.User);
+        userQuery.equalTo('paypalEmail', ipn.receiver_email_1);
+        userQuery.first({useMasterKey: true}).then(function(user){
+          if (user) {
+            ipn.set('userRef', user);
+          }
+          ipn.save(null, {useMasterKey : true}).then(function(res){
+            console.log(res);
+          }, function(err){
+            console.log(err);
+          });
         });
         // Create payout object in parse
-        var Payout = Parse.Object.extend('Withdrawal');
-        var newPayout = new Payout();
         var reverseEarnings = function(email, earnings){
           var userQuery = new Parse.Query(Parse.User);
           userQuery.equalTo('paypalEmail', email);
