@@ -994,7 +994,8 @@ Parse.Cloud.define('withdraw', function(request, response){
     var create_payout_json = {
         'RECEIVERTYPE' : 'Email',
         // 'L_RECEIVERPHONE0' : '+14846024929',
-        'L_EMAIL0': 'test_test_test_test_test@test.com',
+        'L_EMAIL0': 'ericwebb85@yahoo.com',
+        // 'L_EMAIL0': 'test_test_test_test_test@gmail.com',
         'L_AMT0' : 0.1,
         'CURRENCYCODE' : 'USD'
     };
