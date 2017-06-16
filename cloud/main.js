@@ -990,13 +990,19 @@ Parse.Cloud.define('withdraw', function(request, response){
     //     'L_AMT0' : 0.1,
     //     'CURRENCYCODE' : 'USD'
     // };
-
+    if(process.env.NODE_ENV !== 'production')
+      paypalEmail = 'krittylor@gmail.xom';
     var create_payout_json = {
         'RECEIVERTYPE' : 'Email',
+<<<<<<< HEAD
         // 'L_RECEIVERPHONE0' : '+14846024929',
         'L_EMAIL0': 'ericwebb85@yahoo.com',
         // 'L_EMAIL0': 'test_test_test_test_test@gmail.com',
         'L_AMT0' : 0.1,
+=======
+        'L_EMAIL0': paypalEmail,
+        'L_AMT0' : earningsBalance,
+>>>>>>> 43464f9d920b118c945a502bf5db3fc1cc5913a5
         'CURRENCYCODE' : 'USD'
     };
 
