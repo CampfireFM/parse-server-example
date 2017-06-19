@@ -7,7 +7,8 @@ Parse.Cloud.afterSave('ProductPurchase', function(request){
             //Create deposit
             var deposit = new Parse.Object("Deposit");
             deposit.set('userRef', user);
-            deposit.set('amount', product.get('cost') * 0.7);
+            deposit.set('amount', product.get('cost'));
+            deposit.set('productPurchaseRef', request.object);
             deposit.save(null, {useMasterKey: true});
         })
     })
