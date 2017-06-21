@@ -58,8 +58,10 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
                                 if (err) {
                                     console.log(err);
                                 } else {
-                                    //Send push notification to user's friends
+                                    // Send push notification to user's friends
                                     sendPushOrSMS(request.user, campfireFriends, 'joinCampfire');
+                                    request.object.set('fbFollowers', campfireFriends.length);
+                                    request.object.save(null, {useMasterKey: true});
                                 }
                             });
                         }
@@ -90,8 +92,10 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
                             if (err) {
                                 console.log(err);
                             } else {
-                                //Send push notification to user's friend
+                                // Send push notification to user's friend
                                 sendPushOrSMS(request.user, campfireFriends, 'joinCampfire');
+                                request.object.set('twitterFollowers', campfireFriends.length);
+                                request.object.save(null, {useMasterKey: true});
                             }
                         })
                     }
