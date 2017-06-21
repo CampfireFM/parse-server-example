@@ -50,7 +50,7 @@ function splitUnlockEarnings(params){
 
     console.log("reached here11");
     var question = params.question;
-    var total_unlock_earnings = unlockCostMatches * unlockMatchValue;
+    var total_unlock_earnings = Math.floor10(unlockCostMatches * unlockMatchValue);
     
     var fromUser = question.get("fromUser");
     var toUser   = question.get("toUser");
@@ -101,7 +101,8 @@ function splitUnlockEarnings(params){
 
         fromUser.increment("earningsTotal", split_asker);
         fromUser.increment("earningsBalance", split_asker);
-        fromUser.increment("earningsDonated", donation_asker_params["matchesCount"]);
+        fromUser.increment("earningsFromUnlock", split_asker);
+        fromUser.increment("earningsDonated", split_asker_charity);
         fromUser.save(null, {useMasterKey: true});
     }
 
@@ -137,7 +138,8 @@ function splitUnlockEarnings(params){
 
     toUser.increment("earningsTotal", split_answerer);
     toUser.increment("earningsBalance", split_answerer);
-    toUser.increment("earningsDonated", donation_answerer_params["matchesCount"]);
+    toUser.increment("earningsFromUnlock", split_answerer);
+    toUser.increment("earningsDonated", split_answerer_charity);
     toUser.save(null, {useMasterKey: true});
 }
 
@@ -214,3 +216,51 @@ function getQuestionObjAndItsPointers(questionId,callback) {
         }
     });
 }
+
+(function() {
+    /**
+     * Decimal adjustment of a number.
+     *
+     * @param {String}  type  The type of adjustment.
+     * @param {Number}  value The number.
+     * @param {Integer} exp   The exponent (the 10 logarithm of the adjustment base).
+     * @returns {Number} The adjusted value.
+     */
+    function decimalAdjust(type, value, exp) {
+        // If the exp is undefined or zero...
+        if (typeof exp === 'undefined' || +exp === 0) {
+            return Math[type](value);
+        }
+        value = +value;
+        exp = +exp;
+        // If the value is not a number or the exp is not an integer...
+        if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0)) {
+            return NaN;
+        }
+        // Shift
+        value = value.toString().split('e');
+        value = Math[type](+(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp)));
+        // Shift back
+        value = value.toString().split('e');
+        return +(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp));
+    }
+
+    // Decimal round
+    if (!Math.round10) {
+        Math.round10 = function(value, exp) {
+            return decimalAdjust('round', value, exp);
+        };
+    }
+    // Decimal floor
+    if (!Math.floor10) {
+        Math.floor10 = function(value, exp) {
+            return decimalAdjust('floor', value, exp);
+        };
+    }
+    // Decimal ceil
+    if (!Math.ceil10) {
+        Math.ceil10 = function(value, exp) {
+            return decimalAdjust('ceil', value, exp);
+        };
+    }
+})();
