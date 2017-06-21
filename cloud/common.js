@@ -135,7 +135,7 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
                         answerId: additionalData
                     }
                 }).then(function(link) {
-                    alert += `\n ${link}`;
+                    alert += `\n ${link.url}`;
                     client.messages.create({
                         to: user.get('phoneNumber'),
                         from: config.twilio.number,
