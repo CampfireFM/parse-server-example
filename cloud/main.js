@@ -646,11 +646,9 @@ Parse.Cloud.define("updateNewUser", function(request, response) {
     user.set('missedNotificationCount', 0);
     user.set('matchCount', initial_match_count);
     user.set('questionPrice', 5);
-    // user.set('accountBalance', '');    // Should no longer exists
     user.set('askAbout', '');
     user.set('tagline', '');
     user.set('donationPercentage', 0);
-    // user.set('totalEarnings', 0);      // Should no longer exists
     user.set('isTestUser', false);
     user.set('isDummyUser', false);
 
