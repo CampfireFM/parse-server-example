@@ -29,6 +29,7 @@ campfireUnlockValue = 0.12;
 matchValue = 0.1;
 unlockCostMatches = 25;
 unlockMatchValue = 0.002475;
+campfireDefaultUser = null;
 (function loadDefaultSettings(){
     var Defaults = Parse.Object.extend('Defaults');
     var default_values = null;
@@ -43,6 +44,7 @@ unlockMatchValue = 0.002475;
         matchValue = defaults[0].get('matchValue');
         unlockCostMatches = defaults[0].get('unlockCostMatches');
         unlockMatchValue = defaults[0].get('unlockMatchValue');
+        campfireDefaultUser = defaults[0].get('campfireUserRef');
     }, function(err){
         //set to default value
         transactionFee = 0.3;
@@ -64,6 +66,7 @@ Parse.Cloud.afterSave('Defaults', function(request){
     matchValue = request.object.get('matchValue');
     unlockCostMatches = request.get('unlockCostMatches');
     unlockMatchValue = request.get('unlockMatchValue');
+    campfireDefaultUser = request.get('campfireUserRef');
     if(!transactionPercentage)
         transactionPercentage = 2.9;
     if(!transactionFee)
@@ -1073,6 +1076,25 @@ Parse.Cloud.define('getHottestUsers', function(request, response){
     });
 });
 
+Parse.Cloud.define('getWelcomeQuestion', function(request, response){
+
+    // Get welcome question
+    var Question = Parse.Object.extend('Question');
+    var question = new Question();
+    question.set('toUser', request.user);
+    question.set('isAnswered', false);
+    question.set('price', 0);
+    question.set('text', 'This is welcome question');
+    question.set('charityPercentage', 0);
+    question.set('fromUser', campfireDefaultUser);
+    question.set('isExpired', false);
+    question.set('isTest', false);
+    question.save(null, {useMasterKey: true}).then(function(res){
+        response.success({});
+    }, function(err){
+        response.error(err);
+    })
+});
 // //Add answerCount to all users
 // (function(){
 //     const Question = Parse.Object.extend('Question');
@@ -1089,3 +1111,29 @@ Parse.Cloud.define('getHottestUsers', function(request, response){
 //         toUser.save(null, {useMasterKey: true});
 //     }, {useMasterKey: true});
 // })();
+//
+// var Twilio = require('twilio');
+// var branch = require('node-branch-io');
+// branch.link.create(config.branchKey, {
+//     channel: '',
+//     feature: '',
+//     data: {
+//         answerId: '30XOrRCjeF'
+//     }
+// }).then(link => {
+//     var accountSid = config.twilio.accountSid;
+//     var authToken = config.twilio.authToken;
+//
+//     //require the Twilio module and create a REST client
+//     var client = Twilio(config.twilio.accountSid, config.twilio.authToken);
+//     client.messages.create({
+//         to: '+971551532847',
+//         from: config.twilio.number,
+//         body: link.url
+//     }, function (err, message) {
+//         if (err)
+//             console.log(err.message);
+//         else
+//             console.log(message.sid);
+//     });
+// });
