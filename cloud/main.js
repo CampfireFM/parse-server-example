@@ -29,6 +29,7 @@ campfireUnlockValue = 0.12;
 matchValue = 0.1;
 unlockCostMatches = 25;
 unlockMatchValue = 0.002475;
+campfireDefaultUser = null;
 (function loadDefaultSettings(){
     var Defaults = Parse.Object.extend('Defaults');
     var default_values = null;
@@ -43,6 +44,7 @@ unlockMatchValue = 0.002475;
         matchValue = defaults[0].get('matchValue');
         unlockCostMatches = defaults[0].get('unlockCostMatches');
         unlockMatchValue = defaults[0].get('unlockMatchValue');
+        campfireDefaultUser = defaults[0].get('campfireUserRef');
     }, function(err){
         //set to default value
         transactionFee = 0.3;
@@ -64,6 +66,7 @@ Parse.Cloud.afterSave('Defaults', function(request){
     matchValue = request.object.get('matchValue');
     unlockCostMatches = request.get('unlockCostMatches');
     unlockMatchValue = request.get('unlockMatchValue');
+    campfireDefaultUser = request.get('campfireUserRef');
     if(!transactionPercentage)
         transactionPercentage = 2.9;
     if(!transactionFee)
@@ -85,149 +88,135 @@ Parse.Cloud.define('hello', function(req, res) {
     res.success("Hi");
 });
 
-Parse.Cloud.define('getStripeCustomer', function(req, res) {
-	var customerId = req.params.customerId;
-  	if(!customerId){
-  		return res.error('customerId is mandatory');
-  	}else{
-  		payment_methods.retrieveCustomer(customerId, function(err, result){
-  			if(err){
-  				return res.error(err);
-  			}else{
-  				return res.success(result);
-  			}
-  		})
-  	}
-});
-
-Parse.Cloud.define('addAnswersToList', function(req, res){
-  var Answer = Parse.Object.extend('Answer');
-  var query = new Parse.Query(Answer);
-  query.containedIn("objectId", req.params.answerIds);
-  query.find({
-    success: function(objects) {
-      if (objects.length) {
-        for (var i = 0; i < objects.length; i++) {
-          var object = objects[i];
-          var pointer = new Parse.Object("List");
-          pointer.id = req.params.listId;
-          object.addUnique("lists", pointer);
-          object.save();
+Parse.Cloud.define('addAnswersToList', function(req, res) {
+    var Answer = Parse.Object.extend('Answer');
+    var query = new Parse.Query(Answer);
+    query.containedIn("objectId", req.params.answerIds);
+    query.find({
+        success: function (objects) {
+            if (objects.length) {
+                for (var i = 0; i < objects.length; i++) {
+                    var object = objects[i];
+                    var pointer = new Parse.Object("List");
+                    pointer.id = req.params.listId;
+                    object.addUnique("lists", pointer);
+                    object.save();
+                }
+                res.success('Success');
+            }
+        },
+        error: function (error) {
+            res.error(error);
         }
-        res.success('Success');
-      }
-    },
-    error: function(error) {
-      res.error(error);
-    }
 
-  })
+    })
 
 });
 
-Parse.Cloud.define('getUsers', function(req, res){
-  var users = [];
-  var User = Parse.Object.extend('User');
-  var query = new Parse.Query(User);
+Parse.Cloud.define('getUsers', function(req, res) {
+    var users = [];
+    var User = Parse.Object.extend('User');
+    var query = new Parse.Query(User);
 
-  query.find({
-    success: function(objects) {
-      if (objects.length) {
-        for (var i = 0; i < objects.length; i++) {
-        var object = objects[i];
-          users.push({
-            id: object.id,
-            name: object.get('fullName')
-          });
+    query.find({
+        success: function (objects) {
+            if (objects.length) {
+                for (var i = 0; i < objects.length; i++) {
+                    var object = objects[i];
+                    users.push({
+                        id: object.id,
+                        name: object.get('fullName')
+                    });
+                }
+            }
+            res.success(users);
+        },
+        error: function (error) {
+            res.error(error);
         }
-      }
-      res.success(users);
-    },
-    error: function(error) {
-      res.error(error);
-    }
-  })
+    })
 });
 
-Parse.Cloud.define('removeAnswersFromList', function(req, res){
-  var Answer = Parse.Object.extend('Answer');
-  var query = new Parse.Query(Answer);
-  query.containedIn("objectId", req.params.answerIds);
-  query.find({
-    success: function(objects) {
-      if (objects.length) {
-        for (var i = 0; i < objects.length; i++) {
-          var object = objects[i];
-          var pointer = new Parse.Object("List");
-          pointer.id = req.params.listId;
-          object.remove("lists", pointer);
-          object.save();
+Parse.Cloud.define('removeAnswersFromList', function(req, res) {
+    var Answer = Parse.Object.extend('Answer');
+    var query = new Parse.Query(Answer);
+    query.containedIn("objectId", req.params.answerIds);
+    query.find({
+        success: function (objects) {
+            if (objects.length) {
+                for (var i = 0; i < objects.length; i++) {
+                    var object = objects[i];
+                    var pointer = new Parse.Object("List");
+                    pointer.id = req.params.listId;
+                    object.remove("lists", pointer);
+                    object.save();
+                }
+                res.success('Success');
+            }
+        },
+        error: function (error) {
+            res.error(error);
         }
-        res.success('Success');
-      }
-    },
-    error: function(error) {
-      res.error(error);
-    }
 
-  })
+    })
 
 });
 
-Parse.Cloud.define('getFeaturedCampfire', function(req, res){
-  var campfires = [];
-  var limit = req.params.limit || 6;
-  var skip =  req.params.skip || 0;
+Parse.Cloud.define('getFeaturedCampfire', function(req, res) {
+    var campfires = [];
+    var limit = req.params.limit || 6;
+    var skip = req.params.skip || 0;
 
-  var Answer = Parse.Object.extend('Answer');
-  var query = new Parse.Query(Answer);
-  //query.equalTo('isDummyData', false);
+    var Answer = Parse.Object.extend('Answer');
+    var query = new Parse.Query(Answer);
+    //query.equalTo('isDummyData', false);
 
-  query.include(['questionRef', 'questionRef.fromUser.fullName',
-    'questionRef.toUser.fullName']);
-  query.descending('createdAt');
-  query.limit(limit);
-  query.skip(skip);
+    query.include(['questionRef', 'questionRef.fromUser.fullName',
+        'questionRef.toUser.fullName']);
+    query.descending('createdAt');
+    query.lessThan('liveDate', new Date());
+    query.limit(limit);
+    query.skip(skip);
 
-  query.find({
-    success: function(objects) {
-      if (objects.length) {
-        for (var i = 0; i < objects.length; i++) {
-          var object = objects[i];
-          var fromUser = object.get('questionRef').get('fromUser');
-          var toUser = object.get('questionRef').get('toUser');
-          var answerFile = object.get('answerFile');
-          if (answerFile || true) {
-            campfires.push({
-              id: object.id,
-              question: object.get('questionRef').get('text'),
-              answer: answerFile.toJSON().url,
-              from: {
-                name: fromUser.get('fullName'),
-                firstName: fromUser.get('firstName'),
-                lastName: fromUser.get('lastName'),
-                picture: fromUser.get('profilePhoto') ? (fromUser.get('profilePhoto')).toJSON().url : '',
-                cover: fromUser.get('coverPhoto') ? (fromUser.get('coverPhoto')).toJSON().url : '',
-                tagline: fromUser.get('tagline')
-              },
-              to: {
-                name: toUser.get('fullName'),
-                firstName: toUser.get('firstName'),
-                lastName: toUser.get('lastName'),
-                picture: toUser.get('profilePhoto') ? (toUser.get('profilePhoto')).toJSON().url : '',
-                cover: toUser.get('coverPhoto') ? (toUser.get('coverPhoto')).toJSON().url : '',
-                tagline: toUser.get('tagline')
-              },
-            });
-          }
+    query.find({
+        success: function (objects) {
+            if (objects.length) {
+                for (var i = 0; i < objects.length; i++) {
+                    var object = objects[i];
+                    var fromUser = object.get('questionRef').get('fromUser');
+                    var toUser = object.get('questionRef').get('toUser');
+                    var answerFile = object.get('answerFile');
+                    if (answerFile || true) {
+                        campfires.push({
+                            id: object.id,
+                            question: object.get('questionRef').get('text'),
+                            answer: answerFile.toJSON().url,
+                            from: {
+                                name: fromUser.get('fullName'),
+                                firstName: fromUser.get('firstName'),
+                                lastName: fromUser.get('lastName'),
+                                picture: fromUser.get('profilePhoto') ? (fromUser.get('profilePhoto')).toJSON().url : '',
+                                cover: fromUser.get('coverPhoto') ? (fromUser.get('coverPhoto')).toJSON().url : '',
+                                tagline: fromUser.get('tagline')
+                            },
+                            to: {
+                                name: toUser.get('fullName'),
+                                firstName: toUser.get('firstName'),
+                                lastName: toUser.get('lastName'),
+                                picture: toUser.get('profilePhoto') ? (toUser.get('profilePhoto')).toJSON().url : '',
+                                cover: toUser.get('coverPhoto') ? (toUser.get('coverPhoto')).toJSON().url : '',
+                                tagline: toUser.get('tagline')
+                            },
+                        });
+                    }
+                }
+            }
+            res.success(campfires);
+        },
+        error: function (error) {
+            res.error(error);
         }
-      }
-      res.success(campfires);
-    },
-    error: function(error) {
-      res.error(error);
-    }
-  })
+    })
 });
 function pointerTo(objectId, klass) {
 
@@ -247,6 +236,7 @@ Parse.Cloud.define('getFeaturedAnswers', function(req, res) {
     query.notEqualTo('isTest', true);
     query.containsAll('lists', [pointerTo('CTsXJi51Qc', 'List')]);
     query.descending('liveDate');
+    query.lessThan('liveDate', new Date());
     query.limit(limit);
     query.skip(skip);
 
@@ -261,38 +251,38 @@ Parse.Cloud.define('getFeaturedAnswers', function(req, res) {
 });
 
 Parse.Cloud.define('getMpActiveUsers', function(req, res) {
-  var fromDate = new Date();
-  fromDate.setMonth(fromDate.getMonth());
-  fromDate = (fromDate.getFullYear() + "-" + fromDate.getMonth() + "-" + fromDate.getDate());
-  var toDate = new Date();
-  toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
-  panel.segmentation({
-    event: "Active Session",
-    type: "unique",
-    unit: "day",
-    from_date: fromDate,
-    to_date: toDate,
-    where: 'properties["$duration"] > 15'
-  }).then(function(data) {
-    res.success(data);
-  });
+    var fromDate = new Date();
+    fromDate.setMonth(fromDate.getMonth());
+    fromDate = (fromDate.getFullYear() + "-" + fromDate.getMonth() + "-" + fromDate.getDate());
+    var toDate = new Date();
+    toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
+    panel.segmentation({
+        event: "Active Session",
+        type: "unique",
+        unit: "day",
+        from_date: fromDate,
+        to_date: toDate,
+        where: 'properties["$duration"] > 15'
+    }).then(function (data) {
+        res.success(data);
+    });
 });
 
 Parse.Cloud.define('getMixpanelData', function(req, res) {
-  var fromDate = new Date();
-  fromDate.setMonth(fromDate.getMonth());
-  fromDate = (fromDate.getFullYear() + "-" + fromDate.getMonth() + "-" + fromDate.getDate());
-  var toDate = new Date();
-  toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
-  panel.events({
-    event: ["Unlock", "Viewed: Ask - Question Submitted"],
-    type: "unique",
-    unit: "day",
-    from_date: fromDate,
-    to_date: toDate
-  }).then(function(data) {
-    res.success(data);
-  });
+    var fromDate = new Date();
+    fromDate.setMonth(fromDate.getMonth());
+    fromDate = (fromDate.getFullYear() + "-" + fromDate.getMonth() + "-" + fromDate.getDate());
+    var toDate = new Date();
+    toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
+    panel.events({
+        event: ["Unlock", "Viewed: Ask - Question Submitted"],
+        type: "unique",
+        unit: "day",
+        from_date: fromDate,
+        to_date: toDate
+    }).then(function (data) {
+        res.success(data);
+    });
 });
 
 Parse.Cloud.define('getCampfires', function(req, res) {
@@ -332,13 +322,13 @@ Parse.Cloud.define('getCampfires', function(req, res) {
 
     // filtering
     if (req.params.answererName) {
-      toUserQuery.startsWith("fullName", req.params.answererName);
+        toUserQuery.startsWith("fullName", req.params.answererName);
     }
     if (req.params.answererAskerName) {
-      fromUserQuery.startsWith("fullName", req.params.answererAskerName)
+        fromUserQuery.startsWith("fullName", req.params.answererAskerName)
     }
     if (req.params.question) {
-      QuestionQuery.startsWith('text', req.params.question)
+        QuestionQuery.startsWith('text', req.params.question)
     }
 
     // Exclude test data
@@ -365,70 +355,70 @@ Parse.Cloud.define('getCampfires', function(req, res) {
     // totalpages count
     var count = 0;
 
-    var findCampfires = function (){
-      query.find({
-          success: function (objects) {
-              if (objects.length > 0) {
-                  return Parse.Promise.as().then(function () {
-                      var promise = Parse.Promise.as();
+    var findCampfires = function () {
+        query.find({
+            success: function (objects) {
+                if (objects.length > 0) {
+                    return Parse.Promise.as().then(function () {
+                        var promise = Parse.Promise.as();
 
-                      objects.forEach(function (object) {
-                        if (object.get('questionRef')) {
-                          promise = promise.then(function () {
-                              var fromUser = object.get('questionRef').get('fromUser');
-                              var toUser = object.get('questionRef').get('toUser');
-                              var charity = object.get('questionRef').get('charity');
-                              var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
-                              var CuQuery = new Parse.Query(CampfireUnlock);
-                              var answer = object.get('answerFile');
-                              var answerFile = answer ? answer.toJSON().url : ''
-                              date = new Date(object.get('createdAt'));
+                        objects.forEach(function (object) {
+                            if (object.get('questionRef')) {
+                                promise = promise.then(function () {
+                                    var fromUser = object.get('questionRef').get('fromUser');
+                                    var toUser = object.get('questionRef').get('toUser');
+                                    var charity = object.get('questionRef').get('charity');
+                                    var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
+                                    var CuQuery = new Parse.Query(CampfireUnlock);
+                                    var answer = object.get('answerFile');
+                                    var answerFile = answer ? answer.toJSON().url : ''
+                                    date = new Date(object.get('createdAt'));
 
-                              CuQuery.equalTo("answerRef", object);
-                              var Cucount = 0;
-                              return CuQuery.count().then(function (result) {
-                                  Cucount = result;
-                                  campfires.push({
-                                      id: object.id,
-                                      answer: answerFile,
-                                      answererCoverPhoto: (toUser.get('coverPhoto') && toUser.get('coverPhoto').url) ? (toUser.get('coverPhoto')).toJSON().url : '',
-                                      answererProfileImage: (toUser.get('profilePhoto') && toUser.get('profilePhoto').url) ? (toUser.get('profilePhoto')).toJSON().url : '',
-                                      answererName: toUser.get('fullName'),
-                                      answererAskerName: (fromUser) ? fromUser.get('fullName') : '',
-                                      question: object.get('questionRef').get('text'),
-                                      date: date.toDateString(),
-                                      eavesdrops: object.get("unlockCount"),
-                                      likes: object.get('likeCount'),
-                                      charity: (charity) ? charity.get('name') : 'None',
-                                      transcription: object.get('transcription'),
-                                      transcriptStatus: object.get('transcriptStatus'),
-                                      recordingLength: object.get('recordingLength')
-                                  });
+                                    CuQuery.equalTo("answerRef", object);
+                                    var Cucount = 0;
+                                    return CuQuery.count().then(function (result) {
+                                        Cucount = result;
+                                        campfires.push({
+                                            id: object.id,
+                                            answer: answerFile,
+                                            answererCoverPhoto: (toUser.get('coverPhoto') && toUser.get('coverPhoto').url) ? (toUser.get('coverPhoto')).toJSON().url : '',
+                                            answererProfileImage: (toUser.get('profilePhoto') && toUser.get('profilePhoto').url) ? (toUser.get('profilePhoto')).toJSON().url : '',
+                                            answererName: toUser.get('fullName'),
+                                            answererAskerName: (fromUser) ? fromUser.get('fullName') : '',
+                                            question: object.get('questionRef').get('text'),
+                                            date: date.toDateString(),
+                                            eavesdrops: object.get("unlockCount"),
+                                            likes: object.get('likeCount'),
+                                            charity: (charity) ? charity.get('name') : 'None',
+                                            transcription: object.get('transcription'),
+                                            transcriptStatus: object.get('transcriptStatus'),
+                                            recordingLength: object.get('recordingLength')
+                                        });
 
-                                  return Parse.Promise.as();
+                                        return Parse.Promise.as();
 
-                              }, function (error) {
-                                  res.error(error);
-                              });
-                          });
-                        }
-                      });
-                      return promise;
+                                    }, function (error) {
+                                        res.error(error);
+                                    });
+                                });
+                            }
+                        });
+                        return promise;
 
-                  }).then(function () {
-                      return res.success({campfires: campfires, totalItems: count});
-                  }, function (error) {
-                      res.error(error);
-                  });
-              }
-              else {
-                  res.success({campfires: [], totalItems: 0});
-              }
-          },
-          error: function (error) {
-              res.error(error);
-          }
-      })
+                    }).then(function () {
+                        return res.success({campfires: campfires, totalItems: count});
+                    }, function (error) {
+                        res.error(error);
+                    });
+                }
+                else {
+                    res.success({campfires: [], totalItems: 0});
+                }
+            },
+            error: function (error) {
+                res.error(error);
+            }
+        })
     }
 
     if (!(req.params.topic_id && req.params.noPagination)) {
@@ -440,101 +430,101 @@ Parse.Cloud.define('getCampfires', function(req, res) {
             findCampfires();
         });
     } else {
-      findCampfires();
+        findCampfires();
     }
 });
 
-Parse.Cloud.define('getPeople', function(req, res){
-  var people = [];
-  var sortedBy = req.params.sortedBy || 'createdAt';
-  var sortDir = req.params.sortDir || 'desc';
-  var page = req.params.currentPage || 1;
-  var limit = req.params.perPage || 6;
-  var skip = (page - 1) * limit;
+Parse.Cloud.define('getPeople', function(req, res) {
+    var people = [];
+    var sortedBy = req.params.sortedBy || 'createdAt';
+    var sortDir = req.params.sortDir || 'desc';
+    var page = req.params.currentPage || 1;
+    var limit = req.params.perPage || 6;
+    var skip = (page - 1) * limit;
 
-  var People = Parse.Object.extend('User');
-  var query = new Parse.Query(People);
+    var People = Parse.Object.extend('User');
+    var query = new Parse.Query(People);
 
-  // filtering
-  if (req.params.fullName){
-    query.startsWith('fullName', req.params.fullName);
-  }
-  if (req.params.email){
-    query.startsWith('email', req.params.email);
-  }
-  if (req.params.gender){
-    query.equalTo("gender", req.params.gender);
-  }
-  if (req.params.tagline){
-    query.startsWith("tagline", req.params.tagline);
-  }
+    // filtering
+    if (req.params.fullName) {
+        query.startsWith('fullName', req.params.fullName);
+    }
+    if (req.params.email) {
+        query.startsWith('email', req.params.email);
+    }
+    if (req.params.gender) {
+        query.equalTo("gender", req.params.gender);
+    }
+    if (req.params.tagline) {
+        query.startsWith("tagline", req.params.tagline);
+    }
 
-  // totalpages count
-  var count;
-  query.count().then(function(result){
-    count = result;
+    // totalpages count
+    var count;
+    query.count().then(function (result) {
+        count = result;
 
-    // sorting
-    sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
+        // sorting
+        sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
 
-    // pagination
-    query.limit(limit);
-    query.skip(skip);
-    query.find({useMasterKey : true}).then(function(objects){
-        if (objects.length > 0) {
-          for (var i = 0; i < objects.length; i++) {
-            var object = objects[i];
-            people.push({
-              id: object.id,
-              profileImage: object.get('profilePhoto') ? (object.get('profilePhoto')).toJSON().url : '',
-              fullName: object.get('fullName'),
-              email: object.get('email'),
-              gender: object.get('gender'),
-              tagline: object.get('tagline')
-            });
-          }
-        }
-        res.success({people: people,totalItems: count});
-      },function(error) {
+        // pagination
+        query.limit(limit);
+        query.skip(skip);
+        query.find({useMasterKey: true}).then(function (objects) {
+            if (objects.length > 0) {
+                for (var i = 0; i < objects.length; i++) {
+                    var object = objects[i];
+                    people.push({
+                        id: object.id,
+                        profileImage: object.get('profilePhoto') ? (object.get('profilePhoto')).toJSON().url : '',
+                        fullName: object.get('fullName'),
+                        email: object.get('email'),
+                        gender: object.get('gender'),
+                        tagline: object.get('tagline')
+                    });
+                }
+            }
+            res.success({people: people, totalItems: count});
+        }, function (error) {
+            res.error(error);
+        })
+    }, function (error) {
         res.error(error);
-      })
-  },function(error) {
-    res.error(error);
-  });
+    });
 
 });
 
 Parse.Cloud.define('getQuestionDetails', function(req, res) {
 
-      var Question = Parse.Object.extend("Question");
-      var query = new Parse.Query(Question);
-      // query.equalTo("objectId",question.id);
-      query.include(['fromUser','fromUser.charityRef','toUser','toUser.charityRef']);
-      query.equalTo("objectId",req.params.questionId);
-      query.find({
-        success: function(questions) {
-          console.log(questions.length);
-          console.log(questions[0]);
-          return res.success(questions[0]);
-          // return callback(null,questions[0]);
+    var Question = Parse.Object.extend("Question");
+    var query = new Parse.Query(Question);
+    // query.equalTo("objectId",question.id);
+    query.include(['fromUser', 'fromUser.charityRef', 'toUser', 'toUser.charityRef']);
+    query.equalTo("objectId", req.params.questionId);
+    query.find({
+        success: function (questions) {
+            console.log(questions.length);
+            console.log(questions[0]);
+            return res.success(questions[0]);
+            // return callback(null,questions[0]);
         },
-        error: function(object, error) {
-          console.log(error);
-          // return callback(error,null);
-          return res.error(error);
+        error: function (object, error) {
+            console.log(error);
+            // return callback(error,null);
+            return res.error(error);
         }
-      });
+    });
 });
 
 
 Parse.Cloud.define('deleteCharity', function(req, res) {
 
     var charity_ids_array = req.params.charity_ids_array;
-    deleteCharity(array_charity_ids,function(err,result){
-        if(err){
-          return res.error(result);
-        }else{
-          return res.success(result);
+    deleteCharity(array_charity_ids, function (err, result) {
+        if (err) {
+            return res.error(result);
+        } else {
+            return res.success(result);
         }
     });
 
@@ -542,177 +532,175 @@ Parse.Cloud.define('deleteCharity', function(req, res) {
 
 
 
-function deleteCharity(array_charity_ids,callback){
+function deleteCharity(array_charity_ids,callback) {
 
     var array_charity_pointers = [];
-    for(id in array_charity_ids){
-      array_charity_ids[id] = {__type: "Pointer",className: "Charity",objectId: array_charity_ids[id]};
+    for (id in array_charity_ids) {
+        array_charity_ids[id] = {__type: "Pointer", className: "Charity", objectId: array_charity_ids[id]};
     }
 
     var query = new Parse.Query(Parse.User);
     query.equalTo("charityRef", array_charity_pointers);
     query.find({
-      success: function(results_users) {
+        success: function (results_users) {
 
-          for(i in results_users){
-            results_users[i].unset("charityRef");
-          }
-          Parse.Object.saveAll(results_users,{useMasterKey:true});
-
-          var Question = Parse.Object.extend('Question');
-          var query = new Parse.Query(Question);
-          query.equalTo("charity", array_charity_pointers);
-          query.find({
-            success: function(results_questions) {
-
-                for(i in results_questions){
-                  results_questions[i].unset("charity");
-                  results_questions[i].set("charityPercentage",0);
-                }
-                Parse.Object.saveAll(results_questions,{useMasterKey:true});
-
-                var Charity = Parse.Object.extend('Charity');
-                var query = new Parse.Query(Charity);
-                query.containedIn('objectId', array_charity_ids);
-                query.find({useMasterKey:true}).then(function (charity_objects) {
-
-                    Parse.Object.destroyAll(charity_objects);
-
-                    return callback("Delete was success");
-
-                }, function (error) {
-                     return callback(error,null);
-                });
-            },
-            error: function(error) {
-                return callback(error,null);
+            for (i in results_users) {
+                results_users[i].unset("charityRef");
             }
-          });
-      },
-      error: function(error) {
-          return callback(error,null);
-      }
+            Parse.Object.saveAll(results_users, {useMasterKey: true});
+
+            var Question = Parse.Object.extend('Question');
+            var query = new Parse.Query(Question);
+            query.equalTo("charity", array_charity_pointers);
+            query.find({
+                success: function (results_questions) {
+
+                    for (i in results_questions) {
+                        results_questions[i].unset("charity");
+                        results_questions[i].set("charityPercentage", 0);
+                    }
+                    Parse.Object.saveAll(results_questions, {useMasterKey: true});
+
+                    var Charity = Parse.Object.extend('Charity');
+                    var query = new Parse.Query(Charity);
+                    query.containedIn('objectId', array_charity_ids);
+                    query.find({useMasterKey: true}).then(function (charity_objects) {
+
+                        Parse.Object.destroyAll(charity_objects);
+
+                        return callback("Delete was success");
+
+                    }, function (error) {
+                        return callback(error, null);
+                    });
+                },
+                error: function (error) {
+                    return callback(error, null);
+                }
+            });
+        },
+        error: function (error) {
+            return callback(error, null);
+        }
     });
 
 }
 
 Parse.Cloud.define("updateNewUser", function(request, response) {
-  var profilePicFile = null;
-  var coverPicFile = null;
-  var params = request.params;
-  var firstname = params.firstName || '';
-  var lastname = params.lastName || '';
-  var bio = params.bio || '';
-  var initial_match_count = 0;
-  var default_image = {};
-  var Defaults = Parse.Object.extend('Defaults');
-  var default_values = null;
-  var query = new Parse.Query(Defaults);
-  query.limit(1);
+    var profilePicFile = null;
+    var coverPicFile = null;
+    var params = request.params;
+    var firstname = params.firstName || '';
+    var lastname = params.lastName || '';
+    var bio = params.bio || '';
+    var initial_match_count = 0;
+    var default_image = {};
+    var Defaults = Parse.Object.extend('Defaults');
+    var default_values = null;
+    var query = new Parse.Query(Defaults);
+    query.limit(1);
 
-  query.find({useMasterKey : true}).then(function(defaults){
-    default_values = defaults;
-    initial_match_count = defaults[0].get('initialMatchCount');
-    default_image = defaults[0].get('coverPhoto');
-    if(request.user){
-      setUserValues(request.user);
-    }
-    else{
-      var id = request.params.id;
-      var User = Parse.Object.extend('User');
-      var query = new Parse.Query(User);
-      query.get(id, {useMasterKey : true}).then(function(user){
-          setUserValues(user);
-        }, function(error){
-          response.error(error.message);
-        });
-    }
-  },function(error){
-    response.error(error.message);
-  });
-
-  var setUserValues = function(user){
-
-    user.set('firstName', firstname);
-    user.set('lastName', lastname);
-    user.set('fullName', firstname + ' ' + lastname)
-    user.set('gender', params.gender);
-    user.set('email', params.email);
-    user.set('bio', params.bio);
-
-    //default values
-
-    user.set('unansweredQuestionCount', 0);
-    user.set('missedNotificationCount', 0);
-    user.set('matchCount', initial_match_count);
-    user.set('questionPrice', 5);
-    // user.set('accountBalance', '');    // Should no longer exists
-    user.set('askAbout', '');
-    user.set('tagline', '');
-    user.set('donationPercentage', 0);
-    // user.set('totalEarnings', 0);      // Should no longer exists
-    user.set('isTestUser', false);
-    user.set('isDummyUser', false);
-
-    // setting both image to default image
-    user.set('coverPhoto', default_image);
-    user.set('profilePhoto', default_image);
-
-    if(params.profilePicUrl && params.coverPicUrl){
-      var image_file_regex = /(.*\.(?:png|jpg|jpeg|gif))/i
-      if(!image_file_regex.test(params.profilePicUrl)){
-        // If profile pic url is not an image url then save with
-        // default image
-        saveUser();
-      }
-      Parse.Cloud.httpRequest({ url: params.profilePicUrl }).then(function(response) {
-        var base64_profile_image = response.buffer.toString('base64');
-        profilePicFile = new Parse.File("profile.jpeg", { base64: base64_profile_image });
-        profilePicFile.save().then(function() {
-          user.set('profilePhoto', profilePicFile);
-          if(!image_file_regex.test(params.coverPicUrl)){
-            // If cover pic url is not an image url then save with
-            // default image
-            saveUser();
-          }
-          Parse.Cloud.httpRequest({ url: params.coverPicUrl }).then(function(response) {
-            var base64_cover_image = response.buffer.toString('base64');
-            coverPicFile = new Parse.File("cover.jpeg", { base64: base64_cover_image });
-            coverPicFile.save().then(function() {
-              user.set('coverPhoto', coverPicFile);
-              saveUser();
-            }, function(error) {
-              response.error(error.message);
+    query.find({useMasterKey: true}).then(function (defaults) {
+        default_values = defaults;
+        initial_match_count = defaults[0].get('initialMatchCount');
+        default_image = defaults[0].get('coverPhoto');
+        if (request.user) {
+            setUserValues(request.user);
+        }
+        else {
+            var id = request.params.id;
+            var User = Parse.Object.extend('User');
+            var query = new Parse.Query(User);
+            query.get(id, {useMasterKey: true}).then(function (user) {
+                setUserValues(user);
+            }, function (error) {
+                response.error(error.message);
             });
-          }, function(error){
-            saveUser();
-          });
-        }, function(error) {
-          response.error(error.message);
-        });
-      },function(error){
-        // if we get any error from profile pic url like 404,
-        // we save user and give succes response
-        // to avoid loosing the rest of the data
-        saveUser();
-      });
-    }
-    else{
-      user.save(null, {useMasterKey : true}).then(function(user) {
-        response.success(user);
-      }, function(error) {
+        }
+    }, function (error) {
         response.error(error.message);
-      });
-    }
+    });
 
-    var saveUser = function(){
-      user.save(null, {useMasterKey : true}).then(function(user) {
-        response.success(user);
-      }, function(error) {
-        response.error(error.message);
-      });
+    var setUserValues = function (user) {
+
+        user.set('firstName', firstname);
+        user.set('lastName', lastname);
+        user.set('fullName', firstname + ' ' + lastname)
+        user.set('gender', params.gender);
+        user.set('email', params.email);
+        user.set('bio', params.bio);
+
+        //default values
+
+        user.set('unansweredQuestionCount', 0);
+        user.set('missedNotificationCount', 0);
+        user.set('matchCount', initial_match_count);
+        user.set('questionPrice', 5);
+        user.set('askAbout', '');
+        user.set('tagline', '');
+        user.set('donationPercentage', 0);
+        user.set('isTestUser', false);
+        user.set('isDummyUser', false);
+
+        // setting both image to default image
+        user.set('coverPhoto', default_image);
+        user.set('profilePhoto', default_image);
+
+        if (params.profilePicUrl && params.coverPicUrl) {
+            var image_file_regex = /(.*\.(?:png|jpg|jpeg|gif))/i
+            if (!image_file_regex.test(params.profilePicUrl)) {
+                // If profile pic url is not an image url then save with
+                // default image
+                saveUser();
+            }
+            Parse.Cloud.httpRequest({url: params.profilePicUrl}).then(function (response) {
+                var base64_profile_image = response.buffer.toString('base64');
+                profilePicFile = new Parse.File("profile.jpeg", {base64: base64_profile_image});
+                profilePicFile.save().then(function () {
+                    user.set('profilePhoto', profilePicFile);
+                    if (!image_file_regex.test(params.coverPicUrl)) {
+                        // If cover pic url is not an image url then save with
+                        // default image
+                        saveUser();
+                    }
+                    Parse.Cloud.httpRequest({url: params.coverPicUrl}).then(function (response) {
+                        var base64_cover_image = response.buffer.toString('base64');
+                        coverPicFile = new Parse.File("cover.jpeg", {base64: base64_cover_image});
+                        coverPicFile.save().then(function () {
+                            user.set('coverPhoto', coverPicFile);
+                            saveUser();
+                        }, function (error) {
+                            response.error(error.message);
+                        });
+                    }, function (error) {
+                        saveUser();
+                    });
+                }, function (error) {
+                    response.error(error.message);
+                });
+            }, function (error) {
+                // if we get any error from profile pic url like 404,
+                // we save user and give succes response
+                // to avoid loosing the rest of the data
+                saveUser();
+            });
+        }
+        else {
+            user.save(null, {useMasterKey: true}).then(function (user) {
+                response.success(user);
+            }, function (error) {
+                response.error(error.message);
+            });
+        }
+
+        var saveUser = function () {
+            user.save(null, {useMasterKey: true}).then(function (user) {
+                response.success(user);
+            }, function (error) {
+                response.error(error.message);
+            });
+        }
     }
-  }
 });
 
 function getFollows(user, callback){
@@ -1075,6 +1063,25 @@ Parse.Cloud.define('getHottestUsers', function(request, response){
     });
 });
 
+Parse.Cloud.define('getWelcomeQuestion', function(request, response){
+
+    // Get welcome question
+    var Question = Parse.Object.extend('Question');
+    var question = new Question();
+    question.set('toUser', request.user);
+    question.set('isAnswered', false);
+    question.set('price', 0);
+    question.set('text', 'This is welcome question');
+    question.set('charityPercentage', 0);
+    question.set('fromUser', campfireDefaultUser);
+    question.set('isExpired', false);
+    question.set('isTest', false);
+    question.save(null, {useMasterKey: true}).then(function(res){
+        response.success({});
+    }, function(err){
+        response.error(err);
+    })
+});
 // //Add answerCount to all users
 // (function(){
 //     const Question = Parse.Object.extend('Question');
@@ -1091,3 +1098,29 @@ Parse.Cloud.define('getHottestUsers', function(request, response){
 //         toUser.save(null, {useMasterKey: true});
 //     }, {useMasterKey: true});
 // })();
+//
+// var Twilio = require('twilio');
+// var branch = require('node-branch-io');
+// branch.link.create(config.branchKey, {
+//     channel: '',
+//     feature: '',
+//     data: {
+//         answerId: '30XOrRCjeF'
+//     }
+// }).then(link => {
+//     var accountSid = config.twilio.accountSid;
+//     var authToken = config.twilio.authToken;
+//
+//     //require the Twilio module and create a REST client
+//     var client = Twilio(config.twilio.accountSid, config.twilio.authToken);
+//     client.messages.create({
+//         to: '+971551532847',
+//         from: config.twilio.number,
+//         body: link.url
+//     }, function (err, message) {
+//         if (err)
+//             console.log(err.message);
+//         else
+//             console.log(message.sid);
+//     });
+// });
