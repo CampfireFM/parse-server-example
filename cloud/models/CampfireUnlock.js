@@ -52,7 +52,7 @@ function splitUnlockEarnings(params){
     var question = params.question;
 
     // Math.round((num + 0.00001) * 100) / 100
-    var total_user_unlock_earnings = Math.floor( (unlockCostMatches * unlockMatchValue) * Math.pow(10, 4) ) / Math.pow(10, 4) );
+    var total_user_unlock_earnings = Math.floor( (unlockCostMatches * unlockMatchValue) * Math.pow(10, 4) ) / Math.pow(10, 4) ;
     // var total_unlock_earnings = Math.floor10(unlockCostMatches * unlockMatchValue);
     
     var fromUser = question.get("fromUser");
