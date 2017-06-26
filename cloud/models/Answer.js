@@ -172,7 +172,7 @@ function splitAndMakePayments(question, callback){
 
     qAnswerer.increment("earningsTotal", split_answerer);
     qAnswerer.increment("earningsBalance", split_answerer);
-    qAnswerer.increment("earningsFromAnswer", split_answerer);
+    qAnswerer.increment("earningsFromAnswers", split_answerer);
     qAnswerer.increment("earningsDonated", split_charity);
     qAnswerer.save(null, {useMasterKey: true});
 
