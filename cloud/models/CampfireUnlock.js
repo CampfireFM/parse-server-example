@@ -101,7 +101,7 @@ function splitUnlockEarnings(params){
 
         fromUser.increment("earningsTotal", split_asker);
         fromUser.increment("earningsBalance", split_asker);
-        fromUser.increment("earningsFromUnlock", split_asker);
+        fromUser.increment("earningsFromUnlocks", split_asker);
         fromUser.increment("earningsDonated", split_asker_charity);
         fromUser.save(null, {useMasterKey: true});
     }
@@ -138,7 +138,7 @@ function splitUnlockEarnings(params){
 
     toUser.increment("earningsTotal", split_answerer);
     toUser.increment("earningsBalance", split_answerer);
-    toUser.increment("earningsFromUnlock", split_answerer);
+    toUser.increment("earningsFromUnlocks", split_answerer);
     toUser.increment("earningsDonated", split_answerer_charity);
     toUser.save(null, {useMasterKey: true});
 }
