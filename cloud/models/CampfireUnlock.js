@@ -102,7 +102,7 @@ function splitUnlockEarnings(params){
 
         // The following should probably go inside a payout or donation success block
 
-        fromUser.increment("earningsTotal", split_asker);
+        fromUser.increment("earningsTotal", total_user_unlock_earnings);
         fromUser.increment("earningsBalance", split_asker);
         fromUser.increment("earningsFromUnlocks", split_asker);
         fromUser.increment("earningsDonated", split_asker_charity);
@@ -139,7 +139,7 @@ function splitUnlockEarnings(params){
         console.log();
     });
 
-    toUser.increment("earningsTotal", split_answerer);
+    toUser.increment("earningsTotal", total_user_unlock_earnings);
     toUser.increment("earningsBalance", split_answerer);
     toUser.increment("earningsFromUnlocks", split_answerer);
     toUser.increment("earningsDonated", split_answerer_charity);
