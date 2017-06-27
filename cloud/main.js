@@ -64,9 +64,9 @@ Parse.Cloud.afterSave('Defaults', function(request){
     answerPercentageToCampfire = request.object.get('answerPercentageToCampfire');
     campfireUnlockValue = request.object.get('campfireUnlockValue');
     matchValue = request.object.get('matchValue');
-    unlockCostMatches = request.get('unlockCostMatches');
-    unlockMatchValue = request.get('unlockMatchValue');
-    campfireDefaultUser = request.get('campfireUserRef');
+    unlockCostMatches = request.object.get('unlockCostMatches');
+    unlockMatchValue = request.object.get('unlockMatchValue');
+    campfireDefaultUser = request.object.get('campfireUserRef');
     if(!transactionPercentage)
         transactionPercentage = 2.9;
     if(!transactionFee)
