@@ -325,10 +325,15 @@ Parse.Cloud.define('getCampfires', function(req, res) {
         toUserQuery.startsWith("fullName", req.params.answererName);
     }
     if (req.params.answererAskerName) {
-        fromUserQuery.startsWith("fullName", req.params.answererAskerName)
+      fromUserQuery.startsWith("fullName", req.params.answererAskerName);
     }
     if (req.params.question) {
-        QuestionQuery.startsWith('text', req.params.question)
+      QuestionQuery.startsWith('text', req.params.question);
+    }
+    if (req.params.categoryId) {
+      var categoryRef = new Parse.Object("Category");
+      categoryRef.id = req.params.categoryId;
+      QuestionQuery.equalTo('category', categoryRef);
     }
 
     // Exclude test data
@@ -480,7 +485,8 @@ Parse.Cloud.define('getPeople', function(req, res) {
                         fullName: object.get('fullName'),
                         email: object.get('email'),
                         gender: object.get('gender'),
-                        tagline: object.get('tagline')
+                        tagline: object.get('tagline'),
+                        isFeatured: object.get('isFeatured')
                     });
                 }
             }
