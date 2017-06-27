@@ -134,9 +134,10 @@ function splitAndMakePayments(question, callback){
     var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
     var price = question.get("price") ? question.get("price") : 0;
 
+    var total_user_answer_earnings = Math.floor((price / 2) * Math.pow(10, 4)) / Math.pow(10, 4);
     // Split to charity and split to answerer are found after money for app is taken out
-    var split_charity = price * ( charity_percentage / 100);
-    var split_answerer = price - split_charity;
+    var split_charity = total_user_answer_earnings * ( charity_percentage / 100);
+    var split_answerer = total_user_answer_earnings - split_charity;
 
     var toUser = qAnswerer;
     var fromUser = qAsker;
@@ -170,7 +171,7 @@ function splitAndMakePayments(question, callback){
 
     // should probably go in a success block
 
-    qAnswerer.increment("earningsTotal", split_answerer);
+    qAnswerer.increment("earningsTotal", total_user_answer_earnings);
     qAnswerer.increment("earningsBalance", split_answerer);
     qAnswerer.increment("earningsFromAnswers", split_answerer);
     qAnswerer.increment("earningsDonated", split_charity);
