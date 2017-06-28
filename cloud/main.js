@@ -1064,13 +1064,25 @@ Parse.Cloud.define('getHottestUsers', function(request, response){
 
 Parse.Cloud.define('getWelcomeQuestion', function(request, response){
 
+    // Get firstname of the user
+    const firstName = request.user.get('firstName');
+    const welcomeQuestions = [
+        `Hey ${firstName}! If you could have picked your name, what would it be?`,
+        `Hey ${firstName}! What is your secret super power and what super power do you wish you had?`,
+        `Hey ${firstName}! What scares you the most?`,
+        `Hey ${firstName}! If you could deliver a one minute piece of advice to your 13 year old self, what would it be?`,
+        `Hey ${firstName}! What your favorite city you\'ve ever been to?`,
+        `Hey ${firstName}! If you could be born in a country other than the one you were actually born in, what country would it be and why?`,
+        `Hey ${firstName}! Who’s the most famous person you ever spoke to, and how did it happen?`
+    ];
     // Get welcome question
     var Question = Parse.Object.extend('Question');
     var question = new Question();
     question.set('toUser', request.user);
     question.set('isAnswered', false);
     question.set('price', 0);
-    question.set('text', 'This is welcome question');
+    const questionText = welcomeQuestions[Math.floor(Math.random() * welcomeQuestions.length)];
+    question.set('text', questionText);
     question.set('charityPercentage', 0);
     question.set('fromUser', campfireDefaultUser);
     question.set('isExpired', false);
