@@ -911,7 +911,6 @@ Parse.Cloud.define('withdraw', function(request, response){
 
 Parse.Cloud.define('getHottestCamps', function(request, response){
 
-    return response.success([]);
     var List = Parse.Object.extend('List');
     var Question = Parse.Object.extend('Question');
 
@@ -941,11 +940,11 @@ Parse.Cloud.define('getHottestCamps', function(request, response){
         const countMap = [];
         var processed = 0;
         lists.forEach(function(list){
-            var questionQuery = new Parse.Query(Question);
-            questionQuery.equalTo('list', list);
-            questionQuery.greaterThanOrEqualTo('updatedAt', list.get('liveDate'));
-            questionQuery.lessThanOrEqualTo('updatedAt', list.get('endDate'));
-            questionQuery.count().then(function(count){
+            //Check answer's live date and list
+            var Answer = Parse.Object.extend('Answer');
+            var query = new Parse.Query(Answer);
+            query.containsAll('lists', [pointerTo(list.id, 'List')]);
+            query.count().then(function(count){
                 countMap.push({
                     list: list,
                     count: count
