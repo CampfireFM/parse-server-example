@@ -257,12 +257,11 @@ Parse.Cloud.define('getMpActiveUsers', function(req, res) {
     var toDate = new Date();
     toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
     panel.segmentation({
-        event: "Active Session",
+        event: 483416,
         type: "unique",
         unit: "day",
         from_date: fromDate,
         to_date: toDate,
-        where: 'properties["$duration"] > 15'
     }).then(function (data) {
         res.success(data);
     });
