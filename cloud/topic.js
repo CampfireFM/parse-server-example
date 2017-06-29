@@ -46,6 +46,29 @@ Parse.Cloud.define('getFeaturedTopics', function(req, res) {
   })
 });
 
+Parse.Cloud.define('getFeaturedTopics-web', function(req, res) {
+  // var topics = [];
+  var Defaults = Parse.Object.extend('Defaults');
+  var defaultQuery = new Parse.Query(Defaults);
+  defaultQuery.first({useMasterKey: true}).then(function(defaultValue){
+    var spotlightedLists = defaultValue.get('spotlightedLists');
+    console.log(spotlightedLists);
+    var List = Parse.Object.extend('List');
+    var query = new Parse.Query(List);
+    query.containedIn('objectId', spotlightedLists);
+    query.find({useMasterKey: true}).then(function(topics){
+        res.success({topics: topics, spotlightedLists: spotlightedLists.reverse() });
+        //res.success(topics);
+      }, function(error) {
+        res.error(error);
+      }
+    );
+  }, function(error){
+    console.log(error);
+    res.error(error);
+  })
+});
+
 Parse.Cloud.define('setFeaturedTopics', function(req, res) {
   var Defaults = Parse.Object.extend('Defaults');
   var defaultQuery = new Parse.Query(Defaults);
@@ -76,6 +99,8 @@ Parse.Cloud.define('setFeaturedTopics', function(req, res) {
     res.error(error);
   })
 });
+
+
 
 Parse.Cloud.define('RemoveFeaturedTopic', function(req, res) {
   var Defaults = Parse.Object.extend('Defaults');
