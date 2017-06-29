@@ -917,7 +917,6 @@ Parse.Cloud.define('withdraw', function(request, response){
 
 Parse.Cloud.define('getHottestCamps', function(request, response){
 
-    return response.success([]);
     var List = Parse.Object.extend('List');
     var Question = Parse.Object.extend('Question');
 
@@ -947,11 +946,11 @@ Parse.Cloud.define('getHottestCamps', function(request, response){
         const countMap = [];
         var processed = 0;
         lists.forEach(function(list){
-            var questionQuery = new Parse.Query(Question);
-            questionQuery.equalTo('list', list);
-            questionQuery.greaterThanOrEqualTo('updatedAt', list.get('liveDate'));
-            questionQuery.lessThanOrEqualTo('updatedAt', list.get('endDate'));
-            questionQuery.count().then(function(count){
+            //Check answer's live date and list
+            var Answer = Parse.Object.extend('Answer');
+            var query = new Parse.Query(Answer);
+            query.containsAll('lists', [pointerTo(list.id, 'List')]);
+            query.count().then(function(count){
                 countMap.push({
                     list: list,
                     count: count
@@ -1071,13 +1070,25 @@ Parse.Cloud.define('getHottestUsers', function(request, response){
 
 Parse.Cloud.define('getWelcomeQuestion', function(request, response){
 
+    // Get firstname of the user
+    const firstName = request.user.get('firstName');
+    const welcomeQuestions = [
+        `Hey ${firstName}! If you could have picked your name, what would it be?`,
+        `Hey ${firstName}! What is your secret super power and what super power do you wish you had?`,
+        `Hey ${firstName}! What scares you the most?`,
+        `Hey ${firstName}! If you could deliver a one minute piece of advice to your 13 year old self, what would it be?`,
+        `Hey ${firstName}! What your favorite city you\'ve ever been to?`,
+        `Hey ${firstName}! If you could be born in a country other than the one you were actually born in, what country would it be and why?`,
+        `Hey ${firstName}! Who’s the most famous person you ever spoke to, and how did it happen?`
+    ];
     // Get welcome question
     var Question = Parse.Object.extend('Question');
     var question = new Question();
     question.set('toUser', request.user);
     question.set('isAnswered', false);
     question.set('price', 0);
-    question.set('text', 'This is welcome question');
+    const questionText = welcomeQuestions[Math.floor(Math.random() * welcomeQuestions.length)];
+    question.set('text', questionText);
     question.set('charityPercentage', 0);
     question.set('fromUser', campfireDefaultUser);
     question.set('isExpired', false);
