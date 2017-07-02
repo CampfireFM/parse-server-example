@@ -495,7 +495,7 @@ Parse.Cloud.define('getPeople', function(req, res) {
                         isFeatured: object.get('isFeatured'),
                         fbFollowers: object.get('fbFollowers'),
                         twitterFollowers: object.get('twitterFollowers'),
-                        createdAt: object.get('createdAt').substring(0, object.get('createdAt').indexOf('T')).substring(1)
+                        createdAt: object.get('createdAt')
                     });
                 }
             }
