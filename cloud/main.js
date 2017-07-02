@@ -463,11 +463,11 @@ Parse.Cloud.define('getPeople', function(req, res) {
     if (req.params.isFeatured) {
         query.startsWith("isFeatured", req.params.isFeatured);
     }
-    if (req.params.fbFollowers) {
-        query.startsWith("fbFollowers", req.params.fbFollowers);
+    if (req.params.followers) {
+        query.startsWith("followers", req.params.followers);
     }
-    if (req.params.twitterFollowers) {
-        query.startsWith("twitterFollowers", req.params.twitterFollowers);
+    if (req.params.createdAt) {
+        query.startsWith("createdAt", req.params.createdAt);
     }
 
     // totalpages count
@@ -494,7 +494,8 @@ Parse.Cloud.define('getPeople', function(req, res) {
                         tagline: object.get('tagline'),
                         isFeatured: object.get('isFeatured'),
                         fbFollowers: object.get('fbFollowers'),
-                        twitterFollowers: object.get('twitterFollowers')
+                        twitterFollowers: object.get('twitterFollowers'),
+                        createdAt: object.get('createdAt')
                     });
                 }
             }
