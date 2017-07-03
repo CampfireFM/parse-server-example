@@ -154,7 +154,7 @@ function createDonationForUnlock(params, callback) {
     var Donation = Parse.Object.extend("Donation");
     var donation = new Donation();
 
-    if(params.amount === 0)
+    if(params.amount === 0 || !params.charityRef)
         return callback(null);
     for (key in params) {
         donation.set(key, params[key]);
