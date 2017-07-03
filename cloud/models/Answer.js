@@ -160,7 +160,8 @@ function splitAndMakePayments(question, callback){
             amount: split_charity,
             questionRef: question,
             userRef : toUser,
-            isPaid: false
+            isPaid: false,
+            charityRef: charity
         };
 
         createDonation(donation_params, function(e,r){
