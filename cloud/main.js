@@ -1210,3 +1210,22 @@ Parse.Cloud.define('removeUser', function(request, response) {
 //             console.log(message.sid);
 //     });
 // });
+
+Parse.Cloud.define('getAnswersForList', function(request, response) {
+    var skip = request.params.skip || 0;
+    var limit = request.params.limit || 6;
+    var listId = request.params.listId;
+
+    var Answers = Parse.Object.extend('Answer');
+    var query = new Parse.Query(Answers);
+
+    query.containsAll('lists', [pointerTo(listId, 'List')]);
+    query.skip(skip);
+    query.limit(limit);
+    query.find({useMasterKey: true}).then(function(answers) {
+        response.success(answers);
+    }, function(err) {
+        console.log(err);
+        request.error(err);
+    })
+})
