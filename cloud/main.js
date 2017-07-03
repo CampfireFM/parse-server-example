@@ -882,6 +882,7 @@ Parse.Cloud.define('withdraw', function(request, response){
         'CURRENCYCODE' : 'USD'
     };
 
+    console.log('Payout_Request_Json', create_payout_json);
     paypal.request('MassPay', create_payout_json).then(function(payout) {
         //Get Payout Item
 
