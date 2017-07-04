@@ -1183,9 +1183,6 @@ function removeUser(userId) {
     });
 }
 
-removeUser('yMNoqrGB9C');
-removeUser('yzBDQ19qHf');
-removeUser('3mjhBJNSMM');
 Parse.Cloud.define('removeUser', function(request, response) {
     const userId = request.params.userId;
     if(!userId)

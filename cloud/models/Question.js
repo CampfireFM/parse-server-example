@@ -24,7 +24,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                 user.save(null, { useMasterKey: true });
                 
                 //Add question activity to Activity
-                addActivity('question', request.user, user, request.object, null);
+                addActivity('question', request.object.get('fromUser'), user, request.object, null);
                 
                 sendPushOrSMS(request.user, toUser, 'questions');
 
