@@ -879,8 +879,6 @@ Parse.Cloud.define('withdraw', function(request, response){
     var paypalConfig = config.paypal;
     var paypal = Paypal(paypalConfig);
 
-    var sender_batch_id = Math.random().toString(36).substring(9);
-    var amount = currentUser.get('earningsBalance');
     // response.success("OK");
     // var create_payout_json = {
     //     'RECEIVER_TYPE' : 'EmailAddress',
@@ -890,6 +888,8 @@ Parse.Cloud.define('withdraw', function(request, response){
     // };
     // if(process.env.NODE_ENV !== 'production')
     //   paypalEmail = 'krittylor@gmail.xom';
+    // Round earningsBalance
+    earningsBalance = Math.floor( earningsBalance * Math.pow(10, 2) ) / Math.pow(10, 2) ;
     var create_payout_json = {
         'RECEIVERTYPE' : 'Email',
         'L_EMAIL0': paypalEmail,
@@ -909,6 +909,7 @@ Parse.Cloud.define('withdraw', function(request, response){
                 console.log(`Updated balance of ${user.get('earningsBalance')}`);
                 response.success(payout);
             }, function(error){
+                console.log(`Paid ${earningsBalance} to ${paypalEmail} but failed to update earningsBalance to 0`);
                 console.log(error);
                 response.success(payout);
             });
@@ -1020,7 +1021,7 @@ Parse.Cloud.define('getSuggestedUsers', function(request, response){
     //Get suggested users ranked by the number of answers to question
     var userQuery = new Parse.Query(Parse.User);
     userQuery.notEqualTo('isTestUser', true);
-    userQuery.descending('answerCount').limit(20);
+    userQuery.descending('answerCount').limit(6);
 
     userQuery.find({useMasterKey: true}).then(function(suggestedUsers){
         console.log(suggestedUsers);
