@@ -1017,18 +1017,17 @@ Parse.Cloud.define('getHottestCategories', function(request, response){
     })
 });
 
-Parse.Cloud.define('getSuggestedUsers', function(request, response){
-    //Get suggested users ranked by the number of answers to question
+Parse.Cloud.define('getFeaturedUsers', function(request, response){
+    //Get featured users ranked by the number of answers to question
     var userQuery = new Parse.Query(Parse.User);
-    userQuery.notEqualTo('isTestUser', true);
-    userQuery.descending('answerCount').limit(6);
+    userQuery.equalTo('isFeatured', true);
 
-    userQuery.find({useMasterKey: true}).then(function(suggestedUsers){
-        console.log(suggestedUsers);
-        response.success(suggestedUsers);
+    userQuery.find({useMasterKey: true}).then(function(featuredUsers){
+        console.log(featuredUsers);
+        response.success(featuredUsers);
     }, function(err){
         console.log(err);
-        throw new Error(`Got an error while getting suggested users. ErrorCode: ${err.code}, ErrorMessage: ${err.message}`);
+        throw new Error(`Got an error while getting featured users. ErrorCode: ${err.code}, ErrorMessage: ${err.message}`);
     });
 });
 
