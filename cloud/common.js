@@ -57,7 +57,8 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
     }
 
     toUsers.forEach(function(user){
-
+        if (user.id == currentUser.id)
+            return;
         if (subscriptionTypes.indexOf(type) !== -1) {
             if (!checkPushSubscription(user, type) && !checkSMSSubscription(user, type))
                 return console.log(logTexts[type]);
