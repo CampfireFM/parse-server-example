@@ -155,12 +155,13 @@ function splitAndMakePayments(question, callback){
         console.log();
     });
 
-    if(split_charity > 0){
+    if(split_charity > 0 && charity){
         var donation_params = {
             amount: split_charity,
             questionRef: question,
             userRef : toUser,
-            isPaid: false
+            isPaid: false,
+            charityRef: charity
         };
 
         createDonation(donation_params, function(e,r){

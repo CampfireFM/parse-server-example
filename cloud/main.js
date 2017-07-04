@@ -897,6 +897,7 @@ Parse.Cloud.define('withdraw', function(request, response){
         'CURRENCYCODE' : 'USD'
     };
 
+    console.log('Payout_Request_Json', create_payout_json);
     paypal.request('MassPay', create_payout_json).then(function(payout) {
         //Get Payout Item
 
@@ -1108,6 +1109,90 @@ Parse.Cloud.define('getWelcomeQuestion', function(request, response){
         response.error(err);
     })
 });
+
+function removeUser(userId) {
+
+    // Get default avatar
+    const Defaults = Parse.Object.extend('Defaults');
+    const query = new Parse.Query(Defaults);
+    query.find({useMasterKey: true}).then(function (defaults) {
+        const defaultAvatar = defaults[0].get('defaultAvatar');
+        const query = new Parse.Query(Parse.User);
+        query.equalTo('objectId', userId);
+
+        query.first({useMasterKey: true}).then(function (user) {
+            if (user) {
+                user.set('isLive', false);
+                user.set('emailSubscriptions', []);
+                user.set('pushSubscriptions', []);
+                user.set('smsSubscriptions', []);
+                user.set('username', 'deleted_' + user.get('username'));
+                user.set('email', 'deleted_' + user.get('email'));
+                user.set('profilePhoto', defaultAvatar);
+                user.save(null, {useMasterKey: true});
+
+                // Remove unanswered questions / Update fromUser or toUser to null
+                const Question = Parse.Object.extend('Question');
+                const questionQuery1 = new Parse.Query(Question);
+                questionQuery1.equalTo('fromUser', user);
+                // questionQuery1.equalTo('isAnswered', false);
+                const questionQuery2 = new Parse.Query(Question);
+                questionQuery2.equalTo('toUser', user);
+                // questionQuery2.equalTo('isAnswered', false);
+
+                const compoundQuery = Parse.Query.or(questionQuery1, questionQuery2);
+
+                compoundQuery.find({useMasterKey: true}).then(function (questions) {
+                    if (questions.length > 0) {
+                        questions.forEach(function (question) {
+                            if (question.get('isAnswered') !== true) {
+                                Parse.Object.destroyAll([question], {useMasterKey: true});
+                            }
+                            else {
+                                if (question.get('fromUser').id === userId) {
+                                    question.set('fromUser', null);
+                                    question.save(null, {useMasterKey: true});
+                                }
+                                if (question.get('toUser').id === userId) {
+                                    question.set('toUser', null);
+                                    question.save(null, {useMasterKey: true});
+                                }
+                            }
+                        });
+                    }
+                });
+
+                // Update userRef to null in answers
+                const Answer = Parse.Object.extend('Answer');
+                const answerQuery = new Parse.Query(Answer);
+
+                answerQuery.equalTo('userRef', user);
+
+                answerQuery.find({useMasterKey: true}).then(function (answers) {
+                    if (answers.length > 0) {
+                        answers.forEach(function (answer) {
+                            answer.set('userRef', null);
+                            answer.save(null, {useMasterKey: true});
+                        })
+                    }
+                });
+            }
+        });
+    }, function (err) {
+        console.log(err);
+    });
+}
+
+removeUser('yMNoqrGB9C');
+removeUser('yzBDQ19qHf');
+removeUser('3mjhBJNSMM');
+Parse.Cloud.define('removeUser', function(request, response) {
+    const userId = request.params.userId;
+    if(!userId)
+        return response.success({});
+    removeUser(userId);
+    response.success({userId});
+});
 // //Add answerCount to all users
 // (function(){
 //     const Question = Parse.Object.extend('Question');
@@ -1150,3 +1235,22 @@ Parse.Cloud.define('getWelcomeQuestion', function(request, response){
 //             console.log(message.sid);
 //     });
 // });
+
+Parse.Cloud.define('getAnswersForList', function(request, response) {
+    var skip = request.params.skip || 0;
+    var limit = request.params.limit || 6;
+    var listId = request.params.listId;
+
+    var Answers = Parse.Object.extend('Answer');
+    var query = new Parse.Query(Answers);
+
+    query.containsAll('lists', [pointerTo(listId, 'List')]);
+    query.skip(skip);
+    query.limit(limit);
+    query.find({useMasterKey: true}).then(function(answers) {
+        response.success(answers);
+    }, function(err) {
+        console.log(err);
+        request.error(err);
+    })
+});
