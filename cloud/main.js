@@ -889,11 +889,11 @@ Parse.Cloud.define('withdraw', function(request, response){
     // if(process.env.NODE_ENV !== 'production')
     //   paypalEmail = 'krittylor@gmail.xom';
     // Round earningsBalance
-    earningsBalance = Math.floor( earningsBalance * Math.pow(10, 2) ) / Math.pow(10, 2) ;
+    const roundedEarningsBalance = Math.floor( earningsBalance * Math.pow(10, 2) ) / Math.pow(10, 2) ;
     var create_payout_json = {
         'RECEIVERTYPE' : 'Email',
         'L_EMAIL0': paypalEmail,
-        'L_AMT0' : earningsBalance,
+        'L_AMT0' : roundedEarningsBalance,
         'CURRENCYCODE' : 'USD'
     };
 
@@ -904,7 +904,7 @@ Parse.Cloud.define('withdraw', function(request, response){
         console.log("Created Single Payout");
         console.log(payout);
         if(payout.ACK == 'Success'){
-            currentUser.set('earningsBalance', 0);
+            currentUser.set('earningsBalance', earningsBalance - roundedEarningsBalance);
             currentUser.save(null, {useMasterKey : true}).then(function(user){
                 console.log(`Updated balance of ${user.get('earningsBalance')}`);
                 response.success(payout);
