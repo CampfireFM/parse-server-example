@@ -119,7 +119,7 @@ function sendQuestionEmail(recipient, questionId, questionAskerProfilePhoto, que
         channel: '',
         feature: '',
         data: {
-            questionId: questionId
+            tag: 'question'
         }
     }).then(function(link){
         // Invoke the send method with an options object
@@ -140,6 +140,11 @@ function sendQuestionEmail(recipient, questionId, questionAskerProfilePhoto, que
                 buildDeepLink: function(){
                     return function(text, render){
                         return `<a href="${link.url}" style="color: #F16F00; font-family: Nunito, Helvetica, sans-serif; font-size: 1.1rem; font-weight: 400; line-height: 160%;" target="_blank">`
+                    }
+                },
+                buildLinkButton: function() {
+                    return function(text, render){
+                        return `<a target="_blank" style="text-decoration:none; color: #FFFFFF; font-family: sans-serif; font-size: 1rem; font-weight: 400; line-height: 120%;" href="${link.url}"> Answer on Campfire </a>`;
                     }
                 }
             }
