@@ -144,7 +144,7 @@ function sendQuestionEmail(recipient, questionId, questionAskerProfilePhoto, que
                 },
                 buildLinkButton: function() {
                     return function(text, render){
-                        return `<a target="_blank" style="text-decoration:none; color: #FFFFFF; font-family: sans-serif; font-size: 1rem; font-weight: 400; line-height: 120%;" href="${link.url}"> Answer on Campfire </a>`;
+                        return `<a target="_blank" style="text-decoration:none; color: #FFFFFF; font-family: sans-serif; font-size: 1rem; font-weight: 400; line-height: 120%;" href="${link.url}">`;
                     }
                 }
             }
