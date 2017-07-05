@@ -164,7 +164,7 @@ Parse.Cloud.define('removeAnswersFromList', function(req, res) {
 
 Parse.Cloud.define('getFeaturedCampfire', function(req, res) {
     var campfires = [];
-    var limit = req.params.limit || 6;
+    var limit = req.params.limit || 3;
     var skip = req.params.skip || 0;
 
     var Answer = Parse.Object.extend('Answer');
