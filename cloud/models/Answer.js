@@ -89,7 +89,8 @@ Parse.Cloud.afterSave("Answer", function(request) {
                                 user.get('email'),
                                 request.user.get('profilePhoto').url(),
                                 request.user.get('fullName'),
-                                question.get('text')
+                                question.get('text'),
+                                answer.id
                             )
                         }
                     },
