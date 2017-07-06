@@ -113,9 +113,9 @@ Parse.Cloud.define('addAnswersToList', function(req, res) {
 
 });
 
-Parse.Cloud.define('getUsers', function(req, res) {
+Parse.Cloud.define('getUsers', function(request, response) {
     var result = [];
-    var chunk_size = 100;
+    var chunk_size = 1000;
     var processCallback = function(res) {
         const users = res.map((user) => {
             return {
@@ -135,7 +135,7 @@ Parse.Cloud.define('getUsers', function(req, res) {
         if (skip) {
             query.greaterThan("objectId", skip);
         }
-        query.include('objectId', 'fullName');
+        query.select(['objectId', 'fullName']);
         query.limit(chunk_size);
         query.ascending("objectId");
         query.find().then(function (res) {
