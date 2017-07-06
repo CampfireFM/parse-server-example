@@ -114,27 +114,37 @@ Parse.Cloud.define('addAnswersToList', function(req, res) {
 });
 
 Parse.Cloud.define('getUsers', function(req, res) {
-    var users = [];
-    var User = Parse.Object.extend('User');
-    var query = new Parse.Query(User);
-
-    query.find({
-        success: function (objects) {
-            if (objects.length) {
-                for (var i = 0; i < objects.length; i++) {
-                    var object = objects[i];
-                    users.push({
-                        id: object.id,
-                        name: object.get('fullName')
-                    });
-                }
+    var result = [];
+    var chunk_size = 100;
+    var processCallback = function(res) {
+        const users = res.map((user) => {
+            return {
+                id: user.id,
+                name: user.get('fullName')
             }
-            res.success(users);
-        },
-        error: function (error) {
-            res.error(error);
+        });
+        result = result.concat(users);
+        if (res.length === chunk_size) {
+            process(res[res.length-1].id);
+        } else {
+            response.success(result);
         }
-    })
+    };
+    var process = function(skip) {
+        var query = new Parse.Query(Parse.User);
+        if (skip) {
+            query.greaterThan("objectId", skip);
+        }
+        query.include('objectId', 'fullName');
+        query.limit(chunk_size);
+        query.ascending("objectId");
+        query.find().then(function (res) {
+            processCallback(res);
+        }, function (error) {
+            response.error("query unsuccessful, length of result " + result.length + ", error:" + error.code + " " + error.message);
+        });
+    };
+    process(false);
 });
 
 Parse.Cloud.define('removeAnswersFromList', function(req, res) {
