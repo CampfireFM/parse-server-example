@@ -436,6 +436,54 @@ Parse.Cloud.define('getCampfires', function(req, res) {
     }
 });
 
+Parse.Cloud.define('gettopCharityUsers', function(req, res) {
+    var charityUsers = Parse.Object.extend('User');
+    var charityUsersQuery = new Parse.Query(charityUsers);
+    charityUsersQuery.select("profilePhoto");
+    charityUsersQuery.greaterThan('donationPercentage', 0);
+    var Campfire = Parse.Object.extend('Answer');
+    var query = new Parse.Query(Campfire);
+    query.matchesQuery('userRef', charityUsersQuery);
+    query.ascending('unlockCount');
+    query.limit(6);
+
+    query.find({useMasterKey: true}).then(function (objects) {
+        if (objects.length) {
+            var topCharityUsers = [];
+            var topCharityUserIds = [];
+            for (var i = 0; i < objects.length; i++) {
+                var object = objects[i];
+                var toUserObj = object.get('userRef');
+                topCharityUserIds.push(object.get('userRef').id);
+                console.log("topCharityUserIds==>");
+                console.log(topCharityUserIds);
+            }
+            var User = Parse.Object.extend('User');
+            var queryUser = new Parse.Query(User);
+            queryUser.containedIn('objectId', topCharityUserIds);
+            queryUser.select('profilePhoto');
+            queryUser.find({useMasterKey: true}).then(function (user_objects) {
+            if (user_objects) {
+                console.log("user_objects");
+                console.log(user_objects);
+                for (var i = 0; i < user_objects.length; i++) {
+                    var user_object = user_objects[i];
+                    topCharityUsers.push({
+                        id: user_object.id,
+                        image: (user_object.get('profilePhoto') && user_object.get('profilePhoto').url) ? (user_object.get('profilePhoto')).toJSON().url : ''
+                    });
+                }
+            }
+            res.success(topCharityUsers);
+            }, function (error) {
+              console.log(error);
+            });
+        }
+    }, function(error) {
+        res.error(error);
+    });
+});
+
 Parse.Cloud.define('getPeople', function(req, res) {
     var people = [];
     var sortedBy = req.params.sortedBy || 'createdAt';
