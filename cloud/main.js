@@ -1251,3 +1251,40 @@ Parse.Cloud.define('getAnswersForList', function(request, response) {
         request.error(err);
     })
 });
+
+Parse.Cloud.define('removeList', function(request, response) {
+    var listId = request.params.listId;
+    const Answers = Parse.Object.extend('Answer');
+    const query = new Parse.Query(Answers);
+    query.containsAll('lists', [pointerTo(listId, 'List')]);
+    query.find({useMasterKey: true}).then(function(answers) {
+        answers.forEach(function(answer) {
+            // Build new lists
+            const oldLists = answer.get('lists');
+            let newLists = [];
+            oldLists.forEach(function(list) {
+                if (list.id !== listId)
+                    newLists.push(list);
+            });
+            answer.set('lists', newLists);
+            answer.save(null, {useMasterKey: true});
+        });
+    });
+    const Questions = Parse.Object.extend('Question');
+    const questionQuery = new Parse.Query(Questions);
+    const Lists = Parse.Object.extend('List');
+    const listQuery = new Parse.Query(Lists);
+    listQuery.equalTo('objectId', listId);
+    listQuery.first({useMasterKey: true}).then(function(list) {
+        questionQuery.equalTo('list', list);
+        questionQuery.find({useMasterKey: true}).then(function(questions) {
+            questions.forEach(function(question) {
+                question.unset('list');
+                question.save(null, {useMasterKey: true});
+
+            });
+        });
+        Parse.Object.destroyAll([list], {useMasterKey: true});
+    })
+});
+
