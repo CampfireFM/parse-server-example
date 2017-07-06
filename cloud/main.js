@@ -455,8 +455,6 @@ Parse.Cloud.define('gettopCharityUsers', function(req, res) {
                 var object = objects[i];
                 var toUserObj = object.get('userRef');
                 topCharityUserIds.push(object.get('userRef').id);
-                console.log("topCharityUserIds==>");
-                console.log(topCharityUserIds);
             }
             var User = Parse.Object.extend('User');
             var queryUser = new Parse.Query(User);
@@ -464,8 +462,6 @@ Parse.Cloud.define('gettopCharityUsers', function(req, res) {
             queryUser.select('profilePhoto');
             queryUser.find({useMasterKey: true}).then(function (user_objects) {
             if (user_objects) {
-                console.log("user_objects");
-                console.log(user_objects);
                 for (var i = 0; i < user_objects.length; i++) {
                     var user_object = user_objects[i];
                     topCharityUsers.push({
@@ -476,7 +472,7 @@ Parse.Cloud.define('gettopCharityUsers', function(req, res) {
             }
             res.success(topCharityUsers);
             }, function (error) {
-              console.log(error);
+                res.error(error);
             });
         }
     }, function(error) {
