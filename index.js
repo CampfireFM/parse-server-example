@@ -283,6 +283,7 @@ app.get('/meta/*', function(req, res) {
     page = page.replace('home', '');
     var isEavesdropPage = /^eavesdrop\/(.*)$/.test(page);
     var isUserPage = /^user\/(.*)$/.test(page);
+    var isAskPage = /^user\/(.*)$/.test(page);
     if(isEavesdropPage){
       var answer = {};
       var answerId = req.params[0].split('/')[1]
@@ -344,6 +345,39 @@ app.get('/meta/*', function(req, res) {
             });
           }
       });
+    } else if (isAskPage) {
+        var user = {};
+        var userId = req.params[0].split('/')[1];
+        var userQuery = new Parse.Query(Parse.User);
+        userQuery.equalTo('objectId', userId);
+        userQuery.first({useMasterKey: true}).then(function(user) {
+            if (user) {
+                const title = 'Ask ' + user.get('fullName') + ' on Campfire';
+                res.render('eavesdrop_meta', {
+                    page: req.params[0],
+                    imageUrl: user.get('coverPhoto') ? (user.get('coverPhoto')).toJSON().url : '',
+                    fb_app_id: config.facebookAppIds[0],
+                    description: user.get('bio') ? user.get('bio') : "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
+                    title: title
+                })
+            } else {
+                return res.render('eavesdrop_meta',{
+                    page: page,
+                    imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
+                    fb_app_id: config.facebookAppIds[0],
+                    description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
+                    title: "Campfire - Hear it here."
+                });
+            }
+        }, function(err) {
+            return res.render('eavesdrop_meta',{
+                page: page,
+                imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
+                fb_app_id: config.facebookAppIds[0],
+                description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
+                title: "Campfire - Hear it here."
+            });
+        })
     }
     else if (isUserPage) {
       var userId = req.params[0].split('/')[1]
