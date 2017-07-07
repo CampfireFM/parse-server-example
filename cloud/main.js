@@ -1298,3 +1298,20 @@ Parse.Cloud.define('removeList', function(request, response) {
     })
 });
 
+Parse.Cloud.define('getMostPopularQuestions', function(request, response) {
+    var Answer = Parse.Object.extend('Answer');
+    var query = new Parse.Query(Answer);
+
+    query.descending('unlockCount');
+    query.include('questionRef');
+    query.limit(6);
+    query.find({useMasterKey: true}).then(function(answers) {
+        var questions = answers.map(function(answer) {
+            return answer.get('questionRef');
+        });
+        response.success(questions);
+    }, function(err) {
+        console.log(err);
+        response.error(err);
+    });
+});
