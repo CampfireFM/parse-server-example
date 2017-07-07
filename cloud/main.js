@@ -523,6 +523,12 @@ Parse.Cloud.define('getPeople', function(req, res) {
     if (req.params.createdAt) {
         query.startsWith("createdAt", req.params.createdAt);
     }
+    if (req.params.fromDate) {
+        query.greaterThanOrEqualTo("createdAt", req.params.fromDate);
+    }
+    if (req.params.toDate) {
+        query.lessThanOrEqualTo("createdAt", req.params.toDate);
+    }
 
     // totalpages count
     var count;
@@ -549,7 +555,7 @@ Parse.Cloud.define('getPeople', function(req, res) {
                         isFeatured: object.get('isFeatured'),
                         fbFollowers: object.get('fbFollowers'),
                         twitterFollowers: object.get('twitterFollowers'),
-                        createdAt: object.get('createdAt')
+                        createdAt: object.get('createdAt').toDateString()
                     });
                 }
             }
