@@ -1259,7 +1259,7 @@ Parse.Cloud.define('getAnswersForList', function(request, response) {
     var limit = request.params.limit || 6;
     var listId = request.params.listId;
 
-    if (listId === 'cvh3dy') {
+    if (listId === 'iFwMwfGvJc') {
         getMostPopularQuestions(limit, skip)
             .then(answers => response.success(answers))
             .catch(err => {
