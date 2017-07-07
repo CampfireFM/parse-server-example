@@ -6,6 +6,7 @@ const stripe = require('stripe')(config.stripe_live_key);
 // var paypal = require('paypal-rest-sdk');
 var Paypal = require('paypal-nvp-api');
 const wrapper = require('co-express');
+const Promise = require('promise');
 //include the JS files which represent each classes (models), and contains their operations
 require("./models/Answer.js");
 require("./models/CampfireUnlock.js");
@@ -1248,18 +1249,28 @@ Parse.Cloud.define('getAnswersForList', function(request, response) {
     var limit = request.params.limit || 6;
     var listId = request.params.listId;
 
-    var Answers = Parse.Object.extend('Answer');
-    var query = new Parse.Query(Answers);
+    if (listId === 'cvh3dy') {
+        getMostPopularQuestions(limit, skip)
+            .then(answers => response.success(answers))
+            .catch(err => {
+                console.log(err);
+                response.error(err);
+            })
+    } else {
+        var Answers = Parse.Object.extend('Answer');
+        var query = new Parse.Query(Answers);
 
-    query.containsAll('lists', [pointerTo(listId, 'List')]);
-    query.skip(skip);
-    query.limit(limit);
-    query.find({useMasterKey: true}).then(function(answers) {
-        response.success(answers);
-    }, function(err) {
-        console.log(err);
-        request.error(err);
-    })
+        query.containsAll('lists', [pointerTo(listId, 'List')]);
+        query.skip(skip);
+        query.limit(limit);
+        query.find({useMasterKey: true}).then(function(answers) {
+            response.success(answers);
+        }, function(err) {
+            console.log(err);
+            request.error(err);
+        })
+    }
+
 });
 
 Parse.Cloud.define('removeList', function(request, response) {
@@ -1298,20 +1309,19 @@ Parse.Cloud.define('removeList', function(request, response) {
     })
 });
 
-Parse.Cloud.define('getMostPopularQuestions', function(request, response) {
-    var Answer = Parse.Object.extend('Answer');
-    var query = new Parse.Query(Answer);
+function getMostPopularQuestions(limit, skip) {
+    return new Promise((resolve, reject) => {
+        var Answer = Parse.Object.extend('Answer');
+        var query = new Parse.Query(Answer);
 
-    query.descending('unlockCount');
-    query.include('questionRef');
-    query.limit(6);
-    query.find({useMasterKey: true}).then(function(answers) {
-        var questions = answers.map(function(answer) {
-            return answer.get('questionRef');
+        query.descending('unlockCount');
+        query.limit(limit);
+        query.skip(skip);
+        query.find({useMasterKey: true}).then(function(answers) {
+            resolve(answers);
+        }, function(err) {
+            console.log(err);
+            reject(err);
         });
-        response.success(questions);
-    }, function(err) {
-        console.log(err);
-        response.error(err);
     });
-});
+}
