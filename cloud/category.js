@@ -15,6 +15,11 @@ Parse.Cloud.define('getCategories', function(req, res){
     count = result;
     sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy);
 
+    // filtering
+    if (req.params.name) {
+      query.startsWith('name', req.params.name);
+    }
+
     // pagination
     query.limit(limit);
     query.skip(skip);
