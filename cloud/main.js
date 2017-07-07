@@ -569,6 +569,80 @@ Parse.Cloud.define('getPeople', function(req, res) {
 
 });
 
+Parse.Cloud.define('getFeaturedPeople', function(req, res) {
+  var Defaults = Parse.Object.extend('Defaults');
+  var defaultQuery = new Parse.Query(Defaults);
+  defaultQuery.first({useMasterKey: true}).then(function(defaultValue){
+    var featuredPeople = defaultValue.get('featuredPeople');
+    var People = Parse.Object.extend('User');
+    var query = new Parse.Query(People);
+    query.select('fullName', 'firstName', 'email')
+    query.containedIn('objectId', featuredPeople);
+    query.find({useMasterKey: true}).then(function(people){
+        res.success({people: people, featuredPeople: featuredPeople });
+      }, function(error) {
+        res.error(error);
+      }
+    );
+  }, function(error){
+    res.error(error);
+  })
+});
+
+Parse.Cloud.define('setFeaturedPeople', function(req, res) {
+  var Defaults = Parse.Object.extend('Defaults');
+  var defaultQuery = new Parse.Query(Defaults);
+  defaultQuery.first({useMasterKey: true}).then(function(defaultValue){
+    var featuredPeople = defaultValue.get('featuredPeople');
+    if (req.params.featuredPeople) {
+      defaultValue.remove('featuredPeople');
+      defaultValue.set('featuredPeople', req.params.featuredPeople);
+    } else {
+      if (featuredPeople.indexOf(req.params.featuredPersonId) == -1 ) {
+        if (featuredPeople.length > 4) {
+          featuredPeople.pop()
+        }
+        featuredPeople.unshift(req.params.featuredPersonId)
+        defaultValue.set('featuredPeople', featuredPeople);
+      }
+    }
+    defaultValue.save(null, {
+      success: function(defaultObj) {
+        res.success(defaultObj);
+      },
+      error: function(defaultObj, error) {
+        res.error(error);
+      }
+    });
+  }, function(error){
+    console.log(error);
+    res.error(error);
+  })
+});
+
+Parse.Cloud.define('RemoveFeaturedPerson', function(req, res) {
+  var Defaults = Parse.Object.extend('Defaults');
+  var defaultQuery = new Parse.Query(Defaults);
+  defaultQuery.first({useMasterKey: true}).then(function(defaultValue){
+    var featuredPeople = defaultValue.get('featuredPeople');
+    var featuredPersonIdIndex = featuredPeople.indexOf(req.params.featuredPersonId);
+    featuredPeople.splice(featuredPersonIdIndex, 1);
+    defaultValue.remove('featuredPeople');
+    defaultValue.set('featuredPeople', featuredPeople);
+    defaultValue.save(null, {
+      success: function(defaultObj) {
+        res.success(defaultObj);
+      },
+      error: function(defaultObj, error) {
+        res.error(error);
+      }
+    });
+  }, function(error){
+    console.log(error);
+    res.error(error);
+  })
+});
+
 Parse.Cloud.define('getQuestionDetails', function(req, res) {
 
     var Question = Parse.Object.extend("Question");

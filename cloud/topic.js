@@ -57,7 +57,7 @@ Parse.Cloud.define('getFeaturedTopics-web', function(req, res) {
     var query = new Parse.Query(List);
     query.containedIn('objectId', spotlightedLists);
     query.find({useMasterKey: true}).then(function(topics){
-        res.success({topics: topics, spotlightedLists: spotlightedLists.reverse() });
+        res.success({topics: topics, spotlightedLists: spotlightedLists });
         //res.success(topics);
       }, function(error) {
         res.error(error);
@@ -82,7 +82,7 @@ Parse.Cloud.define('setFeaturedTopics', function(req, res) {
         if (spotlightedLists.length > 2) {
           spotlightedLists.pop()
         }
-        spotlightedLists.push(req.params.listId)
+        spotlightedLists.unshift(req.params.listId)
         defaultValue.set('spotlightedLists', spotlightedLists);
       }
     }
