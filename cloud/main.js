@@ -1102,23 +1102,33 @@ Parse.Cloud.define('getWelcomeQuestion', function(request, response){
         `Hey ${firstName}! If you could be born in a country other than the one you were actually born in, what country would it be and why?`,
         `Hey ${firstName}! Who’s the most famous person you ever spoke to, and how did it happen?`
     ];
-    // Get welcome question
-    var Question = Parse.Object.extend('Question');
-    var question = new Question();
-    question.set('toUser', request.user);
-    question.set('isAnswered', false);
-    question.set('price', 0);
-    const questionText = welcomeQuestions[Math.floor(Math.random() * welcomeQuestions.length)];
-    question.set('text', questionText);
-    question.set('charityPercentage', 0);
-    question.set('fromUser', campfireDefaultUser);
-    question.set('isExpired', false);
-    question.set('isTest', false);
-    question.save(null, {useMasterKey: true}).then(function(res){
-        response.success({});
-    }, function(err){
+    // Get Welcome List
+    const List = Parse.Object.extend('List');
+    const query = new Parse.Query(List);
+    query.equalTo('objectId', 'You2tVmGHd');
+    query.first({useMasterKey: true}).then(function(list) {
+        // Get welcome question
+        var Question = Parse.Object.extend('Question');
+        var question = new Question();
+        question.set('toUser', request.user);
+        question.set('isAnswered', false);
+        question.set('price', 0);
+        question.set('list', list);
+        const questionText = welcomeQuestions[Math.floor(Math.random() * welcomeQuestions.length)];
+        question.set('text', questionText);
+        question.set('charityPercentage', 0);
+        question.set('fromUser', campfireDefaultUser);
+        question.set('isExpired', false);
+        question.set('isTest', false);
+        question.save(null, {useMasterKey: true}).then(function(res){
+            response.success({});
+        }, function(err){
+            response.error(err);
+        })
+    }, function(err) {
+        console.log(err);
         response.error(err);
-    })
+    });
 });
 
 function removeUser(userId) {

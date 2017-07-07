@@ -6,7 +6,10 @@ var answer_methods = {};
 var config = require('../../config');
 var algoliasearch = require('../algolia/algoliaSearch.parse.js');
 var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
+function pointerTo(objectId, klass) {
 
+    return { __type:"Pointer", className:klass, objectId:objectId };
+}
 Parse.Cloud.beforeSave("Answer", function(request, response){
     if(request.object.get("liveDate") === undefined)
         request.object.set("liveDate", new Date());
@@ -38,6 +41,12 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 request.log.error("FAILED IN QUESTION DETAILS FETCH");
                 request.log.error(JSON.stringify(err_question));
             } else {
+
+                const list = question.get('list');
+                const answerLists = [pointerTo(list.id, 'List')];
+                request.object.set('lists', answerLists);
+                request.object.save(null, {useMasterKey: true});
+
                 if(question.get('isTest') !== true) {
 
                     var index = client.initIndex('questions');
