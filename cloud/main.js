@@ -1467,10 +1467,10 @@ Parse.Cloud.define('removeList', function(request, response) {
             questions.forEach(function(question) {
                 question.unset('list');
                 question.save(null, {useMasterKey: true});
-
             });
         });
         Parse.Object.destroyAll([list], {useMasterKey: true});
+        response.success({});
     })
 });
 
