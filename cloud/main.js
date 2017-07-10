@@ -268,7 +268,7 @@ Parse.Cloud.define('getMpActiveUsers', function(req, res) {
     var toDate = new Date();
     toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
     panel.segmentation({
-        event: '483416',
+        event: '$custom_event:483416',
         from_date: fromDate,
         to_date: toDate,
     }).then(function (data) {
