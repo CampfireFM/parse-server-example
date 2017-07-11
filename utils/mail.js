@@ -1,6 +1,7 @@
 var config = require('../config.js');
 var mailgun = require('mailgun-js');
 const branch = require('node-branch-io');
+const wrapper = require('co-express');
 function sendWelcomeMail(userEmail){
     // Get access to Parse Server's cache
     const { AppCache } = require('parse-server/lib/cache');
@@ -64,26 +65,42 @@ function sendSummaryEmail(recipient, summaries, moreAnswersCount){
     // NOTE: It's best to do this inside the Parse.Cloud.define(...) method body and not at the top of your file with your other imports. This gives Parse Server time to boot, setup cloud code and the email adapter.
     const MailgunAdapter = AppCache.get(config.appId)['userController']['adapter'];
 
-    // Invoke the send method with an options object
-    MailgunAdapter.send({
-        templateName: 'summaryEmail',
-        recipient: recipient,
-        variables: {
-            summaries,
-            moreAnswersCount,
-            buildLinkButton : function(){
-                return function(text, render){
-                    return `<a target="_blank" class="buttonA" style="text-decoration:none; color: #FFFFFF; font-family: sans-serif; font-size: 0.9rem; font-weight: 500; line-height: 3rem;  padding: 0.5rem 0.9rem;  border-radius: 0.5rem; margin:1rem 0;" href="https://campfire.fm/eavesdrop/${render(text)}"> Eavesdrop on it </a>`
+    // Generate branch.io links
+    wrapper(function*() {
+        let links = [];
+        for (let i = 0; i < summaries.length; i++) {
+            const link = yield branch.link.create(config.branchKey, {
+                channel: '',
+                feature: '',
+                data: {
+                    answerId: summaries[i].answerId
                 }
-            },
-            buildUserProfilePhoto : function(){
-                return function(text, render){
-                    return `<img alt="H" border="0" height="70" width="70" hspace="0" src="${render(text)}" style="border-radius: 20rem; padding: 0; margin: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: block; color: #000000;" title="Highly compatible" vspace="0" width="50">`
-                    //return `<img style="float: top;" class="profile-photo" src="${render(text)}" alt="interactive connection" width="45" />`
+            });
+            links.push(link.url);
+            summaries[i].link = link.url;
+        }
+        console.log(links);
+        // Invoke the send method with an options object
+        MailgunAdapter.send({
+            templateName: 'summaryEmail',
+            recipient: recipient,
+            variables: {
+                summaries,
+                moreAnswersCount,
+                buildLinkButton : function(){
+                    return function(text, render){
+                        return `<a target="_blank" class="buttonA" style="text-decoration:none; color: #FFFFFF; font-family: sans-serif; font-size: 0.9rem; font-weight: 500; line-height: 3rem;  padding: 0.5rem 0.9rem;  border-radius: 0.5rem; margin:1rem 0;" href="${render(text)}">Eavesdrop on Campfire</a>`
+                    }
+                },
+                buildUserProfilePhoto : function(){
+                    return function(text, render){
+                        return `<img alt="H" border="0" height="70" width="70" hspace="0" src="${render(text)}" style="border-radius: 20rem; padding: 0; margin: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: block; color: #000000;" title="Highly compatible" vspace="0" width="50">`
+                        //return `<img style="float: top;" class="profile-photo" src="${render(text)}" alt="interactive connection" width="45" />`
+                    }
                 }
             }
-        }
-    });
+        });
+    })();
 }
 
 function sendFollowEmail(recipient, followerProfilePhoto, followerUsername){
