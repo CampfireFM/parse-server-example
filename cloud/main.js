@@ -1234,16 +1234,16 @@ Parse.Cloud.define('getWelcomeQuestion', function(request, response){
     const firstName = request.user.get('firstName');
     const welcomeQuestions = [
         `Hey ${firstName}! If you could have picked your name, what would it be?`,
-        `Hey ${firstName}! What is your secret super power and what super power do you wish you had?`,
+        `Hey ${firstName}! What's your secret super power and what super power do you wish you had?`,
         `Hey ${firstName}! What scares you the most?`,
         `Hey ${firstName}! If you could deliver a one minute piece of advice to your 13 year old self, what would it be?`,
-        `Hey ${firstName}! What your favorite city you\'ve ever been to?`,
-        `Hey ${firstName}! If you could be born in a country other than the one you were actually born in, what country would it be and why?`,
+        `Hey ${firstName}! What is your favorite city you\'ve ever been to?`,
+        `Hey ${firstName}! If you could be from a country other than the one you were actually born in, what country would it be and why?`,
         `Hey ${firstName}! There are only so many hours in the day, so what do you think is more important: physical fitness or mental wellness?`,
         `Hey ${firstName}! Where do you get your news from? Why there?`,
         `Hey ${firstName}! If you could have a Campfire conversation with any historical figure, who would it be and why?`,
-        `Hey ${firstName}! Should we cut taxes to promote economic growth,raise them to support the most vulnerable members of our society or something else?`,
-        `Hey ${firstName}! Is it OK to "borrow" someone else's Netflix account instead of opening your own account?`,
+        // `Hey ${firstName}! Should we cut taxes to promote economic growth,raise them to support the most vulnerable members of our society or something else?`,
+        `Hey ${firstName}! Have you ever "borrowed" someone else's Netflix or Amazon Prime account instead of opening your own account?`,
         `Hey ${firstName}! If we found evidence of intelligent life on other planets, would you be excited or terrified?`,
         `Hey ${firstName}! What's the most important quality you look for in a partner?`,
         `Hey ${firstName}! What was the most selfless thing you ever did, and how did it make you feel?`,
@@ -1251,12 +1251,14 @@ Parse.Cloud.define('getWelcomeQuestion', function(request, response){
         `Hey ${firstName}! A house aside, what's the most expensive thing you've ever bought? How did you justify the purchase?`,
         `Hey ${firstName}! Can you describe for us your proudest moment from the last 12 months?`,
         `Hey ${firstName}! Do you think humans are designed for monogamy? What other way do you think things could work?`,
-        `Hey ${firstName}! Are there any laws or social rules that completely baffle you?`,
+        `Hey ${firstName}! What is the craziest law you've ever heard of?`,
         `Hey ${firstName}! What do you think Victoria's secret actually is?`,
-        `Hey ${firstName}! Michael Jackson, Whitney Houston, Prince, Nina Simone: so many of the greats are gone. Who would you most want to see in concert?`,
+        `Hey ${firstName}! Michael Jackson, Whitney Houston, Prince. Who would you most want to see in concert?`,
         `Hey ${firstName}! Do dating apps actually work? Or do you prefer to meet potential partners in the real world?`,
-        `Hey ${firstName}! Who’s the most famous person you ever spoke to, and how did it happen?`
+        `Hey ${firstName}! Who’s the most famous person you've spoken to, and how did it happen?`
     ];
+
+
     // Get Welcome List
     const List = Parse.Object.extend('List');
     const query = new Parse.Query(List);
@@ -1425,7 +1427,10 @@ Parse.Cloud.define('getAnswersForList', function(request, response) {
         var Answers = Parse.Object.extend('Answer');
         var query = new Parse.Query(Answers);
 
+        query.include(['questionRef', 'questionRef.toUser','questionRef.fromUser', 'questionRef.charity', 'questionRef.list', 'userRef']);
         query.containsAll('lists', [pointerTo(listId, 'List')]);
+        query.notEqualTo('isTest', true);
+        query.lessThan('liveDate', new Date());
         query.skip(skip);
         query.limit(limit);
         query.find({useMasterKey: true}).then(function(answers) {
@@ -1479,7 +1484,10 @@ function getMostPopularQuestions(limit, skip) {
         var Answer = Parse.Object.extend('Answer');
         var query = new Parse.Query(Answer);
 
+        query.include(['questionRef', 'questionRef.toUser','questionRef.fromUser', 'questionRef.charity', 'questionRef.list', 'userRef']);
         query.descending('unlockCount');
+        query.notEqualTo('isTest', true);
+        query.lessThan('liveDate', new Date());
         query.limit(limit);
         query.skip(skip);
         query.find({useMasterKey: true}).then(function(answers) {
