@@ -1072,6 +1072,7 @@ Parse.Cloud.define('getHottestCamps', function(request, response){
     listQuery.greaterThanOrEqualTo('endDate', currentDate);
     listQuery.lessThanOrEqualTo('liveDate', currentDate);
     listQuery.notContainedIn('name', ['Featured Web', 'Featured']);
+    listQuery.include(['questionRef', 'questionRef.toUser','questionRef.fromUser', 'questionRef.charity', 'userRef']);
 
     var completed = function(countMap){
         if(countMap.length > 0)

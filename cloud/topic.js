@@ -2,6 +2,7 @@ Parse.Cloud.define('getTopics', function(req, res){
   var topics = [];
   var List = Parse.Object.extend('List');
   var query = new Parse.Query(List);
+  query.include(['questionRef', 'questionRef.toUser','questionRef.fromUser', 'questionRef.charity', 'userRef']);
   query.find({
     success: function(objects) {
       if (objects.length) {
@@ -33,6 +34,7 @@ Parse.Cloud.define('getFeaturedTopics', function(req, res) {
     var List = Parse.Object.extend('List');
     var query = new Parse.Query(List);
     query.containedIn('objectId', spotlightedLists);
+    query.include(['questionRef', 'questionRef.toUser','questionRef.fromUser', 'questionRef.charity', 'userRef']);
     query.find({useMasterKey: true}).then(function(topics){
         // res.success({topics: topics, spotlightedLists: spotlightedLists.reverse() });
         res.success(topics);
