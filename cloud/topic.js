@@ -12,6 +12,7 @@ Parse.Cloud.define('getTopics', function(req, res){
             id: object.id,
             name: object.get('name'),
             type: object.get('type'),
+            liveDate: object.get('liveDate'),
             image: object.get('image') ? (object.get('image')).toJSON().url : ''
           });
         }
