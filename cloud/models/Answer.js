@@ -43,9 +43,11 @@ Parse.Cloud.afterSave("Answer", function(request) {
             } else {
 
                 const list = question.get('list');
-                const answerLists = [pointerTo(list.id, 'List')];
-                request.object.set('lists', answerLists);
-                request.object.save(null, {useMasterKey: true});
+                if (list) {
+                    const answerLists = [pointerTo(list.id, 'List')];
+                    request.object.set('lists', answerLists);
+                    request.object.save(null, {useMasterKey: true});
+                }
 
                 if(question.get('isTest') !== true) {
 
@@ -152,18 +154,20 @@ function splitAndMakePayments(question, callback){
     var toUser = qAnswerer;
     var fromUser = qAsker;
 
-    var payout_params = {
-        amount : split_answerer,
-        userRef : toUser,
-        questionRef : question,
-        type : 'answer',
-        isPaid : false
-    };
+    if (split_answerer > 0) {
+        var payout_params = {
+            amount : split_answerer,
+            userRef : toUser,
+            questionRef : question,
+            type : 'answer',
+            isPaid : false
+        };
 
-    createPayout(payout_params, function(e,r){
-        console.log(e);
-        console.log();
-    });
+        createPayout(payout_params, function(e,r){
+            console.log(e);
+            console.log(r);
+        });
+    }
 
     if(split_charity > 0 && charity){
         var donation_params = {
@@ -176,7 +180,7 @@ function splitAndMakePayments(question, callback){
 
         createDonation(donation_params, function(e,r){
             console.log(e);
-            console.log();
+            console.log(r);
         });
     }
 
