@@ -11,9 +11,16 @@ function pointerTo(objectId, klass) {
     return { __type:"Pointer", className:klass, objectId:objectId };
 }
 Parse.Cloud.beforeSave("Answer", function(request, response){
-    if(request.object.get("liveDate") === undefined)
-        request.object.set("liveDate", new Date());
-    response.success();
+    getQuestionAndItsPointers(request.object.get('questionRef').id, (err, question) => {
+        if (question) {
+            const list = question.get('list');
+            if (list) {
+                const answerLists = [pointerTo(list.id, 'List')];
+                request.object.set('lists', answerLists);
+            }
+        }
+        response.success();
+    });
 });
 
 //begin of afterSave function
@@ -41,13 +48,6 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 request.log.error("FAILED IN QUESTION DETAILS FETCH");
                 request.log.error(JSON.stringify(err_question));
             } else {
-
-                const list = question.get('list');
-                if (list) {
-                    const answerLists = [pointerTo(list.id, 'List')];
-                    request.object.set('lists', answerLists);
-                    request.object.save(null, {useMasterKey: true});
-                }
 
                 if(question.get('isTest') !== true) {
 
