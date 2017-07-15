@@ -13,6 +13,7 @@
     "@google-cloud/storage": "^1.1.0",
     "co-express": "^2.0.0",
     "cors": "^2.8.2",
+    "cron": "^1.2.1",
     "ejs": "^2.5.6",
     "express": "~4.11.x",
     "express-co": "^0.4.0",

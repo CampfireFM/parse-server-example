@@ -22,6 +22,7 @@ require("./common");
 require("./category");
 require("./topic");
 require("./transcript");
+require("./cron");
 
 transactionPercentage = 2.9;
 transactionFee = 0.3;

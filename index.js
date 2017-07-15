@@ -98,6 +98,11 @@ var api = new ParseServer({
                     subject: 'Your question was answered',
                     pathPlainText: resolve(__dirname, './templates/answer.txt'),
                     pathHtml: resolve(__dirname, './templates/answer.html'),
+                },
+                adminSummaryEmail: {
+                    subject: 'New updates to Campfire',
+                    pathPlainText: resolve(__dirname, './templates/adminSummary.txt'),
+                    pathHtml: resolve(__dirname, './templates/adminSummary.html'),
                 }
             }
         }
