@@ -2,6 +2,7 @@ var Twilio = require('twilio');
 const config = require('../config');
 const logTexts = {
     questions : 'Question answerer has not subscribed to receive questions notification yet',
+    expiringQuestions: 'Answerer has not subscribed to receive expiring questions notification yet',
     unlocks : 'Question asker/answerer has not subscribed to receive unlocks notification yet',
     answers : 'Question asker has not subscribed to receive answers sms yet',
     likes : 'Question ansker/answerer has not subscribed to receive likes notification yet',
@@ -10,7 +11,7 @@ const logTexts = {
 };
 const branch = require('node-branch-io');
 const subscriptionTypes = ['questions', 'unlocks', 'answers', 'likes', 'follows', 'earnings'];
-const campfireAutoPushTypes = ['friendMatch', 'joinCampfire'];
+const campfireAutoPushTypes = ['friendMatch', 'joinCampfire', 'expiringQuestions'];
 
 const activityTypes = ['follow', 'unlock', 'like', 'answer', 'question'];
 
@@ -57,7 +58,7 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
     }
 
     toUsers.forEach(function(user){
-        if (user.id == currentUser.id)
+        if (currentUser && (user.id == currentUser.id))
             return;
         if (subscriptionTypes.indexOf(type) !== -1) {
             if (!checkPushSubscription(user, type) && !checkSMSSubscription(user, type))
@@ -76,6 +77,12 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
         switch(type) {
             case 'questions' :
                 alert = fullName + ' asked you a new question';
+                break;
+            case 'expiringQuestions' :
+                if (additionalData > 1)
+                    alert = `You have ${additionalData} questions expiring in 24 hours, hurry up!`;
+                else
+                    alert = `You have ${additionalData} question expiring in 24 hours, hurry up!`;
                 break;
             case 'answers' :
                 alert = fullName + ' answered your question on Campfire!';
@@ -101,7 +108,7 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
         }
 
         //Send push notification to ios devices
-        if(checkPushSubscription(user, type)) {
+        if(checkPushSubscription(user, type) || (campfireAutoPushTypes.indexOf(type) > -1)) {
             Parse.Push.send({
                 where: pushQuery,
                 data: {

@@ -1,4 +1,5 @@
-var CronJob = require('cron').CronJob;
+const CronJob = require('cron').CronJob;
+const { sendPushOrSMS } = require('./common');
 const Promise = require('promise');
 const wrapper = require('co-express');
 const { sendAdminSummaryEmail } = require('../utils/mail');
@@ -13,7 +14,7 @@ const admins = ['krittylor@gmail.com', 'ericwebb85@yahoo.com', 'luke@lukevink.co
 
 function runCron() {
     sendStatisticsEmail();
-    // notifyRemainingQuestions();
+    notifyExpiringQuestions();
 }
 
 function sendStatisticsEmail() {
@@ -122,47 +123,48 @@ function getLast24(className, onlyCount, includes) {
 
     });
 }
-//
-// function getExpiringQuestions(className, onlyCount, includes) {
-//     return new Promise((resolve, reject) => {
-//         const classObject = Parse.Object.extend(className);
-//         const query = new Parse.Query(classObject);
-//         const start = new Date();
-//         const end = new Date();
-//         start.setDate(start.getDate() - 4);
-//         end.setDate(end.getDate() - 3);
-//         query.notEqualTo('isAnswered', true);
-//         query.greaterThanOrEqualTo('createdAt', start);
-//         query.lessThanOrEqualTo('createdAt', end);
-//         query.equalTo('isAnswered', false);
-//         query.notEqualTo('isRefunded', true);
-//         // Include attributes to be extracted
-//         if (onlyCount) {
-//             query.count({useMasterKey: true}).then(function(count) {
-//                 resolve(count);
-//             }, function(err) {
-//                 reject(err);
-//             });
-//         } else {
-//             query.find({useMasterKey: true}).then(function(objects) {
-//                 resolve(objects);
-//             }, function(err) {
-//                 reject(err);
-//             })
-//         }
-//
-//     });
-// }
-//
-// function notifyRemainingQuestions() {
-//     const Question = Parse.Object.extend('Question');
-//     const questionQuery = new Parse.Query(Question);
-//
-//     const start = new Date();
-//     const end = new Date();
-//     start.setDate(start.getDate() - 3);
-//     end.setDate(end.getDate() - 2);
-//     query.greaterThanOrEqualTo('createdAt', start);
-//     query.lessThanOrEqualTo('createdAt', end);
-//     query.equalTo('isAnswered', false);
-// }
+
+function getExpiringQuestionsCount(user) {
+    return new Promise((resolve, reject) => {
+        const Question = Parse.Object.extend('Question');
+        const query = new Parse.Query(Question);
+        const start = new Date();
+        const end = new Date();
+        start.setDate(start.getDate() - 3);
+        end.setDate(end.getDate() - 2);
+        query.notEqualTo('isAnswered', true);
+        query.greaterThanOrEqualTo('createdAt', start);
+        query.lessThanOrEqualTo('createdAt', end);
+        query.equalTo('isAnswered', false);
+        query.equalTo('toUser', user);
+        query.count({useMasterKey: true}).then(function(count) {
+            resolve(count);
+        }, function(err) {
+            reject(err);
+        });
+    });
+}
+
+function notifyExpiringQuestions() {
+    const query = new Parse.Query(Parse.User);
+    query.greaterThan('unansweredQuestionCount', 0);
+    query.notEqualTo('isTest', true);
+
+    query.find({useMasterKey: true}).then(function(users) {
+        if (users.length > 0) {
+            users.forEach(function(user) {
+                getExpiringQuestionsCount(user)
+                    .then(count => {
+                        if (count > 0) {
+                            sendPushOrSMS(null, user, 'expiringQuestions', count);
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            })
+        }
+    }, function(err) {
+        console.log(err);
+    });
+}
