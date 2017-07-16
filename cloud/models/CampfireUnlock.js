@@ -176,6 +176,9 @@ function createDonationForUnlock(params, callback) {
 */
 function createPayoutForUnlock(params, callback) {
 
+    if(params.amount === 0 || !params.charityRef)
+        return callback(null);
+
     var Payout = Parse.Object.extend("Payout");
     var payout = new Payout();
 
