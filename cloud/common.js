@@ -73,10 +73,12 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
 
         //Compose alert text to be sent
         var alert = "";
+        var tag = "";
         const fullName = currentUser ? currentUser.get('fullName') : '';
         switch(type) {
             case 'questions' :
                 alert = fullName + ' asked you a new question';
+                tag = 'question'
                 break;
             case 'expiringQuestions' :
                 if (additionalData > 1)
@@ -86,6 +88,7 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
                 break;
             case 'answers' :
                 alert = fullName + ' answered your question on Campfire!';
+                tag = 'answer'
                 break;
             case 'unlocks' :
                 alert = fullName + ' unlocked your answer/question';
@@ -113,6 +116,7 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
                 where: pushQuery,
                 data: {
                     alert: alert
+                    tag: tag
                 }
             }, {
                 useMasterKey: true,
