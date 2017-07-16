@@ -73,12 +73,14 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
 
         //Compose alert text to be sent
         var alert = "";
+        var badge = 3;
         // var tag = "";
         const fullName = currentUser ? currentUser.get('fullName') : '';
         switch(type) {
             case 'questions' :
                 alert = fullName + ' asked you a new question';
                 tag = 'question'
+
                 break;
             case 'expiringQuestions' :
                 if (additionalData > 1)
@@ -116,7 +118,8 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
                 where: pushQuery,
                 data: {
                     alert: alert,
-                    tag: tag
+                    tag: tag, 
+                    badge: badge
                 }
             }, {
                 useMasterKey: true,
