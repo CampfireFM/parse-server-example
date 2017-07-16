@@ -126,7 +126,7 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
 
             Parse.Push.send({
                 where: pushQuery,
-                data
+                data: data
             }, {
                 useMasterKey: true,
                 success: function () {
