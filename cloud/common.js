@@ -122,12 +122,16 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
                 tag: tag
             };
 
-            if (badge > 0) 
-                data.badge = badge;
+            // if badge > 0 { data.badge = badge };
 
             Parse.Push.send({
                 where: pushQuery,
                 data: data
+                // data: {
+                //     alert: alert,
+                //     tag: tag, 
+                //     badge: badge
+                // }
             }, {
                 useMasterKey: true,
                 success: function () {
