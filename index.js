@@ -48,6 +48,7 @@ var api = new ParseServer({
           production: true
       }]
     },
+    appName: 'Campfire Media',
     emailAdapter: {
         module: 'parse-server-mailgun',
         options: {
@@ -59,14 +60,14 @@ var api = new ParseServer({
             apiKey: config.mailgun.apiKey,
             // The template section
             templates: {
-                // passwordResetEmail: {
-                //     subject: 'Reset your password',
-                //     pathPlainText: resolve(__dirname, 'path/to/templates/password_reset_email.txt'),
-                //     pathHtml: resolve(__dirname, 'path/to/templates/password_reset_email.html'),
-                //     callback: (user) => {return {firstName: user.get('firstName')}}
-                //
-                // // Now you can use {{firstName}} in your templates
-                // },
+                passwordResetEmail: {
+                    subject: 'Reset your password',
+                    pathPlainText: resolve(__dirname, './templates/password_reset_email.txt'),
+                    pathHtml: resolve(__dirname, './templates/password_reset_email.html'),
+                    callback: (user) => {return {username: user.get('fullName')}}
+
+                // Now you can use {{firstName}} in your templates
+                },
                 // verificationEmail: {
                 //     subject: 'Confirm your account',
                 //     pathPlainText: resolve(__dirname, 'path/to/templates/verification_email.txt'),
