@@ -73,7 +73,7 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
 
         //Compose alert text to be sent
         var alert = "";
-        var tag = "";
+        // var tag = "";
         const fullName = currentUser ? currentUser.get('fullName') : '';
         switch(type) {
             case 'questions' :
@@ -115,7 +115,7 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
             Parse.Push.send({
                 where: pushQuery,
                 data: {
-                    alert: alert
+                    alert: alert,
                     tag: tag
                 }
             }, {
