@@ -73,14 +73,14 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
 
         //Compose alert text to be sent
         var alert = "";
-        var badge = 1;
+        var badge = 0;
         var tag = "";
         const fullName = currentUser ? currentUser.get('fullName') : '';
         switch(type) {
             case 'questions' :
                 alert = fullName + ' asked you a new question.';
-                tag = 'question'
-
+                tag = 'question';
+                badge = 1;
                 break;
             case 'expiringQuestions' :
                 if (additionalData > 1)
@@ -90,7 +90,8 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
                 break;
             case 'answers' :
                 alert = fullName + ' answered your question on Campfire!';
-                tag = 'answer'
+                tag = 'answer';
+                badge = 1;
                 break;
             case 'unlocks' :
                 alert = fullName + ' unlocked your question & answer.';
@@ -113,14 +114,19 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
         }
 
         //Send push notification to ios devices
+     
         if(checkPushSubscription(user, type) || (campfireAutoPushTypes.indexOf(type) > -1)) {
+            
+            var data = {
+                alert: alert,
+                tag: tag
+            };
+
+            if badge > 0 { data.badge = badge };
+
             Parse.Push.send({
                 where: pushQuery,
-                data: {
-                    alert: alert,
-                    tag: tag, 
-                    badge: badge
-                }
+                data
             }, {
                 useMasterKey: true,
                 success: function () {
