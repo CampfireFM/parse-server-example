@@ -79,7 +79,7 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
         switch(type) {
             case 'questions' :
                 alert = fullName + ' asked you a new question.';
-                tag = 'question'
+                tag = 'question';
 
                 break;
             case 'expiringQuestions' :
@@ -90,7 +90,7 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
                 break;
             case 'answers' :
                 alert = fullName + ' answered your question on Campfire!';
-                tag = 'answer'
+                tag = 'answer';
                 break;
             case 'unlocks' :
                 alert = fullName + ' unlocked your question & answer.';
