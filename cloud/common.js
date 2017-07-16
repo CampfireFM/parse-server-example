@@ -117,21 +117,20 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
      
         if(checkPushSubscription(user, type) || (campfireAutoPushTypes.indexOf(type) > -1)) {
             
-            var data = {
-                alert: alert,
-                tag: tag
-            };
+            // var data = {
+            //     alert: alert,
+            //     tag: tag
+            // };
 
             // if badge > 0 { data.badge = badge };
 
             Parse.Push.send({
                 where: pushQuery,
-                data: data
-                // data: {
-                //     alert: alert,
-                //     tag: tag, 
-                //     badge: badge
-                // }
+                data: {
+                    alert: alert,
+                    tag: tag, 
+                    badge: badge
+                }
             }, {
                 useMasterKey: true,
                 success: function () {
