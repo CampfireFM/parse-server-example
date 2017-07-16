@@ -74,7 +74,7 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
         //Compose alert text to be sent
         var alert = "";
         var badge = 1;
-        // var tag = "";
+        var tag = "";
         const fullName = currentUser ? currentUser.get('fullName') : '';
         switch(type) {
             case 'questions' :
