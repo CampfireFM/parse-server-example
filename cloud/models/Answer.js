@@ -11,6 +11,8 @@ function pointerTo(objectId, klass) {
     return { __type:"Pointer", className:klass, objectId:objectId };
 }
 Parse.Cloud.beforeSave("Answer", function(request, response){
+    if (request.object.get('liveDate') === undefined)
+        request.object.set('liveDate', new Date());
     getQuestionAndItsPointers(request.object.get('questionRef').id, (err, question) => {
         if (question) {
             const list = question.get('list');
