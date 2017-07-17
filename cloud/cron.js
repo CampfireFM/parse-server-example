@@ -9,7 +9,7 @@ var job = new CronJob({
     start: false,
     timeZone: 'America/Los_Angeles'
 });
-if (process.env.NODE_ENV === 'production')
+if (process.env.RUN_CRON === 'true')
     job.start();
 const admins = ['krittylor@gmail.com', 'ericwebb85@yahoo.com', 'luke@lukevink.com', 'christos@campfire.fm', 'nick@campfire.fm'];
 
