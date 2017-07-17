@@ -337,7 +337,7 @@ Parse.Cloud.define('getCampfires', function(req, res) {
       fromUserQuery.startsWith("fullName", req.params.answererAskerName);
     }
     if (req.params.question) {
-      QuestionQuery.startsWith('text', req.params.question);
+      QuestionQuery.contains('text', req.params.question);
     }
     if (req.params.categoryId) {
       var categoryRef = new Parse.Object("Category");
