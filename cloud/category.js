@@ -17,7 +17,7 @@ Parse.Cloud.define('getCategories', function(req, res){
 
     // filtering
     if (req.params.name) {
-      query.startsWith('name', req.params.name);
+      query.contains('name', req.params.name);
     }
 
     // pagination
