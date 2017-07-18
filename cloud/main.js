@@ -572,54 +572,64 @@ Parse.Cloud.define('getPeople', function(req, res) {
 });
 
 Parse.Cloud.define('getFeaturedPeople', function(req, res) {
-  var Defaults = Parse.Object.extend('Defaults');
-  var defaultQuery = new Parse.Query(Defaults);
-  defaultQuery.first({useMasterKey: true}).then(function(defaultValue){
-    var featuredPeople = defaultValue.get('featuredPeople');
-    var People = Parse.Object.extend('User');
-    var query = new Parse.Query(People);
-    query.select('fullName', 'firstName', 'email')
-    query.containedIn('objectId', featuredPeople);
-    query.find({useMasterKey: true}).then(function(people){
-        res.success({people: people, featuredPeople: featuredPeople });
-      }, function(error) {
+    var Defaults = Parse.Object.extend('Defaults');
+    var defaultQuery = new Parse.Query(Defaults);
+    defaultQuery.first({useMasterKey: true}).then(wrapper(function*(defaultValue) {
+        var featuredPeople = defaultValue.get('featuredPeople');
+        var People = Parse.Object.extend('User');
+        var query = new Parse.Query(People);
+        query.containedIn('objectId', featuredPeople);
+        query.find({useMasterKey: true}).then(function (people) {
+            // Sort people
+            if (people.length > 0) {
+                people.sort(function(p1, p2) {
+                    const personId1 = p1.id;
+                    const personId2 = p2.id;
+                    if (featuredPeople.indexOf(personId1) < featuredPeople.indexOf(personId2))
+                        return -1;
+                    if (featuredPeople.indexOf(personId1) > featuredPeople.indexOf(personId2))
+                        return 1;
+                    return 0;
+                });
+            }
+            res.success(people);
+        }, function (error) {
+            res.error(error);
+        });
+    }), function (error) {
         res.error(error);
-      }
-    );
-  }, function(error){
-    res.error(error);
-  })
+    })
 });
 
 Parse.Cloud.define('setFeaturedPeople', function(req, res) {
-  var Defaults = Parse.Object.extend('Defaults');
-  var defaultQuery = new Parse.Query(Defaults);
-  defaultQuery.first({useMasterKey: true}).then(function(defaultValue){
-    var featuredPeople = defaultValue.get('featuredPeople');
-    if (req.params.featuredPeople) {
-      defaultValue.remove('featuredPeople');
-      defaultValue.set('featuredPeople', req.params.featuredPeople);
-    } else {
-      if (featuredPeople.indexOf(req.params.featuredPersonId) == -1 ) {
-        if (featuredPeople.length > 4) {
-          featuredPeople.pop()
+    var Defaults = Parse.Object.extend('Defaults');
+    var defaultQuery = new Parse.Query(Defaults);
+    defaultQuery.first({useMasterKey: true}).then(function (defaultValue) {
+        var featuredPeople = defaultValue.get('featuredPeople');
+        if (req.params.featuredPeople) {
+            defaultValue.remove('featuredPeople');
+            defaultValue.set('featuredPeople', req.params.featuredPeople);
+        } else {
+            if (featuredPeople.indexOf(req.params.featuredPersonId) == -1) {
+                if (featuredPeople.length > 4) {
+                    featuredPeople.pop()
+                }
+                featuredPeople.unshift(req.params.featuredPersonId)
+                defaultValue.set('featuredPeople', featuredPeople);
+            }
         }
-        featuredPeople.unshift(req.params.featuredPersonId)
-        defaultValue.set('featuredPeople', featuredPeople);
-      }
-    }
-    defaultValue.save(null, {
-      success: function(defaultObj) {
-        res.success(defaultObj);
-      },
-      error: function(defaultObj, error) {
+        defaultValue.save(null, {
+            success: function (defaultObj) {
+                res.success(defaultObj);
+            },
+            error: function (defaultObj, error) {
+                res.error(error);
+            }
+        });
+    }, function (error) {
+        console.log(error);
         res.error(error);
-      }
-    });
-  }, function(error){
-    console.log(error);
-    res.error(error);
-  })
+    })
 });
 
 Parse.Cloud.define('RemoveFeaturedPerson', function(req, res) {
