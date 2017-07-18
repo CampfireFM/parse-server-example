@@ -505,16 +505,16 @@ Parse.Cloud.define('getPeople', function(req, res) {
 
     // filtering
     if (req.params.fullName) {
-        query.startsWith('fullName', req.params.fullName);
+        query.contains('fullName', req.params.fullName);
     }
     if (req.params.email) {
-        query.startsWith('email', req.params.email);
+        query.contains('email', req.params.email);
     }
     if (req.params.gender) {
         query.equalTo("gender", req.params.gender);
     }
     if (req.params.tagline) {
-        query.startsWith("tagline", req.params.tagline);
+        query.contains("tagline", req.params.tagline);
     }
     if (req.params.isFeatured) {
         query.startsWith("isFeatured", req.params.isFeatured);
