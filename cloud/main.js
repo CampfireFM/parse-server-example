@@ -331,18 +331,18 @@ Parse.Cloud.define('getCampfires', function(req, res) {
 
     // filtering
     if (req.params.answererName) {
-        toUserQuery.startsWith("fullName", req.params.answererName);
+        toUserQuery.contains("fullName", req.params.answererName);
     }
     if (req.params.answererAskerName) {
-      fromUserQuery.startsWith("fullName", req.params.answererAskerName);
+        fromUserQuery.contains("fullName", req.params.answererAskerName);
     }
     if (req.params.question) {
-      QuestionQuery.contains('text', req.params.question);
+        QuestionQuery.contains('text', req.params.question);
     }
     if (req.params.categoryId) {
-      var categoryRef = new Parse.Object("Category");
-      categoryRef.id = req.params.categoryId;
-      QuestionQuery.equalTo('category', categoryRef);
+        var categoryRef = new Parse.Object("Category");
+        categoryRef.id = req.params.categoryId;
+        QuestionQuery.equalTo('category', categoryRef);
     }
 
     // Exclude test data
