@@ -1078,9 +1078,9 @@ Parse.Cloud.define('getHottestCamps', function(request, response){
     var completed = function(countMap){
         if(countMap.length > 0)
             countMap.sort(function(a, b){
-                if(a.count < b.count)
+                if(a.list.get('createdAt') < b.list.get('createdAt'))
                     return 1;
-                if(a.count > b.count)
+                if(a.list.get('createdAt') > b.list.get('createdAt'))
                     return -1;
                 return 0;
             });
