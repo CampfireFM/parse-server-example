@@ -73,47 +73,62 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
 
         //Compose alert text to be sent
         var alert = "";
+        var badge = 0;
+
         const fullName = currentUser ? currentUser.get('fullName') : '';
         switch(type) {
             case 'questions' :
-                alert = fullName + ' asked you a new question';
+                alert = fullName + ' asked you a new question.';
+                badge = 1;
                 break;
             case 'expiringQuestions' :
                 if (additionalData > 1)
-                    alert = `You have ${additionalData} questions expiring in 24 hours, hurry up!`;
+                    alert = `You have ${additionalData} questions expiring in the next 24 hours, hurry up!`;
                 else
-                    alert = `You have ${additionalData} question expiring in 24 hours, hurry up!`;
+                    alert = `You have a question expiring in the next 24 hours, hurry up!`;
                 break;
             case 'answers' :
                 alert = fullName + ' answered your question on Campfire!';
+                badge = 1;
                 break;
             case 'unlocks' :
-                alert = fullName + ' unlocked your answer/question';
+                alert = fullName + ' unlocked your question & answer.';
                 break;
             case 'follows' :
-                alert = fullName + ' just followed you';
+                alert = fullName + ' just followed you.';
                 break;
             case 'likes' :
-                alert = fullName + ' just liked your answer/question';
+                alert = fullName + ' just liked your question & answer.';
                 break;
             case 'earnings' :
-                alert = 'You earned money';
+                alert = 'You earned money!';
                 break;
             case 'friendMatch' :
-                alert = 'Your friend ' + fullName + ' is syncing you';
+                alert = 'Your friend ' + fullName + ' is syncing you.';
                 break;
             case 'joinCampfire' :
-                alert = 'Your friend ' + fullName + ' joined campfire, you can ask whatever interested';
+                alert = 'Your friend ' + fullName + ' joined campfire! Go ask them a question.';
                 break;
         }
 
         //Send push notification to ios devices
         if(checkPushSubscription(user, type) || (campfireAutoPushTypes.indexOf(type) > -1)) {
+            
+            var data = {
+                alert: alert
+            }
+
+            if (badge > 0)
+                data.badge = badge
+
             Parse.Push.send({
                 where: pushQuery,
-                data: {
-                    alert: alert
-                }
+                data: data
+                // data: {
+                //     alert: alert,
+                //     tag: tag, 
+                //     badge: badge
+                // }
             }, {
                 useMasterKey: true,
                 success: function () {
