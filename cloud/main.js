@@ -1461,7 +1461,7 @@ Parse.Cloud.define('getAnswersForList', function(request, response) {
         query.lessThan('liveDate', new Date());
         query.skip(skip);
         query.limit(limit);
-        query.ascending("liveDate");
+        query.descending("liveDate");
 
         query.find({useMasterKey: true}).then(function(answers) {
             response.success(answers);
