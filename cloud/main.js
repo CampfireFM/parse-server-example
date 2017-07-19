@@ -1164,18 +1164,34 @@ Parse.Cloud.define('getHottestCategories', function(request, response){
     })
 });
 
-Parse.Cloud.define('getFeaturedUsers', function(request, response){
-    //Get featured users ranked by the number of answers to question
-    var userQuery = new Parse.Query(Parse.User);
-    userQuery.equalTo('isFeatured', true);
-
-    userQuery.find({useMasterKey: true}).then(function(featuredUsers){
-        console.log(featuredUsers);
-        response.success(featuredUsers);
-    }, function(err){
-        console.log(err);
-        throw new Error(`Got an error while getting featured users. ErrorCode: ${err.code}, ErrorMessage: ${err.message}`);
-    });
+Parse.Cloud.define('getFeaturedUsers', function(request, res){
+    var Defaults = Parse.Object.extend('Defaults');
+    var defaultQuery = new Parse.Query(Defaults);
+    defaultQuery.first({useMasterKey: true}).then(wrapper(function*(defaultValue) {
+        var featuredPeople = defaultValue.get('featuredPeople');
+        var People = Parse.Object.extend('User');
+        var query = new Parse.Query(People);
+        query.containedIn('objectId', featuredPeople);
+        query.find({useMasterKey: true}).then(function (people) {
+            // Sort people
+            if (people.length > 0) {
+                people.sort(function(p1, p2) {
+                    const personId1 = p1.id;
+                    const personId2 = p2.id;
+                    if (featuredPeople.indexOf(personId1) < featuredPeople.indexOf(personId2))
+                        return -1;
+                    if (featuredPeople.indexOf(personId1) > featuredPeople.indexOf(personId2))
+                        return 1;
+                    return 0;
+                });
+            }
+            res.success(people);
+        }, function (error) {
+            res.error(error);
+        });
+    }), function (error) {
+        res.error(error);
+    })
 });
 
 Parse.Cloud.define('getSuggestedUsers', function(request, response){
