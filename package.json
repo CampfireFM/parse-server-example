@@ -23,6 +23,7 @@
     "mailgun-js": "^0.10.1",
     "mixpanel": "^0.7.0",
     "mixpanel-data-export": "^2.0.2",
+    "mixpanel-export-people": "0.0.4",
     "node-branch-io": "^2.0.0",
     "node-twitter-api": "^1.8.0",
     "parse": "~1.8.0",

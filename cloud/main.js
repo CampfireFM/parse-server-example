@@ -174,6 +174,12 @@ Parse.Cloud.define('removeAnswersFromList', function(req, res) {
 
 });
 
+Parse.Cloud.define('ExportPeopleToCSV', function(req, res) {
+    var mp = new require("mixpanel-export-people")(config.mixpanel.api_key, config.mixpanel.api_secret);
+    var mixpanelPeopleFile = mp.people.saveCsv("public/mixpanelPeople.csv");
+    res.success({peopleExport: 'success'});
+});
+
 Parse.Cloud.define('getFeaturedCampfire', function(req, res) {
     var campfires = [];
     var limit = req.params.limit || 3;
