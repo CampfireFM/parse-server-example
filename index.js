@@ -128,6 +128,7 @@ app.all('*', function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Credentials', false);
   res.header('Access-Control-Allow-Origin', '*');
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
   next();
 });
 
@@ -520,7 +521,101 @@ app.post('/ipn', function(req, res) {
     }
   })
 });
+app.use(bodyParser.json({limit: '10mb'}));
+app.post('/uploadSocialImage', (req, res) => {
+    const userId = req.body.userId;
+    const charityId = req.body.charityId;
+    const base64Image = req.body.base64Image;
 
+    const Charity = Parse.Object.extend('Charity');
+    const ShareImage = Parse.Object.extend('ShareImage');
+    // Get user object
+    const userQuery = new Parse.Query(Parse.User);
+    userQuery.get(userId, {useMasterKey: true}).then(function(user) {
+        const charityQuery = new Parse.Query(Charity);
+        if (charityId) {
+            charityQuery.get(charityId, {useMasterKey: true}).then(function (charity) {
+                // Check for existing share image
+                const shareImageQuery = new Parse.Query(ShareImage);
+                shareImageQuery.equalTo('userRef', user);
+                shareImageQuery.equalTo('charityRef', charity);
+                shareImageQuery.include(['userRef', 'charityRef']);
+                shareImageQuery.first({useMasterKey: true}).then(function (shareImage) {
+                    if (shareImage) {
+                        const oldProfileImage = shareImage.get('userRef').get('profilePhoto');
+                        const oldCharityImage = shareImage.get('charityRef').get('image');
+                        if (oldProfileImage.name() === user.get('profilePhoto').name() && oldCharityImage.name() === charity.get('image').name()) {
+                            return res.json({});
+                        }
+
+                        // Update share image
+                        var file = new Parse.File('social' + '.png', {base64: base64Image}, 'image/png');
+                        shareImage.set('image', file);
+                        shareImage.save(null, {useMasterKey: true}).then(function () {
+                            console.log(`Successfully updated share image: ${user.get('fullName')}, ${charity.get('name')}`);
+                            res.json({});
+                        }, function (err) {
+                            console.log(err);
+                            console.log(`Failed to update share image: ${user.get('fullName')}, ${charity.get('name')}`);
+                            throw err;
+                        });
+                    } else {
+                        const newShareImage = new Parse.Object('ShareImage');
+                        newShareImage.set('userRef', user);
+                        newShareImage.set('charityRef', charity);
+                        var file = new Parse.File('social' + '.png', {base64: base64Image}, 'image/png');
+                        newShareImage.set('image', file);
+                        newShareImage.save(null, {useMasterKey: true}).then(function () {
+                            res.json({});
+                        }, function (err) {
+                            console.log(err);
+                            throw err;
+                        })
+                    }
+                })
+            }, function (err) {
+                console.log(err);
+                throw err;
+            })
+        } else {
+            const shareImageQuery = new Parse.Query(ShareImage);
+            shareImageQuery.equalTo('userRef', user);
+            shareImageQuery.equalTo('charityRef', undefined);
+            shareImageQuery.include(['userRef']);
+            shareImageQuery.first({useMasterKey: true}).then(function(shareImage) {
+                if (shareImage) {
+                    if (shareImage.get('userRef').get('profilePhoto').name() === user.get('profilePhoto').name())
+                        return res.json({});
+                    var file = new Parse.File('social' + '.png', {base64: base64Image}, 'image/png');
+                    shareImage.set('image', file);
+                    shareImage.save(null, {useMasterKey: true}).then(function () {
+                        res.json({});
+                    }, function (err) {
+                        console.log(err);
+                        throw err;
+                    })
+                } else {
+                    const newShareImage = new Parse.Object('ShareImage');
+                    newShareImage.set('userRef', user);
+                    var file = new Parse.File('social' + '.png', {base64: base64Image}, 'image/png');
+                    newShareImage.set('image', file);
+                    newShareImage.save(null, {useMasterKey: true}).then(function () {
+                        res.json({});
+                    }, function (err) {
+                        console.log(err);
+                        throw err;
+                    })
+                }
+            }, function(err) {
+                console.log(err);
+                throw err;
+            })
+        }
+    }, function(err) {
+        console.log(err);
+        throw err;
+    })
+});
 var port = process.env.PORT || 1337;
 var httpServer = require('http').createServer(app);
 
