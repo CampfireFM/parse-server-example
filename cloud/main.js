@@ -18,6 +18,7 @@ require("./models/List.js");
 require("./models/Activity");
 require("./algolia/algoliaQuestions.js");
 require("./common");
+require("./shareImage");
 
 require("./category");
 require("./topic");
