@@ -958,8 +958,8 @@ function runSummaryUpdate(){
                 // var testEmail = process.env.TEST_EMAIL ? process.env.TEST_EMAIL : 'krittylor@gmail.com';
                 if (process.env.SEND_SUMMARY == 'production')
                     sendSummaryEmail(user.get('email'), summaries, moreAnswersCount);
-                else
-                    sendSummaryEmail('ericwebb85@yahoo.com', summaries, moreAnswersCount);
+                // else
+                //     sendSummaryEmail('ericwebb85@yahoo.com', summaries, moreAnswersCount);
             });
         });
     }, {useMasterKey : true})
