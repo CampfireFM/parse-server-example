@@ -18,6 +18,21 @@ panel = new MixpanelExport({
   api_secret: config.mixpanel.api_secret
 });
 
+var S3Adapter = require('parse-server-s3-adapter');
+
+var s3Options = {
+    "bucket": config['bucketName'],
+    // optional:
+    "region": 'us-east-1', // default value
+    "bucketPrefix": '', // default value
+    "directAccess": true, // default value
+    "baseUrl": config['baseURL'], // default value
+    "signatureVersion": 'v4', // default value
+    "globalCacheControl": null // default value. Or 'public, max-age=86400' for 24 hrs Cache-Control
+};
+
+var s3Adapter = new S3Adapter(s3Options);
+
 var twitter = new Twitter({
   consumerKey: config.auth.twitter.consumer_key,
   consumerSecret: config.auth.twitter.consumer_secret,
@@ -36,6 +51,7 @@ var api = new ParseServer({
     serverURL: config['serverURL'],
     publicServerURL: config['serverURL'],
     auth: config['auth'],
+    filesAdapter: s3Adapter,
     push: {
       ios: [{
           pfx:        './keys/APNS-PROD.p12', // The filename of private key and certificate in PFX or PKCS12 format from disk
