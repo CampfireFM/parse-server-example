@@ -20,6 +20,7 @@ require("./algolia/algoliaQuestions.js");
 require("./common");
 
 require("./category");
+require("./tag");
 require("./topic");
 require("./transcript");
 require("./cron");
