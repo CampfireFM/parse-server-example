@@ -9,6 +9,8 @@ configs = {
         masterKey: process.env.MASTER_KEY || 'whosefleecewaswhiteassnow',
         serverURL: process.env.SERVER_URL || process.env.serverURL || 'http://localhost:1337/parse',
         facebookAppIds: ["984145855062964"],
+        baseURL: process.env.baseURL || 'http://d1h7eyqklrpraf.cloudfront.net',
+        bucketName: process.env.S3_BUCKET_NAME || 'campfire-files-stage',
         auth: {
             twitter: {
                 consumer_key: "PxGZmDyQbD778kzrWmyyPXeIc", // Required
@@ -56,6 +58,8 @@ configs = {
         masterKey: process.env.MASTER_KEY || 'whosefleecewaswhiteassnow',
         serverURL: process.env.SERVER_URL || process.env.serverURL || 'http://localhost:1337/parse',
         facebookAppIds: ["984145855062964"],
+        baseURL: 'http://d7l1hupl0uksg.cloudfront.net',
+        bucketName: process.env.S3_BUCKET_NAME || 'campfire-files-prod',
         auth: {
             twitter: {
                 consumer_key: "PxGZmDyQbD778kzrWmyyPXeIc", // Required
