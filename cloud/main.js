@@ -1,5 +1,5 @@
 const {sendSummaryEmail} = require('../utils/mail');
-const {checkEmailSubscription, sendPushOrSMS} = require('./common');
+const { checkEmailSubscription, sendPushOrSMS, generateShareImage } = require('./common');
 const config = require('../config.js');
 const payment_methods = require("../utils/paymenthandler.js");
 const stripe = require('stripe')(config.stripe_live_key);
@@ -1515,6 +1515,18 @@ Parse.Cloud.define('removeList', function(request, response) {
         Parse.Object.destroyAll([list], {useMasterKey: true});
         response.success({});
     })
+});
+
+Parse.Cloud.define('getShareImageUrl', function(request, response) {
+    const userId = request.params.userId;
+    generateShareImage(userId)
+        .then(url => {
+            response.success(url);
+        })
+        .catch(err => {
+            console.log(err);
+            response.error(err);
+        })
 });
 
 function getMostPopularQuestions(limit, skip) {
