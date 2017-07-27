@@ -291,6 +291,7 @@ app.get('/meta/*', function(req, res) {
     var isEavesdropPage = /^eavesdrop\/(.*)$/.test(page);
     var isUserPage = /^user\/(.*)$/.test(page);
     var isAskPage = /^user\/(.*)$/.test(page);
+    var isAnotherWorld = /^anotherworld$/.test(page);
     if(isEavesdropPage){
       var answer = {};
       var answerId = req.params[0].split('/')[1]
@@ -419,6 +420,15 @@ app.get('/meta/*', function(req, res) {
           var message = 'Failed to load user session: ' + error.message;
           console.log(message);
         }
+      });
+    }
+    else if (isAnotherWorld) {
+      return res.render('eavesdrop_meta',{
+        page: page,
+        imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/another-world.jpg',
+        fb_app_id: config.facebookAppIds[0],
+        description: "This week, Campfire sparks the Another Round podcast. Get Campfire to ask questions to your favorite experts and celebrities - and get paid for it.",
+        title: "Get Campfire"
       });
     }
     else{
