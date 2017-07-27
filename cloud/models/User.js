@@ -1,10 +1,11 @@
 const mail = require('../../utils/mail');
 const config = require('../../config');
-const {sendPushOrSMS} = require('../common');
+const { sendPushOrSMS, generateShareImage } = require('../common');
 var Twitter = require('twitter');
 var Mixpanel = require('mixpanel');
 var graph = require('fbgraph');
 var uniqid = require('uniqid');
+
 var oldEmail = '';
 Parse.Cloud.afterSave(Parse.User, function(request, response) {
     const userEmail = request.object.get('email');
@@ -128,6 +129,8 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
             $last_name: lastName,
             $email: userEmail
         });
+        generateShareImage(request.object.id).then();
+
     }
     response.success('ok');
 });

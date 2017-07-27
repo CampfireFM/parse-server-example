@@ -33,6 +33,7 @@
     "paypal-ipn": "^3.0.0",
     "paypal-nvp-api": "^1.2.27",
     "paypal-rest-sdk": "git://github.com/xcraftdev/PayPal-node-SDK.git",
+    "phantom": "^4.0.5",
     "promise": "^8.0.0",
     "request": "^2.81.0",
     "stripe": "^4.12.0",
@@ -45,6 +46,6 @@
     "dev": "nodemon index.js"
   },
   "engines": {
-    "node": ">=4.3"
+    "node": "6.11.1"
   }
 }
