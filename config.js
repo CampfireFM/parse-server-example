@@ -58,7 +58,7 @@ configs = {
         masterKey: process.env.MASTER_KEY || 'whosefleecewaswhiteassnow',
         serverURL: process.env.SERVER_URL || process.env.serverURL || 'http://localhost:1337/parse',
         facebookAppIds: ["984145855062964"],
-        baseURL: 'http://d7l1hupl0uksg.cloudfront.net',
+        baseURL: process.env.baseURL || 'http://dl0luablfk015.cloudfront.net',
         bucketName: process.env.S3_BUCKET_NAME || 'campfire-files-prod',
         auth: {
             twitter: {
