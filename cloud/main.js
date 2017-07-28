@@ -322,9 +322,9 @@ Parse.Cloud.define('getMpAvgQuestionsListened', function(req, res) {
 Parse.Cloud.define('getMpRetentionFeedLoad', function(req, res) {
     var fromDate = new Date();
     fromDate.setMonth(fromDate.getMonth());
-    fromDate = (fromDate.getFullYear() + "-" + fromDate.getMonth() + "-" + fromDate.getDate());
+    fromDate = (fromDate.getFullYear() + "-" + fromDate.getMonth() + "-" + (fromDate.getDate() - 7) );
     var toDate = new Date();
-    toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 7) + "-" + toDate.getDate());
+    toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
     panel.retention({
         unit: "day",
         event: "Initial Feed Load",
