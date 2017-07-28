@@ -302,6 +302,43 @@ Parse.Cloud.define('getMixpanelData', function(req, res) {
     });
 });
 
+Parse.Cloud.define('getMpAvgQuestionsListened', function(req, res) {
+    var fromDate = new Date();
+    fromDate.setMonth(fromDate.getMonth());
+    fromDate = (fromDate.getFullYear() + "-" + fromDate.getMonth() + "-" + fromDate.getDate());
+    var toDate = new Date();
+    toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
+    panel.events({
+        event: ["Unlock"],
+        type: "average",
+        unit: "day",
+        from_date: fromDate,
+        to_date: toDate
+    }).then(function (data) {
+        res.success(data);
+    });
+});
+
+Parse.Cloud.define('getMpRetentionFeedLoad', function(req, res) {
+    var fromDate = new Date();
+    fromDate.setMonth(fromDate.getMonth());
+    fromDate = (fromDate.getFullYear() + "-" + fromDate.getMonth() + "-" + (fromDate.getDate() - 7) );
+    var toDate = new Date();
+    toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
+    panel.retention({
+        unit: "day",
+        event: "Initial Feed Load",
+        where: 'user["Questions Answered"] > 1',
+        retention_type: "compounded",
+        interval_count: 37,
+        segment_method: "first",
+        from_date: fromDate,
+        to_date: toDate
+    }).then(function (data) {
+        res.success(data);
+    });
+});
+
 Parse.Cloud.define('getCampfires', function(req, res) {
     var campfires = [];
     var sortedBy = req.params.sortedBy || 'createdAt';
