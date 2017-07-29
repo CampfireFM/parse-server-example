@@ -480,4 +480,68 @@ function generateImage(profilePhoto, coverPhoto, logoUrl, backUrl, charityName) 
     }
 }
 
-module.exports = {checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, questionsToAlgoliaObjects, generateShareImage, getShareImageAndExistence};
+
+function getAllUsers() {
+    return new Promise((resolve, reject) => {
+        var result = [];
+        var chunk_size = 1000;
+        var processCallback = function(res) {
+            result = result.concat(res);
+            if (res.length === chunk_size) {
+                process(res[res.length-1].id);
+            } else {
+                resolve(result);
+            }
+        };
+        var process = function(skip) {
+            var query = new Parse.Query(Parse.User);
+            if (skip) {
+                query.greaterThan("objectId", skip);
+            }
+            query.select(['profilePhoto', 'charityRef']);
+            query.include(['charityRef']);
+            query.limit(chunk_size);
+            query.ascending("objectId");
+            query.find().then(function (res) {
+                processCallback(res);
+            }, function (error) {
+                reject(err);
+            });
+        };
+        process(false);
+    })
+}
+
+
+function getFollows(user, callback){
+    var Follow = Parse.Object.extend('Follow');
+    var followQuery = new Parse.Query(Follow);
+    followQuery.include('toUser');
+    followQuery.equalTo('fromUser', user);
+    followQuery.find({useMasterKey : true}).then(function(follows){
+        callback(null, follows);
+    }, function(err){
+        callback(err, null);
+    });
+}
+
+function getRecentAnswers(users, callback){
+    var Answer = Parse.Object.extend('Answer');
+    var answerQuery = new Parse.Query(Answer);
+    var date = new Date();
+    date.setDate(date.getDate() - 1);
+    answerQuery.include('userRef', 'questionRef', 'createdAt');
+    answerQuery.greaterThan('updatedAt', date);
+    answerQuery.containedIn('userRef', users);
+    answerQuery.descending('createdAt');
+    answerQuery.find({useMasterKey : true}).then(function(answers){
+        if(answers[0])
+            callback(null, answers);
+        else
+            callback(null, []);
+    }, function(err){
+        callback(err);
+    })
+}
+
+module.exports = {checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, questionsToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers};

@@ -1,7 +1,5 @@
-const {sendSummaryEmail} = require('../utils/mail');
-const { checkEmailSubscription, sendPushOrSMS, generateShareImage } = require('./common');
+const { sendPushOrSMS, generateShareImage } = require('./common');
 const config = require('../config.js');
-const payment_methods = require("../utils/paymenthandler.js");
 const stripe = require('stripe')(config.stripe_live_key);
 // var paypal = require('paypal-rest-sdk');
 var Paypal = require('paypal-nvp-api');
@@ -909,36 +907,6 @@ Parse.Cloud.define("updateNewUser", function(request, response) {
     }
 });
 
-function getFollows(user, callback){
-    var Follow = Parse.Object.extend('Follow');
-    var followQuery = new Parse.Query(Follow);
-    followQuery.include('toUser');
-    followQuery.equalTo('fromUser', user);
-    followQuery.find({useMasterKey : true}).then(function(follows){
-        callback(null, follows);
-    }, function(err){
-        callback(err, null);
-    });
-}
-
-function getRecentAnswers(users, callback){
-    var Answer = Parse.Object.extend('Answer');
-    var answerQuery = new Parse.Query(Answer);
-    var date = new Date();
-    date.setDate(date.getDate() - 1);
-    answerQuery.include('userRef', 'questionRef', 'createdAt');
-    answerQuery.greaterThan('updatedAt', date);
-    answerQuery.containedIn('userRef', users);
-    answerQuery.descending('createdAt');
-    answerQuery.find({useMasterKey : true}).then(function(answers){
-        if(answers[0])
-            callback(null, answers);
-        else
-            callback(null, []);
-    }, function(err){
-        callback(err);
-    })
-}
 
 function getQuestions(questionIds, callback){
     var Question = Parse.Object.extend('Question');
@@ -955,75 +923,6 @@ function getQuestions(questionIds, callback){
         callback(err);
     });
 }
-
-function runSummaryUpdate(){
-    var query = new Parse.Query(Parse.User);
-    return query.each(function(user){
-        //Cancel getting summary if user has not subscribed to receive summary email
-        if(checkEmailSubscription(user, 'summary') == false)
-            return;
-        getFollows(user, function(err, follows){
-            if(err){
-                console.log(err.message);
-                return;
-            }
-            if(follows.length == 0)
-                return;
-            follows = follows.reduce(function(pre, follow){
-                pre.push(follow.get('toUser'));
-                return pre;
-            }, []);
-            getRecentAnswers(follows, function(err, answers){
-                if(err) {
-                    console.log(err.message);
-                    return;
-                }
-                if(answers.length == 0)
-                    return;
-                const moreAnswersCount = answers.length > 5 ? answers.length - 5 : 0;
-                answers = answers.slice(0, 5);
-
-                var summaries = answers.reduce(function(pre, answer){
-                    //Get userId from answer
-                    pre.push({
-                        answerId : answer.id,
-                        questionId : answer.get('questionRef').id,
-                        question : answer.get('questionRef').get('text'),
-                        userName : answer.get('userRef').get('fullName'),
-                        profilePhoto : answer.get('userRef').get('profilePhoto').url()
-                    });
-                    return pre;
-                }, []);
-
-                console.log("SummaryMap : ", summaries);
-                //Generate email with template
-
-                //send to test email in development
-                // var testEmail = process.env.TEST_EMAIL ? process.env.TEST_EMAIL : 'krittylor@gmail.com';
-                if (process.env.SEND_SUMMARY == 'production')
-                    sendSummaryEmail(user.get('email'), summaries, moreAnswersCount);
-                // else
-                //     sendSummaryEmail('ericwebb85@yahoo.com', summaries, moreAnswersCount);
-            });
-        });
-    }, {useMasterKey : true})
-}
-
-Parse.Cloud.job("sendSummary", function(request, status){
-
-    runSummaryUpdate().then(function(){
-        status.success();
-    });
-});
-
-//Schedule runSummaryUpdate everyday
-(function scheduleSummary(){
-    setInterval(function(){
-        runSummaryUpdate().then(function(){
-            console.log('Updated users with summary');
-        })
-    }, 3600 * 24 * 1000);
-})();
 
 Parse.Cloud.define('getFriendsMatch', function(request, response){
     var facebookIds = request.params.fbUserIds;

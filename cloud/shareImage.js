@@ -1,4 +1,4 @@
-const { generateShareImage } = require('./common');
+const { generateShareImage, getAllUsers } = require('./common');
 const Promise = require('promise');
 
 Parse.Cloud.job("Generate Share Images", function(request, status) {
@@ -25,34 +25,3 @@ Parse.Cloud.job("Generate Share Images", function(request, status) {
         throw err;
     });
 });
-
-function getAllUsers() {
-    return new Promise((resolve, reject) => {
-        var result = [];
-        var chunk_size = 1000;
-        var processCallback = function(res) {
-            result = result.concat(res);
-            if (res.length === chunk_size) {
-                process(res[res.length-1].id);
-            } else {
-                resolve(result);
-            }
-        };
-        var process = function(skip) {
-            var query = new Parse.Query(Parse.User);
-            if (skip) {
-                query.greaterThan("objectId", skip);
-            }
-            query.select(['profilePhoto', 'charityRef']);
-            query.include(['charityRef']);
-            query.limit(chunk_size);
-            query.ascending("objectId");
-            query.find().then(function (res) {
-                processCallback(res);
-            }, function (error) {
-                reject(err);
-            });
-        };
-        process(false);
-    })
-}
