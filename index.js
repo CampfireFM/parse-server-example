@@ -305,7 +305,6 @@ app.get('/meta/*', function(req, res) {
     var page = req.params[0];
     page = page.replace('home', '');
     var isEavesdropPage = /^eavesdrop\/(.*)$/.test(page);
-    var isUserPage = /^user\/(.*)$/.test(page);
     var isAskPage = /^user\/(.*)$/.test(page);
     var isAnotherWorld = /^anotherworld$/.test(page);
     if(isEavesdropPage){
@@ -374,22 +373,45 @@ app.get('/meta/*', function(req, res) {
         var userId = req.params[0].split('/')[1];
         var userQuery = new Parse.Query(Parse.User);
         userQuery.equalTo('objectId', userId);
+        userQuery.include('charityRef');
         userQuery.first({useMasterKey: true}).then(function(user) {
             if (user) {
-                const title = 'Ask ' + user.get('fullName') + ' on Campfire';
-                res.render('eavesdrop_meta', {
-                    page: req.params[0],
-                    imageUrl: user.get('coverPhoto') ? (user.get('coverPhoto')).toJSON().url : '',
-                    fb_app_id: config.facebookAppIds[0],
-                    description: user.get('bio') ? user.get('bio') : "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
-                    title: title
+                const charity = user.get('charityRef');
+                const ShareImage = Parse.Object.extend('ShareImage');
+                const shareImageQuery = new Parse.Query(ShareImage);
+                shareImageQuery.equalTo('userRef', user);
+                shareImageQuery.equalTo('charityRef', charity);
+                let title;
+                if (charity)
+                    title = 'Ask ' + user.get('firstName') + " any question, support " + charity.get('name') + " on Campfire";
+                else
+                    title = 'Ask ' + user.get('fullName') + 'any question with campfire';
+                shareImageQuery.first({useMasterKey: true}).then(function(shareImage) {
+                    const shareImageUrl = shareImage.get('image').url();
+
+                    res.render('eavesdrop_meta', {
+                        page: req.params[0],
+                        imageUrl: shareImageUrl,
+                        fb_app_id: config.facebookAppIds[0],
+                        description: "Campfire lets you ask anyone a question, get an audio answer and support great causes: get.campfire.fm",
+                        title: title
+                    });
+                }, function(err) {
+                    return res.render('eavesdrop_meta',{
+                        page: page,
+                        imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
+                        fb_app_id: config.facebookAppIds[0],
+                        description: "Campfire lets you ask anyone a question, get an audio answer and support great causes: get.campfire.fm",
+                        title: title
+                    });
                 })
+
             } else {
                 return res.render('eavesdrop_meta',{
                     page: page,
                     imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
                     fb_app_id: config.facebookAppIds[0],
-                    description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
+                    description: "Campfire lets you ask anyone a question, get an audio answer and support great causes: get.campfire.fm",
                     title: "Campfire - Hear it here."
                 });
             }
@@ -398,47 +420,11 @@ app.get('/meta/*', function(req, res) {
                 page: page,
                 imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
                 fb_app_id: config.facebookAppIds[0],
-                description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
+                description: "Campfire lets you ask anyone a question, get an audio answer and support great causes: get.campfire.fm",
                 title: "Campfire - Hear it here."
             });
         })
-    }
-    else if (isUserPage) {
-      var userId = req.params[0].split('/')[1]
-      var User = Parse.Object.extend('User');
-      var UserQuery = new Parse.Query(User);
-      UserQuery.include('charityRef');
-      UserQuery.get(userId, {
-        success: function(userObj) {
-          var charityObj = userObj.get('charityRef');
-          var fullName = userObj.get('fullName');
-          var firstName = userObj.get('firstName');
-          if (charityObj) {
-            var charityName = userObj.get('charityRef').get('name');
-            return res.render('eavesdrop_meta',{
-              page: req.params[0],
-              imageUrl: (userObj.get('coverPhoto') && userObj.get('coverPhoto').url) ? (userObj.get('coverPhoto')).toJSON().url : 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
-              fb_app_id: config.facebookAppIds[0],
-              description: "Campfire lets you ask anyone a question, get an audio answer and support great causes: get.campfire.fm",
-              title: "Ask "+firstName+" any question, support "+charityName+" on Campfire"
-            });
-          } else {
-            return res.render('eavesdrop_meta',{
-              page: req.params[0],
-              imageUrl: (userObj.get('coverPhoto') && userObj.get('coverPhoto').url) ? (userObj.get('coverPhoto')).toJSON().url : 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
-              fb_app_id: config.facebookAppIds[0],
-              description: "Campfire lets you ask anyone a question, get an audio answer and support great causes: get.campfire.fm",
-              title: "Ask "+fullName+" any question with Campfire"
-            });
-          }
-        },
-        error: function(userObj, error) {
-          var message = 'Failed to load user session: ' + error.message;
-          console.log(message);
-        }
-      });
-    }
-    else if (isAnotherWorld) {
+    } else if (isAnotherWorld) {
       return res.render('eavesdrop_meta',{
         page: page,
         imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/another-world.jpg',
@@ -446,8 +432,7 @@ app.get('/meta/*', function(req, res) {
         description: "This week, Campfire sparks the Another Round podcast. Get Campfire to ask questions to your favorite experts and celebrities - and get paid for it.",
         title: "Get Campfire"
       });
-    }
-    else{
+    } else{
       return res.render('eavesdrop_meta',{
         page: page,
         imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
