@@ -385,7 +385,7 @@ app.get('/meta/*', function(req, res) {
                 if (charity)
                     title = 'Ask ' + user.get('firstName') + " any question, support " + charity.get('name') + " on Campfire";
                 else
-                    title = 'Ask ' + user.get('fullName') + 'any question with campfire';
+                    title = 'Ask ' + user.get('fullName') + ' any question with campfire';
                 shareImageQuery.first({useMasterKey: true}).then(function(shareImage) {
                     const shareImageUrl = shareImage.get('image').url();
 
