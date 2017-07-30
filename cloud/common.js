@@ -17,9 +17,6 @@ const campfireAutoPushTypes = ['friendMatch', 'joinCampfire', 'expiringQuestions
 
 const activityTypes = ['follow', 'unlock', 'like', 'answer', 'question'];
 
-let sitepage = null;
-let phInstance = null;
-
 const logoImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/logo.png';
 const backgroundCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/background-charity.png';
 const backgroundNoCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/background-nocharity.png';
@@ -266,6 +263,8 @@ function getShareImageAndExistence(user, charity) {
 
 function generateShareImage(userId) {
     return new Promise((resolve, reject) => {
+        let sitepage = null;
+        let phInstance = null;
         phantom.create()
             .then(instance => {
                 phInstance = instance;
