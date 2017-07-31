@@ -306,7 +306,7 @@ app.get('/meta/*', function(req, res) {
     //page = page.replace('home', '');
     var isEavesdropPage = /^eavesdrop\/(.*)$/.test(page);
     var isAskPage = /^user\/(.*)$/.test(page);
-    var isAnotherWorld = /^anotherworld$/.test(page);
+    var isAnotherRound = /^anotherround$/.test(page);
     if(isEavesdropPage){
       var answer = {};
       var answerId = req.params[0].split('/')[1]
@@ -424,7 +424,7 @@ app.get('/meta/*', function(req, res) {
                 title: "Campfire - Hear it here."
             });
         })
-    } else if (isAnotherWorld) {
+    } else if (isAnotherRound) {
       return res.render('eavesdrop_meta',{
         page: page,
         imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/another-world.jpg',
