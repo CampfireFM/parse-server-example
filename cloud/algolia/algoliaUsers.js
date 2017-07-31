@@ -7,7 +7,7 @@ Parse.Cloud.job("Index Users", function(request, status){
 
   //Set Index settings
   index.setSettings({
-    searchableAttributes : ['fullName'],
+    searchableAttributes : ['fullName', 'firstName', 'lastName', 'bio', 'username', 'tagline'],
     customRanking : ['asc(firstName)']
   });
   getAllUsers()
@@ -51,7 +51,7 @@ Parse.Cloud.job("Reindex Users", function(request, status){
             throw err;
           }
           client.initIndex(mainIndexName).setSettings({
-            searchableAttributes: ['fullName'],
+            searchableAttributes: ['fullName', 'firstName', 'lastName', 'bio', 'username', 'tagline'],
             customRanking: ['asc(firstName)']
           });
           status.success();
