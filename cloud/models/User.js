@@ -1,11 +1,12 @@
 const mail = require('../../utils/mail');
 const config = require('../../config');
-const { sendPushOrSMS, generateShareImage } = require('../common');
-var Twitter = require('twitter');
-var Mixpanel = require('mixpanel');
-var graph = require('fbgraph');
-var uniqid = require('uniqid');
-
+const { sendPushOrSMS, generateShareImage, parseToAlgoliaObjects } = require('../common');
+const Twitter = require('twitter');
+const Mixpanel = require('mixpanel');
+const graph = require('fbgraph');
+const uniqid = require('uniqid');
+const algoliasearch = require('../algolia/algoliaSearch.parse.js');
+const algoliaClient = algoliasearch(config.algolia.app_id, config.algolia.api_key);
 var oldEmail = '';
 Parse.Cloud.afterSave(Parse.User, function(request, response) {
     const userEmail = request.object.get('email');
@@ -120,6 +121,17 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
         request.object.set('emailSubscriptions', ["earnings","unlocks","questions","summary", "likes"]);
         request.object.set('pushSubscriptions', ["likes","questions","unlocks","earnings"]);
         request.object.save(null, {useMasterKey : true});
+
+        // Save user to algolia
+        var index = algoliaClient.initIndex('users');
+        // Convert Parse.Object to JSON
+        var objectToSave = parseToAlgoliaObjects(request.object)[0];
+        // Add or update object
+        index.saveObject(objectToSave, function (err, content) {
+            if (err) {
+                throw err;
+            }
+        });
     } else {
         mail.updateMailingList(firstName, lastName, oldEmail, userEmail);
         //Update user at mixpanel
@@ -131,6 +143,16 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
         });
         generateShareImage(request.object.id).then();
 
+        // Save user to algolia
+        var index = algoliaClient.initIndex('users');
+        // Convert Parse.Object to JSON
+        var objectToSave = parseToAlgoliaObjects(request.object)[0];
+        // Add or update object
+        index.saveObject(objectToSave, function (err, content) {
+            if (err) {
+                throw err;
+            }
+        });
     }
     response.success('ok');
 });

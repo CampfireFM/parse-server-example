@@ -221,12 +221,12 @@ function addActivity(type, fromUser, toUsers, question, answer){
  * @Description Convert question parse object to algolia object
  * @param questions
  */
-function questionsToAlgoliaObjects(questions){
-    if(questions.length == undefined)
-        questions = [questions];
-    var algoliaObjects = questions.map(function(question){
-        var object = question.toJSON();
-        object.objectID = question.id;
+function parseToAlgoliaObjects(objects){
+    if(objects.length == undefined)
+        objects = [objects];
+    var algoliaObjects = objects.map(function(obj){
+        var object = obj.toJSON();
+        object.objectID = obj.id;
 
         return object;
     });
@@ -497,7 +497,7 @@ function getAllUsers() {
             if (skip) {
                 query.greaterThan("objectId", skip);
             }
-            query.select(['profilePhoto', 'charityRef']);
+            //query.select(['profilePhoto', 'charityRef']);
             query.include(['charityRef']);
             query.limit(chunk_size);
             query.ascending("objectId");
@@ -543,4 +543,4 @@ function getRecentAnswers(users, callback){
     })
 }
 
-module.exports = {checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, questionsToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers};
+module.exports = {checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers};

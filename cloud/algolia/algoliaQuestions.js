@@ -1,7 +1,7 @@
 var config = require('../../config');
 var algoliasearch = require('./algoliaSearch.parse.js');
 var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
-var {questionsToAlgoliaObjects} = require('../common');
+var {parseToAlgoliaObjects} = require('../common');
 
 Parse.Cloud.job("Index Question", function(request, status){
     const index = client.initIndex('questions');
@@ -25,7 +25,7 @@ Parse.Cloud.job("Index Question", function(request, status){
         status.success();
     }, function(questions){
 
-        const objectsToIndex = questionsToAlgoliaObjects(questions);
+        const objectsToIndex = parseToAlgoliaObjects(questions);
         // Add or update new objects
         index.saveObjects(objectsToIndex, function (err, content) {
             if (err) {
@@ -100,7 +100,7 @@ Parse.Cloud.job("Reindex Question", function(request, status){
         status.success();
     }, function(questions, totalCount) {
         // prepare objects to index from contacts
-        const objectsToIndex = questionsToAlgoliaObjects(questions);
+        const objectsToIndex = parseToAlgoliaObjects(questions);
         // Add new objects to temp index
         tempIndex.saveObjects(objectsToIndex, function (err, content) {
             if (err) {
