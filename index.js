@@ -303,7 +303,7 @@ app.get("/access-token", function(req, res) {
 
 app.get('/meta/*', function(req, res) {
     var page = req.params[0];
-    page = page.replace('home', '');
+    //page = page.replace('home', '');
     var isEavesdropPage = /^eavesdrop\/(.*)$/.test(page);
     var isAskPage = /^user\/(.*)$/.test(page);
     var isAnotherWorld = /^anotherworld$/.test(page);
