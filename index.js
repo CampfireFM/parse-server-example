@@ -364,7 +364,7 @@ app.get('/meta/*', function(req, res) {
               imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
               fb_app_id: config.facebookAppIds[0],
               description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
-              title: "Campfire - Hear it here."
+              title: "Campfire - Ask, answer, get paid, do social good."
             });
           }
       });
@@ -412,7 +412,7 @@ app.get('/meta/*', function(req, res) {
                     imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
                     fb_app_id: config.facebookAppIds[0],
                     description: "Campfire lets you ask anyone a question, get an audio answer and support great causes: get.campfire.fm",
-                    title: "Campfire - Hear it here."
+                    title: "Campfire - Ask, answer, get paid, do social good."
                 });
             }
         }, function(err) {
@@ -421,7 +421,7 @@ app.get('/meta/*', function(req, res) {
                 imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
                 fb_app_id: config.facebookAppIds[0],
                 description: "Campfire lets you ask anyone a question, get an audio answer and support great causes: get.campfire.fm",
-                title: "Campfire - Hear it here."
+                title: "Campfire - Ask, answer, get paid, do social good."
             });
         })
     } else if (isAnotherRound) {
@@ -438,7 +438,7 @@ app.get('/meta/*', function(req, res) {
         imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
         fb_app_id: config.facebookAppIds[0],
         description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
-        title: "Campfire - Hear it here."
+        title: "Campfire - Ask, answer, get paid, do social good."
       });
     }
 });
