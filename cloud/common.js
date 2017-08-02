@@ -204,10 +204,15 @@ function addActivity(type, fromUser, toUsers, question, answer){
     if(toUsers.length === undefined)
         toUsers = [toUsers];
     var Activity = Parse.Object.extend('Activity');
-
+    // Remove fromUser from toUsers
+    const filteredToUsers = [];
+    toUsers.forEach(user => {
+        if (user.id != fromUser.id)
+            filteredToUsers.push(user);
+    });
     var newActivity = new Activity();
     newActivity.set('isRead', false);
-    newActivity.set('toUsers', toUsers);
+    newActivity.set('toUsers', filteredToUsers);
     newActivity.set('fromUser', fromUser);
     newActivity.set('type', type);
     if(type !== 'follow'){
@@ -274,6 +279,8 @@ function generateShareImage(userId) {
                         if (!isExisting) {
                             let sitepage = null;
                             let phInstance = null;
+                            let attempts = 0;
+                            const MAX_ATTEMPTS = 5;
                             phantom.create()
                                 .then(instance => {
                                     phInstance = instance;
@@ -347,6 +354,9 @@ function generateShareImage(userId) {
                                                 }
                                             } else {
                                                 console.log(`Retrying to generate share image for ${user.get('fullName')}`);
+                                                attempts++;
+                                                if (attempts > MAX_ATTEMPTS)
+                                                    reject(new Error(`Can not generate share image for ${user.get('fullName')}`))
                                                 generateSocialImage();
                                             }
                                         })
