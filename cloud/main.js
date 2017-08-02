@@ -5,6 +5,8 @@ const stripe = require('stripe')(config.stripe_live_key);
 var Paypal = require('paypal-nvp-api');
 const wrapper = require('co-express');
 const Promise = require('promise');
+var algoliasearch = require('./algolia/algoliaSearch.parse.js');
+var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
 //include the JS files which represent each classes (models), and contains their operations
 require("./models/Answer.js");
 require("./models/CampfireUnlock.js");
@@ -1342,48 +1344,55 @@ Parse.Cloud.define('removeUser', function(request, response) {
     removeUser(userId);
     response.success({userId});
 });
-// //Add answerCount to all users
-// (function(){
-//     const Question = Parse.Object.extend('Question');
-//     var query = new Parse.Query(Question);
-//     query.equalTo('isTest', false);
-//     query.equalTo('isAnswered', true);
-//     query.include('toUser');
-//     query.count({useMasterKey: true}).then(function(count){
-//         console.log(count);
-//     });
-//     query.each(function(question){
-//         const toUser = question.get('toUser');
-//         toUser.increment('answerCount', 1);
-//         toUser.save(null, {useMasterKey: true});
-//     }, {useMasterKey: true});
-// })();
-//
-// var Twilio = require('twilio');
-// var branch = require('node-branch-io');
-// branch.link.create(config.branchKey, {
-//     channel: '',
-//     feature: '',
-//     data: {
-//         answerId: '30XOrRCjeF'
-//     }
-// }).then(link => {
-//     var accountSid = config.twilio.accountSid;
-//     var authToken = config.twilio.authToken;
-//
-//     //require the Twilio module and create a REST client
-//     var client = Twilio(config.twilio.accountSid, config.twilio.authToken);
-//     client.messages.create({
-//         to: '+971551532847',
-//         from: config.twilio.number,
-//         body: link.url
-//     }, function (err, message) {
-//         if (err)
-//             console.log(err.message);
-//         else
-//             console.log(message.sid);
-//     });
-// });
+
+Parse.Cloud.define('searchUserQuestion', function(request, response) {
+    const keyword = request.params.keyword;
+    const indexUsers = client.initIndex('users');
+    const indexQuestions = client.initIndex('questions');
+    const start = new Date();
+    let users = [];
+    let questions = [];
+    indexUsers.search(keyword, {
+        page: 1,
+        offset: 0,
+        length: 5
+    }, function searchDone(err, content) {
+        if (err) {
+            console.error(err);
+            response.error(err);
+            return;
+        }
+        console.log('First Search duration', new Date().getTime() - start.getTime());
+        for (var h in content.hits) {
+            console.log('Hit(' + content.hits[h].objectID + '): ' + content.hits[h].toString());
+            content.hits[h].className = 'User';
+            users.push(Parse.Object.fromJSON(content.hits[h]));
+        }
+        const start1 = new Date();
+        indexQuestions.search(keyword, {
+            page: 1,
+            offset: 0,
+            length: 5
+        }, function searchDone(err, content) {
+            console.log('Second Search duration', new Date().getTime() - start1.getTime());
+            if (err) {
+                console.error(err);
+                response.error(err);
+                return;
+            }
+
+            for (var h in content.hits) {
+                console.log('Hit(' + content.hits[h].objectID + '): ' + content.hits[h].toString());
+                content.hits[h].className = 'Question';
+                questions.push(Parse.Object.fromJSON(content.hits[h]));
+            }
+            const end = new Date();
+            const duration = end.getTime() - start.getTime();
+            console.log('Search duration: ', duration);
+            response.success({users, questions});
+        });
+    });
+});
 
 Parse.Cloud.define('getAnswersForList', function(request, response) {
     var skip = request.params.skip || 0;
