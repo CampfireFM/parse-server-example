@@ -1,4 +1,4 @@
-const { sendPushOrSMS, generateShareImage } = require('./common');
+const { sendPushOrSMS, generateShareImage, getAllUsers } = require('./common');
 const config = require('../config.js');
 const stripe = require('stripe')(config.stripe_live_key);
 // var paypal = require('paypal-rest-sdk');
@@ -1495,3 +1495,23 @@ function sendResetEmail(email) {
         console.log(`Failed to send password reset email to ${email}`);
     })
 }
+
+Parse.Cloud.job('CheckShadowUsers', function(request, status) {
+    let emailCount = 0;
+    getAllUsers()
+        .then(users => {
+            users.forEach(user => {
+                const email = user.get('email');
+                if (email)
+                    emailCount ++;
+                if (email && (email.indexOf('@bonfire.fm') > -1 || email.indexOf('camp@gmail.com') > -1)) {
+                    user.set('isShadowUser', true);
+                    user.save(null, {useMasterKey: true}).then();
+                }
+            });
+            status.success();
+        })
+        .catch(err => {
+            status.error(err);
+        })
+});

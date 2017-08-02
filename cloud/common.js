@@ -501,7 +501,7 @@ function getAllUsers() {
             query.include(['charityRef']);
             query.limit(chunk_size);
             query.ascending("objectId");
-            query.find().then(function (res) {
+            query.find({useMasterKey: true}).then(function (res) {
                 processCallback(res);
             }, function (error) {
                 reject(err);
