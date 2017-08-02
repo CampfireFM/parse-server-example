@@ -1496,14 +1496,17 @@ function getMostPopularQuestions(limit, skip) {
     });
 }
 
-function sendResetEmail(email) {
+Parse.Cloud.define('RequestPasswordReset', function(request, response) {
+    const email = request.params.email;
     Parse.User.requestPasswordReset(email, {useMasterKey: true}).then(function(){
         console.log(`Sent password reset email to ${email}`);
+        response.success({});
     }, function(err) {
         console.log(err);
         console.log(`Failed to send password reset email to ${email}`);
+        response.error(err);
     })
-}
+});
 
 Parse.Cloud.job('CheckShadowUsers', function(request, status) {
     let emailCount = 0;
