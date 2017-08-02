@@ -1496,7 +1496,7 @@ function getMostPopularQuestions(limit, skip) {
     });
 }
 
-Parse.Cloud.define('RequestPasswordReset', function(request, response) {
+Parse.Cloud.define('requestPasswordReset', function(request, response) {
     const email = request.params.email;
     Parse.User.requestPasswordReset(email, {useMasterKey: true}).then(function(){
         console.log(`Sent password reset email to ${email}`);
