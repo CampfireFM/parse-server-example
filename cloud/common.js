@@ -263,29 +263,30 @@ function getShareImageAndExistence(user, charity) {
 
 function generateShareImage(userId) {
     return new Promise((resolve, reject) => {
-        let sitepage = null;
-        let phInstance = null;
-        phantom.create()
-            .then(instance => {
-                phInstance = instance;
-                return instance.createPage();
-            })
-            .then(page => {
-                sitepage = page;
-                return page.property('viewportSize', {width: 1024, height: 512});
-            })
-            .then(() => {
-                return sitepage.property('content', '<html><head></head><body><div id="test"><canvas id="canvas" width="1024px" height="512px"></canvas></div></body>')
-            })
-            .then(() => {
-                const userQuery = new Parse.Query(Parse.User);
-                userQuery.include(['charityRef']);
-                userQuery.get(userId, {useMasterKey: true}).then(function(user) {
-                    const charity = user.get('charityRef');
-                    getShareImageAndExistence(user, charity)
-                        .then(({isExisting, shareImage}) => {
-                            (function generateSocialImage() {
-                                if (!isExisting) {
+
+        const userQuery = new Parse.Query(Parse.User);
+        userQuery.include(['charityRef']);
+        userQuery.get(userId, {useMasterKey: true}).then(function (user) {
+            const charity = user.get('charityRef');
+            getShareImageAndExistence(user, charity)
+                .then(({isExisting, shareImage}) => {
+                    (function generateSocialImage() {
+                        if (!isExisting) {
+                            let sitepage = null;
+                            let phInstance = null;
+                            phantom.create()
+                                .then(instance => {
+                                    phInstance = instance;
+                                    return instance.createPage();
+                                })
+                                .then(page => {
+                                    sitepage = page;
+                                    return page.property('viewportSize', {width: 1024, height: 512});
+                                })
+                                .then(() => {
+                                    return sitepage.property('content', '<html><head></head><body><div id="test"><canvas id="canvas" width="1024px" height="512px"></canvas></div></body>')
+                                })
+                                .then(() => {
                                     let charityImageUrl;
                                     let backgroundImageUrl;
                                     let charityOrgName;
@@ -350,30 +351,26 @@ function generateShareImage(userId) {
                                             }
                                         })
                                     }, 5000);
-                                } else {
-                                    phInstance.exit();
-                                    console.log('Skipping to generate image that already exists');
-                                    resolve(shareImage.get('image').url());
-                                }
-                            })();
-                        })
-                        .catch(err => {
-                            console.log(err);
-                            phInstance.exit();
-                            reject(err);
-                        })
-                }, function(err) {
+                                })
+                                .catch(err => {
+                                    console.log(err);
+                                    reject(err);
+                                })
+                        } else {
+                            console.log('Skipping to generate image that already exists');
+                            resolve(shareImage.get('image').url());
+                        }
+                    })();
+                })
+                .catch(err => {
                     console.log(err);
-                    phInstance.exit();
                     reject(err);
                 })
-            })
-            .catch(err => {
-                console.log(err);
-                phInstance.exit();
-                reject(err);
-            });
-    })
+        }, function (err) {
+            console.log(err);
+            reject(err);
+        })
+    });
 }
 
 function generateImage(profilePhoto, coverPhoto, logoUrl, backUrl, charityName) {
