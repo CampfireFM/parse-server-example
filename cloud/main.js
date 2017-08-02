@@ -1495,5 +1495,3 @@ function sendResetEmail(email) {
         console.log(`Failed to send password reset email to ${email}`);
     })
 }
-
-sendResetEmail('akisao@gmail.com');
