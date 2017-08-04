@@ -20,8 +20,13 @@ Parse.Cloud.beforeSave("Answer", function(request, response){
                 const answerLists = [pointerTo(list.id, 'List')];
                 request.object.set('lists', answerLists);
             }
+            if (question.get('isAnswered') !== true)
+                response.success();
+            else
+                response.error(new Error('Duplicated answer for same question'));
+        } else {
+            response.error(new Error('Can not find question of the answer'));
         }
-        response.success();
     });
 });
 
