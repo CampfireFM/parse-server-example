@@ -150,7 +150,11 @@ function splitAndMakePayments(question, callback){
     var qAnswerer = question.get("toUser");
     var charity = question.get("charity");
 
+    // Ignore charityPercentage if charity is found undefined
     var charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
+    if (!charity)
+        charity_percentage = 0;
+
     var price = question.get("price") ? question.get("price") : 0;
 
     var total_user_answer_earnings = Math.floor((price / 2) * Math.pow(10, 4)) / Math.pow(10, 4);
