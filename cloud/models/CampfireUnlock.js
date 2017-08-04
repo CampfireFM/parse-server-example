@@ -59,52 +59,55 @@ function splitUnlockEarnings(params){
 
     var split_asker = total_user_unlock_earnings; /// 2;
     var split_answerer = total_user_unlock_earnings; // / 2;
-    if(question.get('type') == 'qotd')
-      return;
+    if(question.get('type') !== 'qotd'){
+        var asker_charity_percentage = fromUser.get("donationPercentage") ? fromUser.get("donationPercentage") : 0;
+        var asker_charity = fromUser.get("charityRef");
+        if (!asker_charity)
+            asker_charity_percentage = 0;
+        var split_asker_charity = split_asker * ( asker_charity_percentage / 100);
 
-    var asker_charity_percentage = fromUser.get("donationPercentage") ? fromUser.get("donationPercentage") : 0;
-    var split_asker_charity = split_asker * ( asker_charity_percentage / 100);
+        var split_asker_final = split_asker - split_asker_charity;
+        var payout_asker_params = {
+            amount: split_asker_final,
+            userRef: fromUser,
+            unlockRef: params.campfireunlock,
+            type: 'unlockAsker',
+            isPaid: false
+        };
 
-    var asker_charity = fromUser.get("charityRef");
+        console.log(payout_asker_params);
 
-    var split_asker_final = split_asker - split_asker_charity;
-    var payout_asker_params = {
-        amount: split_asker_final,
-        userRef: fromUser,
-        unlockRef: params.campfireunlock,
-        type: 'unlockAsker',
-        isPaid: false
-    };
+        createPayoutForUnlock(payout_asker_params, function (e, r) {
+            console.log(e);
+        });
 
-    console.log(payout_asker_params);
+        var donation_asker_params = {
+            amount: split_asker_charity,
+            charityRef: asker_charity,
+            questionRef: question,
+            userRef: fromUser,
+            isPaid: false
+        };
 
-    createPayoutForUnlock(payout_asker_params, function(e,r) {
-        console.log(e);
-    });
-
-    var donation_asker_params = {
-        amount: split_asker_charity,
-        charityRef: asker_charity,
-        questionRef: question,
-        userRef: fromUser,
-        isPaid: false
-    };
-
-    createDonationForUnlock(donation_asker_params, function (e, r) {
-        console.log(e);
-        console.log();
-    });
+        createDonationForUnlock(donation_asker_params, function (e, r) {
+            console.log(e);
+            console.log();
+        });
 
 
-    // The following should probably go inside a payout or donation success block
+        // The following should probably go inside a payout or donation success block
 
-    fromUser.increment("earningsTotal", total_user_unlock_earnings);
-    fromUser.increment("earningsBalance", split_asker);
-    fromUser.increment("earningsFromUnlocks", split_asker);
-    fromUser.increment("earningsDonated", split_asker_charity);
-    fromUser.save(null, {useMasterKey: true});
+        fromUser.increment("earningsTotal", total_user_unlock_earnings);
+        fromUser.increment("earningsBalance", split_asker);
+        fromUser.increment("earningsFromUnlocks", split_asker);
+        fromUser.increment("earningsDonated", split_asker_charity);
+        fromUser.save(null, {useMasterKey: true});
+    }
 
-    var answerer_charity_percentage = question.get("charityPercentage") ? question.get("charityPercentage") : 0;
+    var answerer_charity_percentage = toUser.get("donationPercentage") ? toUser.get("donationPercentage") : 0;
+    var answerer_charity = toUser.get('charityRef');
+    if (!answerer_charity)
+        answerer_charity_percentage = 0;
     var split_answerer_charity = split_answerer * ( answerer_charity_percentage / 100);
 
     var split_answerer_final = split_answerer - split_answerer_charity;
@@ -124,7 +127,7 @@ function splitUnlockEarnings(params){
 
     var donation_answerer_params = {
         amount: split_answerer_charity,
-        charityRef: question.get("charity"),
+        charityRef: question.get("charityRef"),
         questionRef: question,
         userRef: toUser,
         isPaid: false
@@ -146,11 +149,12 @@ function splitUnlockEarnings(params){
 */
 function createDonationForUnlock(params, callback) {
 
-    var Donation = Parse.Object.extend("Donation");
-    var donation = new Donation();
-
+    params.amount = Math.floor( params.amount * Math.pow(10, 4) ) / Math.pow(10, 4);
     if(params.amount === 0)
         return callback(null);
+
+    var Donation = Parse.Object.extend("Donation");
+    var donation = new Donation();
     for (key in params) {
         donation.set(key, params[key]);
     }
@@ -171,6 +175,7 @@ function createDonationForUnlock(params, callback) {
 */
 function createPayoutForUnlock(params, callback) {
 
+    params.amount = Math.floor( params.amount * Math.pow(10, 4) ) / Math.pow(10, 4);
     if(params.amount === 0)
         return callback(null);
 
@@ -217,51 +222,3 @@ function getQuestionObjAndItsPointers(questionId,callback) {
         }
     });
 }
-
-(function() {
-    /**
-     * Decimal adjustment of a number.
-     *
-     * @param {String}  type  The type of adjustment.
-     * @param {Number}  value The number.
-     * @param {Integer} exp   The exponent (the 10 logarithm of the adjustment base).
-     * @returns {Number} The adjusted value.
-     */
-    function decimalAdjust(type, value, exp) {
-        // If the exp is undefined or zero...
-        if (typeof exp === 'undefined' || +exp === 0) {
-            return Math[type](value);
-        }
-        value = +value;
-        exp = +exp;
-        // If the value is not a number or the exp is not an integer...
-        if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0)) {
-            return NaN;
-        }
-        // Shift
-        value = value.toString().split('e');
-        value = Math[type](+(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp)));
-        // Shift back
-        value = value.toString().split('e');
-        return +(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp));
-    }
-
-    // Decimal round
-    if (!Math.round10) {
-        Math.round10 = function(value, exp) {
-            return decimalAdjust('round', value, exp);
-        };
-    }
-    // Decimal floor
-    if (!Math.floor10) {
-        Math.floor10 = function(value, exp) {
-            return decimalAdjust('floor', value, exp);
-        };
-    }
-    // Decimal ceil
-    if (!Math.ceil10) {
-        Math.ceil10 = function(value, exp) {
-            return decimalAdjust('ceil', value, exp);
-        };
-    }
-})();

@@ -20,10 +20,10 @@ Parse.Cloud.beforeSave("Answer", function(request, response){
                 const answerLists = [pointerTo(list.id, 'List')];
                 request.object.set('lists', answerLists);
             }
-            if (question.get('isAnswered') !== true)
-                response.success();
-            else
+            if (request.object.existed() === false && question.get('isAnswered') === true)
                 response.error(new Error('Duplicated answer for same question'));
+            else
+                response.success();
         } else {
             response.error(new Error('Can not find question of the answer'));
         }
@@ -213,6 +213,7 @@ function createDonation(params, callback){
     var Donation = Parse.Object.extend("Donation");
     var donation = new Donation();
 
+    params.amount = Math.floor( params.amount * Math.pow(10, 4) ) / Math.pow(10, 4);
     for(key in params){
         donation.set(key,params[key]);
     }
@@ -235,7 +236,7 @@ function createPayout(params, callback){
 
     var Payout = Parse.Object.extend("Payout");
     var payout = new Payout();
-
+    params.amount = Math.floor( params.amount * Math.pow(10, 4) ) / Math.pow(10, 4);
     for(key in params){
         payout.set(key,params[key]);
     }
