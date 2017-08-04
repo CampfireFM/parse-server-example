@@ -2,6 +2,21 @@ const {checkEmailSubscription, sendPushOrSMS, addActivity} = require('../common'
 const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 
+Parse.Cloud.beforeSave('Question', function(request, response) {
+    // Set isTest attribute according to isTestUser of fromUser/toUser
+    const toUser = request.object.get('toUser');
+    const fromUser = request.object.get('fromUser');
+    toUser.fetch({useMasterKey: true}).then(toUser => {
+        fromUser.fetch({useMasterKey: true}).then(fromUser => {
+            const isTest = fromUser.get('isTestUser') === true || toUser.get('isTestUser') === true;
+            request.object.set('isTest', isTest);
+            response.success();
+        })
+    }, err => {
+        response.error(err);
+    });
+});
+
 Parse.Cloud.afterSave("Question", function(request) {
 
     if (request.object.existed() == false) {
@@ -12,11 +27,6 @@ Parse.Cloud.afterSave("Question", function(request) {
             success: function(user) {
                 var fromUser = request.object.get('fromUser');
                 fromUser.fetch({useMasterKey: true}).then(function(fromUser) {
-                    //set isTest attribute according to isTestUser of fromUser/toUser
-                    const isTest = fromUser.get('isTestUser') === true || toUser.get('isTestUser') === true;
-                    request.object.set('isTest', isTest);
-                    request.object.save(null, {useMasterKey : true});
-
                     var questCount = user.get("unansweredQuestionCount");
                     if (questCount == null) {
                         questCount = 0;
