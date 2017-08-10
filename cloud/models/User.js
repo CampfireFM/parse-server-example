@@ -8,6 +8,14 @@ const uniqid = require('uniqid');
 const algoliasearch = require('../algolia/algoliaSearch.parse.js');
 const algoliaClient = algoliasearch(config.algolia.app_id, config.algolia.api_key);
 var oldEmail = '';
+
+Parse.Cloud.beforeSave(Parse.User, function(request, response) {
+    const email = request.object.get('email');
+    if (email && (email.indexOf('@bonfire.fm') > -1 || email.indexOf('camp@gmail.com') > -1)) {
+        request.object.set('isShadowUser', true);
+    }
+    response.success();
+});
 Parse.Cloud.afterSave(Parse.User, function(request, response) {
     const userEmail = request.object.get('email');
     const firstName = request.object.get('firstName');
