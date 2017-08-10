@@ -106,7 +106,7 @@ Parse.Cloud.define('addAnswersToList', function(req, res) {
                     var pointer = new Parse.Object("List");
                     pointer.id = req.params.listId;
                     object.addUnique("lists", pointer);
-                    object.save();
+                    object.save(null, {useMasterKey: true});
                 }
                 res.success('Success');
             }
