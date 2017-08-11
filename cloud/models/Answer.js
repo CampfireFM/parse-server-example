@@ -1,4 +1,4 @@
-const {checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects} = require('../common');
+const {checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateAnswerShareImage } = require('../common');
 const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 var answer_methods = {};
@@ -38,6 +38,8 @@ Parse.Cloud.afterSave("Answer", function(request) {
     //check if its a new record.
     if (request.object.existed() == false) {
 
+        generateAnswerShareImage(request.object.id);
+        
         var answer = request.object;
 
         var currentUser = request.user;

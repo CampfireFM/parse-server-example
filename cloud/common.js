@@ -22,7 +22,8 @@ const backgroundCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/ass
 const backgroundNoCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/background-nocharity.png';
 const listenUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/listen.png';
 const defaultAvatarUrl = 'https://campfiremedia.herokuapp.com/parse/files/maryhadalittlelamb/cdfa632577c4636d3a93d83cd88407ce_default_avatar.png';
-
+const backgroundAnswerCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/background-listen-charity.png';
+const backgroundAnswerNoCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/background-listen-nocharity.png';
 
 function checkPushSubscription(user, type){
     var pushSubscriptions = user.get('pushSubscriptions');
@@ -476,7 +477,6 @@ function generateImage(profilePhoto, coverPhoto, logoUrl, backUrl, charityName) 
         checkAndUploadShareImage();
     }
 
-    //
     function loadImage(src, onload) {
         var img = new Image();
         img.crossOrigin = "Anonymous";
@@ -486,6 +486,276 @@ function generateImage(profilePhoto, coverPhoto, logoUrl, backUrl, charityName) 
     }
 }
 
+function generateAnswerShareImage(answerId) {
+    return new Promise((resolve, reject) => {
+
+        const Answer = Parse.Object.extend('Answer');
+        const answerQuery = new Parse.Query(Answer);
+        answerQuery.equalTo('objectId', answerId);
+        answerQuery.include(['questionRef.fromUser', 'questionRef.toUser', 'questionRef.charityRef']);
+        answerQuery.first({useMasterKey: true}).then(function(answer) {
+            const question = answer.get('questionRef');
+            const questionText = question.get('text');
+            const askerPhoto = question.get('fromUser').get('profilePhoto').url();
+            const askerName = question.get('fromUser').get('fullName');
+            const answererPhoto = question.get('toUser').get('profilePhoto').url();
+            const answererName = question.get('toUser').get('fullName');
+            const charity = question.get('charityRef');
+            let backUrl = backgroundAnswerNoCharityImageUrl;
+            let charityImage;
+            if (charity) {
+                backUrl = backgroundAnswerCharityImageUrl;
+                charityImage = charity.get('image').url();
+            }
+            (function generateImage() {
+                let sitepage = null;
+                let phInstance = null;
+                let attempts = 0;
+                const MAX_ATTEMPTS = 5;
+                phantom.create()
+                    .then(instance => {
+                        phInstance = instance;
+                        return instance.createPage();
+                    })
+                    .then(page => {
+                        sitepage = page;
+                        return page.property('viewportSize', {width: 1024, height: 512});
+                    })
+                    .then(() => {
+                        return sitepage.property('content', '<html><head></head><body><div id="test"><canvas id="canvas" width="1024px" height="512px"></canvas></div></body>')
+                    })
+                    .then(() => {
+                        let charityImageUrl;
+                        let backgroundImageUrl;
+                        let charityOrgName;
+
+                        sitepage.evaluate(generateAnswerImage, answererPhoto, askerPhoto, answererName, askerName, charity, backUrl, questionText).then();
+
+                        setTimeout(() => {
+                            sitepage.evaluate(function () {
+                                if (window.isLoaded)
+                                    return document.getElementById('canvas').toDataURL();
+                                return 'NOT_LOADED';
+                            }).then(res => {
+                                const t = res;
+                                console.log(t.substr(0, 10));
+                                if (t !== 'NOT_LOADED') {
+                                    // Save share image
+                                    var file = new Parse.File('answer' + '.png', {base64: t}, 'image/png');
+                                    answer.set('image', file);
+                                    answer.save(null, {useMasterKey: true}).then((answer) => {
+                                        phInstance.exit();
+                                        resolve(answer.get('image').url());
+                                    }, err => {
+                                        console.log(err);
+                                        phInstance.exit();
+                                        reject(err);
+                                    });
+                                    console.log(`Creating share image for ${answer.id}`);
+                                } else {
+                                    console.log(`Retrying to generate share image for ${answer.id}`);
+                                    attempts++;
+                                    if (attempts > MAX_ATTEMPTS)
+                                        reject(new Error(`Can not generate share image for ${answer.id}`))
+                                    generateImage();
+                                }
+                            })
+                        }, 10000);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        reject(err);
+                    })
+            })();
+        }, function(err) {
+            console.log(err);
+        });
+
+    });
+}
+function generateAnswerImage(answererPhoto, askerPhoto, answererName, askerName, charityImage, backUrl, questionText) {
+    const isCharity = !!charityImage;
+    var canvas = document.getElementById("canvas");
+
+    var ctx = canvas.getContext("2d");
+    var backImg = loadImage(backUrl, drawBackground);
+    var answererImg, charityImg, askerImg;
+    const width = 1024;
+    const height = 512;
+    function drawBackground() {
+        ctx.save();
+        ctx.drawImage(backImg, 0, 0, width, height);
+        ctx.font = '24px Nunito,sans-serif';
+        ctx.fillStyle = '#848484';
+        ctx.textAlign = 'left';
+        const x = 60.5;
+        const y = 455;
+        ctx.fillText(askerName + ' asks:', x, y);
+        // Draw question text
+        /**
+         * @param canvas : The canvas object where to draw .
+         *                 This object is usually obtained by doing:
+         *                 canvas = document.getElementById('canvasId');
+         * @param x     :  The x position of the rectangle.
+         * @param y     :  The y position of the rectangle.
+         * @param w     :  The width of the rectangle.
+         * @param h     :  The height of the rectangle.
+         * @param text  :  The text we are going to centralize.
+         * @param fh    :  The font height (in pixels).
+         * @param spl   :  Vertical space between lines
+         */
+        const paint_centered_wrap = function(x, y, w, h, text, fh, spl, color, px) {
+            // The painting properties
+            // Normally I would write this as an input parameter
+            var Paint = {
+                RECTANGLE_STROKE_STYLE : 'black',
+                RECTANGLE_LINE_WIDTH : 1,
+                VALUE_FONT : 'normal ' + fh + 'Px Ninuto,sans-serif',
+                VALUE_FILL_STYLE : 'red'
+            }
+            /*
+             * @param ctx   : The 2d context
+             * @param mw    : The max width of the text accepted
+             * @param font  : The font used to draw the text
+             * @param text  : The text to be splitted   into
+             */
+            var split_lines = function(ctx, mw, font, text) {
+                // We give a little "padding"
+                // This should probably be an input param
+                // but for the sake of simplicity we will keep it
+                // this way
+                mw = mw - px;
+                // We setup the text font to the context (if not already)
+                ctx.font = font;
+                // We split the text by words
+                var words = text.split(' ');
+                var new_line = words[0];
+                var lines = [];
+                for(var i = 1; i < words.length; ++i) {
+                    if (ctx.measureText(new_line + " " + words[i]).width < mw) {
+                        new_line += " " + words[i];
+                    } else {
+                        lines.push(new_line);
+                        new_line = words[i];
+                    }
+                }
+                lines.push(new_line);
+                // DEBUG
+                // for(var j = 0; j < lines.length; ++j) {
+                //    console.log("line[" + j + "]=" + lines[j]);
+                // }
+                return lines;
+            };
+            if (ctx) {
+                // draw rectangular
+                //ctx.strokeStyle=Paint.RECTANGLE_STROKE_STYLE;
+                ctx.lineWidth = Paint.RECTANGLE_LINE_WIDTH;
+                ctx.fillStyle = color;
+                //ctx.strokeRect(x, y, w, h);
+                // Paint text
+                var lines = split_lines(ctx, w, Paint.VALUE_FONT, text);
+                // Block of text height
+                var both = lines.length * (fh + spl);
+                if (both >= h) {
+                    // We won't be able to wrap the text inside the area
+                    // the area is too small. We should inform the user
+                    // about this in a meaningful way
+                } else {
+                    // We determine the y of the first line
+                    var ly = (h - both)/2 + y + spl*lines.length;
+                    var lx = 0;
+                    for (var j = 0; j < lines.length; ++j, ly+=fh+spl) {
+                        // We continue to centralize the lines
+                        lx = x + w / 2 - ctx.measureText(lines[j]).width/2;
+                        // DEBUG
+                        console.log("ctx2d.fillText('"+ lines[j] +"', "+ lx +", " + ly + ")");
+                        ctx.fillText(lines[j], lx, ly);
+                    }
+                }
+            }
+        };
+        // Get font size
+
+        var fontSize;
+        //questionText = 'Parse.Query defines a query that is used to fetch Parse.Objects. The most common use case is finding all objects that match a query through the find method. For example, this sample code fetches all objects of class MyClass. It calls a different function depending on whether the fetch succeeded or not.';
+        if (questionText.length > 200) {
+            questionText = questionText.substr(0, 197) + '...';
+        }
+        fontSize = 33 + (200 - questionText.length) / 10;
+
+        paint_centered_wrap(38, 32, 522, 378, '"' + questionText + '"', fontSize, fontSize * 0.1, '#535353', 100);
+        paint_centered_wrap(625, 250, 350, 200, 'Listen to ' + answererName + '\'s answer', 35, 5, 'white', 30);
+        ctx.restore();
+        answererImg = loadImage(answererPhoto, drawAnswererPhoto);
+    }
+
+    function drawAnswererPhoto() {
+
+        ctx.save();
+        ctx.beginPath();
+        const x = 796.5;
+        const y = 141.5;
+        const radius = 100;
+        ctx.arc(x, y, radius, 0, Math.PI * 2, true);
+
+        ctx.closePath();
+        ctx.clip();
+
+        ctx.drawImage(answererImg, x - radius, y - radius, radius * 2, radius * 2);
+
+        ctx.restore();
+        askerImg = loadImage(askerPhoto, drawAskerPhoto);
+    }
+
+    function drawAskerPhoto() {
+
+        ctx.save();
+        ctx.beginPath();
+        const x = 520.5;
+        const y = 447.5;
+        const radius = 22;
+        ctx.arc(x, y, radius, 0, Math.PI * 2, true);
+
+        ctx.closePath();
+        ctx.clip();
+
+        ctx.drawImage(askerImg, x - radius, y - radius, radius * 2, radius * 2);
+        if (isCharity)
+            charityImg = loadImage(charityImage, drawCharity);
+        else
+            window.isLoaded = true;
+        ctx.restore();
+    }
+
+    function drawCharity() {
+        ctx.save();
+        ctx.beginPath();
+        const x = 908;
+        const y = 85.3;
+        const radius = 45;
+
+        ctx.arc(x, y, radius, 0, Math.PI * 2, true);
+
+        ctx.closePath();
+        ctx.clip();
+
+        ctx.drawImage(charityImg, x - radius, y - radius, radius * 2, radius * 2);
+        ctx.strokeStyle = "white";
+        ctx.lineWidth   = 4;
+        ctx.stroke();
+        window.isLoaded = true;
+        ctx.restore();
+
+    }
+
+    function loadImage(src, onload) {
+        var img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = onload;
+        img.src = src;
+        return img;
+    }
+}
 
 function getAllUsers() {
     return new Promise((resolve, reject) => {
@@ -518,36 +788,35 @@ function getAllUsers() {
     })
 }
 
-
-function getFollows(user, callback){
-    var Follow = Parse.Object.extend('Follow');
-    var followQuery = new Parse.Query(Follow);
-    followQuery.include('toUser');
-    followQuery.equalTo('fromUser', user);
-    followQuery.find({useMasterKey : true}).then(function(follows){
-        callback(null, follows);
-    }, function(err){
-        callback(err, null);
-    });
-}
-
-function getRecentAnswers(users, callback){
-    var Answer = Parse.Object.extend('Answer');
-    var answerQuery = new Parse.Query(Answer);
-    var date = new Date();
-    date.setDate(date.getDate() - 1);
-    answerQuery.include('userRef', 'questionRef', 'createdAt');
-    answerQuery.greaterThan('updatedAt', date);
-    answerQuery.containedIn('userRef', users);
-    answerQuery.descending('createdAt');
-    answerQuery.find({useMasterKey : true}).then(function(answers){
-        if(answers[0])
-            callback(null, answers);
-        else
-            callback(null, []);
-    }, function(err){
-        callback(err);
+function getAllAnswers() {
+    return new Promise((resolve, reject) => {
+        var result = [];
+        var chunk_size = 1000;
+        var processCallback = function(res) {
+            result = result.concat(res);
+            if (res.length === chunk_size) {
+                process(res[res.length-1].id);
+            } else {
+                resolve(result);
+            }
+        };
+        var process = function(skip) {
+            const Answer = Parse.Object.extend('Answer');
+            var query = new Parse.Query(Answer);
+            if (skip) {
+                query.greaterThan("objectId", skip);
+            }
+            query.select(['objectId', 'image']);
+            query.limit(chunk_size);
+            query.ascending("objectId");
+            query.find({useMasterKey: true}).then(function (res) {
+                processCallback(res);
+            }, function (error) {
+                reject(err);
+            });
+        };
+        process(false);
     })
 }
 
-module.exports = {checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers};
+module.exports = {checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers, generateAnswerShareImage, getAllAnswers};
