@@ -357,7 +357,7 @@ function generateShareImage(userId) {
                                                 console.log(`Retrying to generate share image for ${user.get('fullName')}`);
                                                 attempts++;
                                                 if (attempts > MAX_ATTEMPTS)
-                                                    reject(new Error(`Can not generate share image for ${user.get('fullName')}`))
+                                                    return reject(new Error(`Can not generate share image for ${user.get('fullName')}`))
                                                 generateSocialImage();
                                             }
                                         })
@@ -496,6 +496,10 @@ function generateAnswerShareImage(answerId) {
         answerQuery.first({useMasterKey: true}).then(function(answer) {
             const question = answer.get('questionRef');
             const questionText = question.get('text');
+            if (!question.get('fromUser') || !question.get('fromUser').get('profilePhoto'))
+                return reject('Can not find fromUser');
+            if (!question.get('toUser') || !question.get('toUser').get('profilePhoto'))
+                return reject('Can not find toUser');
             const askerPhoto = question.get('fromUser').get('profilePhoto').url();
             const askerName = question.get('fromUser').get('fullName');
             const answererPhoto = question.get('toUser').get('profilePhoto').url();
@@ -529,7 +533,7 @@ function generateAnswerShareImage(answerId) {
                         let backgroundImageUrl;
                         let charityOrgName;
 
-                        sitepage.evaluate(generateAnswerImage, answererPhoto, askerPhoto, answererName, askerName, charity, backUrl, questionText).then();
+                        sitepage.evaluate(generateAnswerImage, answererPhoto, askerPhoto, answererName, askerName, charityImage, backUrl, questionText).then();
 
                         setTimeout(() => {
                             sitepage.evaluate(function () {
@@ -556,7 +560,7 @@ function generateAnswerShareImage(answerId) {
                                     console.log(`Retrying to generate share image for ${answer.id}`);
                                     attempts++;
                                     if (attempts > MAX_ATTEMPTS)
-                                        reject(new Error(`Can not generate share image for ${answer.id}`))
+                                        return reject(new Error(`Can not generate share image for ${answer.id}`))
                                     generateImage();
                                 }
                             })
@@ -569,6 +573,7 @@ function generateAnswerShareImage(answerId) {
             })();
         }, function(err) {
             console.log(err);
+            reject(err);
         });
 
     });

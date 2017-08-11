@@ -22,6 +22,7 @@ Parse.Cloud.job("Generate User Share Images", function(request, status) {
         generateSocialImage(0);
     }).catch(err => {
         console.log(err);
+        status.error(err);
         throw err;
     });
 });
@@ -41,7 +42,7 @@ Parse.Cloud.job("Generate Answer Share Images", function(request, status) {
                 console.log(`Skipping answer ${index}`);
                 generateSocialAnswerImage(index + 1);
             } else {
-                generateSocialAnswerImage(answer.id)
+                generateAnswerShareImage(answer.id)
                     .then(() => generateSocialImage(index + 1))
                     .catch((err) => {
                         console.log(err);
@@ -52,6 +53,7 @@ Parse.Cloud.job("Generate Answer Share Images", function(request, status) {
         generateSocialAnswerImage(0);
     }).catch(err => {
         console.log(err);
+        status.error(err);
         throw err;
     });
 });
