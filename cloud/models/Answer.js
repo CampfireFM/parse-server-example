@@ -37,8 +37,6 @@ Parse.Cloud.afterSave("Answer", function(request) {
 
     //check if its a new record.
     if (request.object.existed() == false) {
-
-        generateAnswerShareImage(request.object.id);
         
         var answer = request.object;
 
@@ -121,6 +119,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 });
             }
         });
+        generateAnswerShareImage(request.object.id).then();
         //ENDS HERE - TO BE UNCOMMENTED
     }
 });
