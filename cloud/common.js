@@ -504,7 +504,7 @@ function generateAnswerShareImage(answerId) {
             const askerName = question.get('fromUser').get('fullName');
             const answererPhoto = question.get('toUser').get('profilePhoto').url();
             const answererName = question.get('toUser').get('fullName');
-            const charity = question.get('charityRef');
+            const charity = question.get('charity');
             let backUrl = backgroundAnswerNoCharityImageUrl;
             let charityImage;
             if (charity) {
