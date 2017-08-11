@@ -43,7 +43,7 @@ Parse.Cloud.job("Generate Answer Share Images", function(request, status) {
                 generateSocialAnswerImage(index + 1);
             } else {
                 generateAnswerShareImage(answer.id)
-                    .then(() => generateSocialImage(index + 1))
+                    .then(() => generateSocialAnswerImage(index + 1))
                     .catch((err) => {
                         console.log(err);
                         generateSocialAnswerImage(index + 1);

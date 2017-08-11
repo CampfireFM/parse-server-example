@@ -492,9 +492,11 @@ function generateAnswerShareImage(answerId) {
         const Answer = Parse.Object.extend('Answer');
         const answerQuery = new Parse.Query(Answer);
         answerQuery.equalTo('objectId', answerId);
-        answerQuery.include(['questionRef.fromUser', 'questionRef.toUser', 'questionRef.charityRef']);
+        answerQuery.include(['questionRef.fromUser', 'questionRef.toUser', 'questionRef.charity']);
         answerQuery.first({useMasterKey: true}).then(function(answer) {
             const question = answer.get('questionRef');
+            if (!question)
+                return reject('Can not find question');
             const questionText = question.get('text');
             if (!question.get('fromUser') || !question.get('fromUser').get('profilePhoto'))
                 return reject('Can not find fromUser');
@@ -688,7 +690,7 @@ function generateAnswerImage(answererPhoto, askerPhoto, answererName, askerName,
         }
         fontSize = 33 + (200 - questionText.length) / 10;
 
-        paint_centered_wrap(38, 32, 522, 378, '"' + questionText + '"', fontSize, fontSize * 0.1, '#535353', 100);
+        paint_centered_wrap(38, 32, 522, 378, '"' + questionText.trim() + '"', fontSize, fontSize * 0.1, '#535353', 100);
         paint_centered_wrap(625, 250, 350, 200, 'Listen to ' + answererName + '\'s answer', 35, 5, 'white', 30);
         ctx.restore();
         answererImg = loadImage(answererPhoto, drawAnswererPhoto);
