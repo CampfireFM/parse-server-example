@@ -7,27 +7,29 @@ var config = require('../../config');
 var algoliasearch = require('../algolia/algoliaSearch.parse.js');
 var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
 function pointerTo(objectId, klass) {
-
     return { __type:"Pointer", className:klass, objectId:objectId };
 }
-Parse.Cloud.beforeSave("Answer", function(request, response){
-    if (request.object.get('liveDate') === undefined)
+Parse.Cloud.beforeSave("Answer", function(request, response) {
+    if (request.object.existed())
+        return response.success();
+    else {
         request.object.set('liveDate', new Date());
-    getQuestionAndItsPointers(request.object.get('questionRef').id, (err, question) => {
-        if (question) {
-            const list = question.get('list');
-            if (list) {
-                const answerLists = [pointerTo(list.id, 'List')];
-                request.object.set('lists', answerLists);
+        getQuestionAndItsPointers(request.object.get('questionRef').id, (err, question) => {
+            if (question) {
+                const list = question.get('list');
+                if (list) {
+                    const answerLists = [pointerTo(list.id, 'List')];
+                    request.object.set('lists', answerLists);
+                }
+                if (question.get('isAnswered') === true)
+                    response.error(new Error('Duplicated answer for same question'));
+                else
+                    response.success();
+            } else {
+                response.error(new Error('Can not find question of the answer'));
             }
-            if (request.object.existed() === false && question.get('isAnswered') === true)
-                response.error(new Error('Duplicated answer for same question'));
-            else
-                response.success();
-        } else {
-            response.error(new Error('Can not find question of the answer'));
-        }
-    });
+        });
+    }
 });
 
 //begin of afterSave function
