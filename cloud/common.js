@@ -689,9 +689,9 @@ function generateAnswerImage(answererPhoto, askerPhoto, answererName, askerName,
             questionText = questionText.substr(0, 197) + '...';
         }
         fontSize = 33 + (200 - questionText.length) / 10;
-        const answerNameFontSize = 35 + Math.min(15 - answererName.length, 0);
+        //const answerNameFontSize = 35 + Math.min(15 - answererName.length, 0);
         paint_centered_wrap(38, 32, 522, 378, '"' + questionText.trim() + '"', fontSize, fontSize * 0.1, '#535353', 100);
-        paint_centered_wrap(625, 250, 350, 200, 'Listen to ' + answererName + '\'s answer', answerNameFontSize, 5, 'white', 0);
+        paint_centered_wrap(625, 250, 350, 190, 'Listen to ' + answererName + '\'s answer', 35, 5, 'white', 0);
         ctx.restore();
         answererImg = loadImage(answererPhoto, drawAnswererPhoto);
     }
