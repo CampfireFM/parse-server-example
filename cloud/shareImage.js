@@ -57,3 +57,28 @@ Parse.Cloud.job("Generate Answer Share Images", function(request, status) {
         throw err;
     });
 });
+
+Parse.Cloud.job("Reset Answer Share Images", function(request, status) {
+    getAllAnswers().then(answers => {
+        function generateSocialAnswerImage(index) {
+            if (index === answers.length) {
+                console.log('Completed');
+                status.success();
+                return;
+            }
+            console.log(`Processing ${index} answer`);
+            const answer = answers[index];
+            generateAnswerShareImage(answer.id)
+              .then(() => generateSocialAnswerImage(index + 1))
+              .catch((err) => {
+                  console.log(err);
+                  generateSocialAnswerImage(index + 1);
+              });
+        }
+        generateSocialAnswerImage(0);
+    }).catch(err => {
+        console.log(err);
+        status.error(err);
+        throw err;
+    });
+});
