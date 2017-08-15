@@ -1413,7 +1413,7 @@ Parse.Cloud.define('searchUser', function(request, response) {
         console.log('First Search duration', new Date().getTime() - start.getTime());
         for (var h in content.hits) {
             console.log('Hit(' + content.hits[h].objectID + '): ' + content.hits[h].toString());
-            content.hits[h].className = 'User';
+            content.hits[h].className = '_User';
             users.push(Parse.Object.fromJSON(content.hits[h]));
         }
 
