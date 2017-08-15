@@ -1394,6 +1394,36 @@ Parse.Cloud.define('searchUserQuestion', function(request, response) {
     });
 });
 
+Parse.Cloud.define('searchUser', function(request, response) {
+    const keyword = request.params.keyword;
+    const indexUsers = client.initIndex('users');
+    const start = new Date();
+    let users = [];
+    let questions = [];
+    indexUsers.search(keyword, {
+        page: 1,
+        offset: 0,
+        length: 5
+    }, function searchDone(err, content) {
+        if (err) {
+            console.error(err);
+            response.error(err);
+            return;
+        }
+        console.log('First Search duration', new Date().getTime() - start.getTime());
+        for (var h in content.hits) {
+            console.log('Hit(' + content.hits[h].objectID + '): ' + content.hits[h].toString());
+            content.hits[h].className = 'User';
+            users.push(Parse.Object.fromJSON(content.hits[h]));
+        }
+
+        const end = new Date();
+        const duration = end.getTime() - start.getTime();
+        console.log('Search duration: ', duration);
+        response.success(users);
+    });
+});
+
 Parse.Cloud.define('getAnswersForList', function(request, response) {
     var skip = request.params.skip || 0;
     var limit = request.params.limit || 6;
