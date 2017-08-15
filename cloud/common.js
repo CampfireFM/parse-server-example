@@ -89,7 +89,7 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
         switch(type) {
             case 'questions' :
                 alert = fullName + ' asked you a new question.';
-                badge = 1;
+                badge = additionalData;
                 break;
             case 'expiringQuestions' :
                 if (additionalData > 1)
