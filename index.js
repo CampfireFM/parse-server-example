@@ -440,7 +440,7 @@ app.get('/meta/*', function(req, res) {
         });
     } else {
         return res.render('eavesdrop_meta', {
-            page: page,
+            page: 'home',
             imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
             fb_app_id: config.facebookAppIds[0],
             description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
