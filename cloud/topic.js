@@ -37,12 +37,15 @@ Parse.Cloud.define('getFeaturedTopics', function(req, res) {
     query.containedIn('objectId', spotlightedLists);
     query.include(['questionRef', 'questionRef.toUser','questionRef.fromUser', 'questionRef.charity', 'userRef']);
     query.find({useMasterKey: true}).then(function(topics){
-        // res.success({topics: topics, spotlightedLists: spotlightedLists.reverse() });
-        res.success(topics);
-      }, function(error) {
-        res.error(error);
-      }
-    );
+      // res.success({topics: topics, spotlightedLists: spotlightedLists.reverse() });
+      // Sort topics as in default value
+      topics.sort(function(a, b) {
+        return spotlightedLists.indexOf(a.id) > spotlightedLists.indexOf(b.id);
+      });
+      res.success(topics);
+    }, function(error) {
+      res.error(error);
+    });
   }, function(error){
     console.log(error);
     res.error(error);
