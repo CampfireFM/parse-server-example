@@ -307,74 +307,80 @@ app.get('/meta/*', function(req, res) {
     var isEavesdropPage = /^eavesdrop\/(.*)$/.test(page);
     var isAskPage = /^user\/(.*)$/.test(page);
     var isAnotherRound = /^anotherround$/.test(page);
-    if(isEavesdropPage){
-      var answer = {};
-      var answerId = req.params[0].split('/')[1]
-      var Answer = Parse.Object.extend('Answer');
-      var query = new Parse.Query(Answer);
-      query.include(['questionRef', 'questionRef.fromUser.fullName', 'questionRef.toUser.fullName']);
-      query.equalTo('isDummyData', false);
-      query.get(answerId, {
-        success: function(object) {
-            var answerObj = {};
-            var fromUser = object.get('questionRef').get('fromUser');
-            var toUser = object.get('questionRef').get('toUser');
-            var answerFile = object.get('answerFile');
-            if (answerFile) {
-              answerObj = {
-                id: object.id,
-                question: object.get('questionRef').get('text'),
-                answer: answerFile.toJSON().url,
-                to: {
-                  name: toUser.get('fullName'),
-                  firstName: toUser.get('firstName'),
-                  lastName: toUser.get('lastName'),
-                  picture: toUser.get('profilePhoto') ? (toUser.get('profilePhoto')).toJSON().url : '',
-                  cover: '',
-                  bio: toUser.get('bio'),
-                  tagline: toUser.get('tagline')
-                },
-                from: {
-                  name: fromUser.get('fullName'),
-                  firstName: fromUser.get('firstName'),
-                  lastName: fromUser.get('lastName'),
-                  picture: fromUser.get('profilePhoto') ? (fromUser.get('profilePhoto')).toJSON().url : '',
-                  cover: fromUser.get('coverPhoto') ? (fromUser.get('coverPhoto')).toJSON().url : '',
-                  bio: fromUser.get('bio'),
-                  tagline: toUser.get('tagline')
+    if (isEavesdropPage) {
+        var answer = {};
+        var answerId = req.params[0].split('/')[1]
+        var Answer = Parse.Object.extend('Answer');
+        var query = new Parse.Query(Answer);
+        query.include(['questionRef', 'questionRef.fromUser.fullName', 'questionRef.toUser.fullName']);
+        query.equalTo('isDummyData', false);
+        query.get(answerId, {
+            success: function (object) {
+                var answerObj = {};
+                var fromUser = object.get('questionRef').get('fromUser');
+                var toUser = object.get('questionRef').get('toUser');
+                var answerFile = object.get('answerFile');
+                if (answerFile) {
+                    answerObj = {
+                        id: object.id,
+                        question: object.get('questionRef').get('text'),
+                        answer: answerFile.toJSON().url,
+                        to: {
+                            name: toUser.get('fullName'),
+                            firstName: toUser.get('firstName'),
+                            lastName: toUser.get('lastName'),
+                            picture: toUser.get('profilePhoto') ? (toUser.get('profilePhoto')).toJSON().url : '',
+                            cover: '',
+                            bio: toUser.get('bio'),
+                            tagline: toUser.get('tagline')
+                        },
+                        from: {
+                            name: fromUser.get('fullName'),
+                            firstName: fromUser.get('firstName'),
+                            lastName: fromUser.get('lastName'),
+                            picture: fromUser.get('profilePhoto') ? (fromUser.get('profilePhoto')).toJSON().url : '',
+                            cover: fromUser.get('coverPhoto') ? (fromUser.get('coverPhoto')).toJSON().url : '',
+                            bio: fromUser.get('bio'),
+                            tagline: toUser.get('tagline')
+                        }
+                    };
                 }
-              };
+                answer = answerObj;
+
+                const desc = answer.to.name + " responds to " + answer.from.firstName + "'s" + ' question: "' + answer.question + '" on Campfire.';
+                const title = "Eavesdrop on " + answer.to.name + " - Campfire";
+
+                let imageUrl;
+                if (object.get('image')) {
+                    imageUrl = object.get('image').url();
+                } else {
+                    imageUrl = toUser.get('coverPhoto') ? (toUser.get('coverPhoto')).toJSON().url : '';
+                }
+                return res.render('eavesdrop_meta', {
+                    page: req.params[0],
+                    imageUrl: imageUrl,
+                    fb_app_id: config.facebookAppIds[0],
+                    description: desc,
+                    title: title
+                });
+            },
+            error: function (object, error) {
+                return res.render('eavesdrop_meta', {
+                    page: req.params[0],
+                    imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
+                    fb_app_id: config.facebookAppIds[0],
+                    description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
+                    title: "Campfire - Ask, answer, get paid, do social good."
+                });
             }
-            answer = answerObj;
-
-            desc = answer.to.name + " responds to " + answer.from.firstName + "'s" + ' question: "' + answer.question + '" on Campfire.';
-            title = "Eavesdrop on " + answer.to.name + " - Campfire";
-
-            return res.render('eavesdrop_meta',{
-              page: req.params[0],
-              imageUrl: toUser.get('coverPhoto') ? (toUser.get('coverPhoto')).toJSON().url : '',
-              fb_app_id: config.facebookAppIds[0],
-              description: desc,
-              title: title
-            });
-          },
-          error: function(object, error) {
-            return res.render('eavesdrop_meta',{
-              page: req.params[0],
-              imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
-              fb_app_id: config.facebookAppIds[0],
-              description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
-              title: "Campfire - Ask, answer, get paid, do social good."
-            });
-          }
-      });
+        });
     } else if (isAskPage) {
         var user = {};
         var userId = req.params[0].split('/')[1];
         var userQuery = new Parse.Query(Parse.User);
         userQuery.equalTo('objectId', userId);
         userQuery.include('charityRef');
-        userQuery.first({useMasterKey: true}).then(function(user) {
+        userQuery.first({useMasterKey: true}).then(function (user) {
             if (user) {
                 const charity = user.get('charityRef');
                 const ShareImage = Parse.Object.extend('ShareImage');
@@ -386,7 +392,7 @@ app.get('/meta/*', function(req, res) {
                     title = 'Ask ' + user.get('firstName') + " any question, support " + charity.get('name') + " on Campfire";
                 else
                     title = 'Ask ' + user.get('fullName') + ' any question with campfire';
-                shareImageQuery.first({useMasterKey: true}).then(function(shareImage) {
+                shareImageQuery.first({useMasterKey: true}).then(function (shareImage) {
                     const shareImageUrl = shareImage.get('image').url();
 
                     res.render('eavesdrop_meta', {
@@ -396,8 +402,8 @@ app.get('/meta/*', function(req, res) {
                         description: "Campfire lets you ask anyone a question, get an audio answer and support great causes: get.campfire.fm",
                         title: title
                     });
-                }, function(err) {
-                    return res.render('eavesdrop_meta',{
+                }, function (err) {
+                    return res.render('eavesdrop_meta', {
                         page: page,
                         imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
                         fb_app_id: config.facebookAppIds[0],
@@ -407,7 +413,7 @@ app.get('/meta/*', function(req, res) {
                 })
 
             } else {
-                return res.render('eavesdrop_meta',{
+                return res.render('eavesdrop_meta', {
                     page: page,
                     imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
                     fb_app_id: config.facebookAppIds[0],
@@ -415,8 +421,8 @@ app.get('/meta/*', function(req, res) {
                     title: "Campfire - Ask, answer, get paid, do social good."
                 });
             }
-        }, function(err) {
-            return res.render('eavesdrop_meta',{
+        }, function (err) {
+            return res.render('eavesdrop_meta', {
                 page: page,
                 imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
                 fb_app_id: config.facebookAppIds[0],
@@ -425,112 +431,112 @@ app.get('/meta/*', function(req, res) {
             });
         })
     } else if (isAnotherRound) {
-      return res.render('eavesdrop_meta',{
-        page: page,
-        imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/another-world.jpg',
-        fb_app_id: config.facebookAppIds[0],
-        description: "This week, Campfire sparks the Another Round podcast. Get Campfire to ask questions to your favorite experts and celebrities - and get paid for it.",
-        title: "Get Campfire"
-      });
-    } else{
-      return res.render('eavesdrop_meta',{
-        page: page,
-        imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
-        fb_app_id: config.facebookAppIds[0],
-        description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
-        title: "Campfire - Ask, answer, get paid, do social good."
-      });
+        return res.render('eavesdrop_meta', {
+            page: page,
+            imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/another-world.jpg',
+            fb_app_id: config.facebookAppIds[0],
+            description: "This week, Campfire sparks the Another Round podcast. Get Campfire to ask questions to your favorite experts and celebrities - and get paid for it.",
+            title: "Get Campfire"
+        });
+    } else {
+        return res.render('eavesdrop_meta', {
+            page: page,
+            imageUrl: 'https://campfiremedia.herokuapp.com/public/assets/images/defaultshareimage.jpg',
+            fb_app_id: config.facebookAppIds[0],
+            description: "Spark intimate conversations that reward you, your heroes, and the causes you care about.",
+            title: "Campfire - Ask, answer, get paid, do social good."
+        });
     }
 });
 
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.post('/ipn', function(req, res) {
-  res.sendStatus(200);
-  ipn.verify(req.body, {'allow_sandbox': process.env.PAYPAL_MODE !== 'live'}, function (err, msg) {
-    if(err){
-      console.log('IPN INVALID');
-      console.log(err);
-    } else {
-      console.log(req.body);
-      const ipnContent = req.body;
-      //In case of Mass payout, record appropriate datas in Withdraw Class
-      if(ipnContent.txn_type == 'masspay') {
-        //Save IPN object to database
-        var IPN = Parse.Object.extend('IPN');
-        var ipn = new IPN();
-        ipn.set('masspayTransactionId', ipnContent.masspay_txn_id_1);
-        ipn.set('currency', ipnContent.mc_currency_1);
-        ipn.set('fee', parseFloat(ipnContent.mc_fee_1));
-        ipn.set('gross', parseFloat(ipnContent.mc_gross_1));
-        ipn.set('paymentDate', ipnContent.payment_date);
-        ipn.set('paymentStatus', ipnContent.payment_status);
-        ipn.set('status', ipnContent.status_1);
-        ipn.set('receiverEmail', ipnContent.receiver_email_1);
-        ipn.set('uniqueId', ipnContent.unique_id_1);
-        ipn.set('testIpn', ipnContent.test_ipn == '1');
-        if(ipnContent.status_1 == 'Failed')
-          ipn.set('reasonCode', ipnContent.reason_code_1);
-
-        // Set userRef
-        var userQuery = new Parse.Query(Parse.User);
-        userQuery.equalTo('paypalEmail', ipn.receiver_email_1);
-        userQuery.first({useMasterKey: true}).then(function(user){
-          if (user) {
-            ipn.set('userRef', user);
-          }
-          ipn.save(null, {useMasterKey : true}).then(function(res){
-            console.log(res);
-          }, function(err){
+    res.sendStatus(200);
+    ipn.verify(req.body, {'allow_sandbox': process.env.PAYPAL_MODE !== 'live'}, function (err, msg) {
+        if (err) {
+            console.log('IPN INVALID');
             console.log(err);
-          });
-        });
-        // Create payout object in parse
-        var reverseEarnings = function(email, earnings){
-          var userQuery = new Parse.Query(Parse.User);
-          userQuery.equalTo('paypalEmail', email);
-          userQuery.first({useMasterKey : true}).then(function(user){
-            if(user){
-              user.set('earningsBalance', user.get('earningsBalance') + earnings);
-              user.save(null, {useMasterKey : true});
+        } else {
+            console.log(req.body);
+            const ipnContent = req.body;
+            //In case of Mass payout, record appropriate datas in Withdraw Class
+            if (ipnContent.txn_type == 'masspay') {
+                //Save IPN object to database
+                var IPN = Parse.Object.extend('IPN');
+                var ipn = new IPN();
+                ipn.set('masspayTransactionId', ipnContent.masspay_txn_id_1);
+                ipn.set('currency', ipnContent.mc_currency_1);
+                ipn.set('fee', parseFloat(ipnContent.mc_fee_1));
+                ipn.set('gross', parseFloat(ipnContent.mc_gross_1));
+                ipn.set('paymentDate', ipnContent.payment_date);
+                ipn.set('paymentStatus', ipnContent.payment_status);
+                ipn.set('status', ipnContent.status_1);
+                ipn.set('receiverEmail', ipnContent.receiver_email_1);
+                ipn.set('uniqueId', ipnContent.unique_id_1);
+                ipn.set('testIpn', ipnContent.test_ipn == '1');
+                if (ipnContent.status_1 == 'Failed')
+                    ipn.set('reasonCode', ipnContent.reason_code_1);
+
+                // Set userRef
+                var userQuery = new Parse.Query(Parse.User);
+                userQuery.equalTo('paypalEmail', ipn.receiver_email_1);
+                userQuery.first({useMasterKey: true}).then(function (user) {
+                    if (user) {
+                        ipn.set('userRef', user);
+                    }
+                    ipn.save(null, {useMasterKey: true}).then(function (res) {
+                        console.log(res);
+                    }, function (err) {
+                        console.log(err);
+                    });
+                });
+                // Create payout object in parse
+                var reverseEarnings = function (email, earnings) {
+                    var userQuery = new Parse.Query(Parse.User);
+                    userQuery.equalTo('paypalEmail', email);
+                    userQuery.first({useMasterKey: true}).then(function (user) {
+                        if (user) {
+                            user.set('earningsBalance', user.get('earningsBalance') + earnings);
+                            user.save(null, {useMasterKey: true});
+                        }
+                    });
+                };
+                switch (ipnContent.status_1) {
+                    case 'Failed':
+                        var reasonCode = ipnContent.reason_code_1;
+                        switch (reasonCode) {
+                            case '14767':
+                                //Receiver is unregistered
+                                break;
+                            case '14769':
+                                //Receiver is unconfirmed
+                                break;
+                        }
+                        reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
+                        break;
+                    case 'Returned':
+                        reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
+                        break;
+                    case 'Reversed':
+                        reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
+                        break;
+                    case 'Unclaimed':
+                        console.log('Receiver is unregistered');
+                        // Reverse transaction
+                        // reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
+                        break;
+                    case 'Pending':
+                        break;
+                    case 'Blocked':
+                        // reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
+                        break;
+                    default:
+                        break;
+                }
             }
-          });
-        };
-        switch(ipnContent.status_1) {
-          case 'Failed':
-            var reasonCode = ipnContent.reason_code_1;
-            switch(reasonCode){
-              case '14767':
-                //Receiver is unregistered
-                break;
-              case '14769':
-                //Receiver is unconfirmed
-                break;
-            }
-            reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
-            break;
-          case 'Returned':
-            reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
-            break;
-          case 'Reversed':
-            reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
-            break;
-          case 'Unclaimed':
-            console.log('Receiver is unregistered');
-            // Reverse transaction
-            // reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
-            break;
-          case 'Pending':
-            break;
-          case 'Blocked':
-            // reverseEarnings(ipnContent.receiver_email_1, ipnContent.mc_gross_1);
-            break;
-          default:
-            break;
         }
-      }
-    }
-  })
+    })
 });
 app.use(bodyParser.json({limit: '10mb'}));
 app.post('/uploadSocialImage', (req, res) => {
