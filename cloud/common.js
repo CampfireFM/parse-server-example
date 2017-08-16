@@ -250,17 +250,11 @@ function getShareImageAndExistence(user, charity) {
             if (!shareImage) {
                 return resolve({isExisting: false});
             }
-            if (charity) {
-                if (charity.get('image').name() === shareImage.get('charityRef').get('image').name()
-                    && (user.get('profilePhoto') && user.get('profilePhoto').name()) === (shareImage.get('userRef').get('profilePhoto') && shareImage.get('userRef').get('profilePhoto').name()))
-                    return resolve({isExisting: true, shareImage});
-                return resolve({isExisting: false, shareImage});
-            } else {
-                if ((user.get('profilePhoto') && user.get('profilePhoto').name()) === (shareImage.get('userRef').get('profilePhoto') && shareImage.get('userRef').get('profilePhoto').name()))
-                    return resolve({isExisting: true, shareImage});
-                else
-                    return resolve({isExisting: false, shareImage});
-            }
+            const charityImageName = (shareImage.get('charityRef') && shareImage.get('charityRef').get('image').name());
+            const profilePhotoName = (user.get('profilePhoto') && user.get('profilePhoto').name());
+            if (charityImageName === shareImage.get('charityImageName') && profilePhotoName === shareImage.get('profilePhotoName'))
+                return resolve({isExisting: true, shareImage});
+            return resolve({isExisting: false, shareImage});
         }, function(err) {
             reject(err);
         });
