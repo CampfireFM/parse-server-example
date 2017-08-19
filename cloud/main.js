@@ -145,7 +145,7 @@ Parse.Cloud.define('getUsers', function(request, response) {
         query.select(['objectId', 'fullName', 'email']);
         query.limit(chunk_size);
         query.ascending("objectId");
-        query.find().then(function (res) {
+        query.find({useMasterKey: true}).then(function (res) {
             processCallback(res);
         }, function (error) {
             response.error("query unsuccessful, length of result " + result.length + ", error:" + error.code + " " + error.message);
