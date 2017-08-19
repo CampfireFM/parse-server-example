@@ -126,7 +126,8 @@ Parse.Cloud.define('getUsers', function(request, response) {
         const users = res.map((user) => {
             return {
                 id: user.id,
-                name: user.get('fullName')
+                name: user.get('fullName'),
+                email: user.get('email')
             }
         });
         result = result.concat(users);
@@ -141,7 +142,7 @@ Parse.Cloud.define('getUsers', function(request, response) {
         if (skip) {
             query.greaterThan("objectId", skip);
         }
-        query.select(['objectId', 'fullName']);
+        query.select(['objectId', 'fullName', 'email']);
         query.limit(chunk_size);
         query.ascending("objectId");
         query.find().then(function (res) {
