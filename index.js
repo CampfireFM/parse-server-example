@@ -120,6 +120,11 @@ var api = new ParseServer({
                     subject: 'New updates to Campfire',
                     pathPlainText: resolve(__dirname, './templates/adminSummary.txt'),
                     pathHtml: resolve(__dirname, './templates/adminSummary.html'),
+                },
+                transactionFailureEmail: {
+                  subject: 'Transaction Failure',
+                  pathPlainText: resolve(__dirname, './templates/transactionFailure.txt'),
+                  pathHtml: resolve(__dirname, './templates/transactionFailure.html'),
                 }
             }
         }

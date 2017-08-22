@@ -7,6 +7,7 @@ const wrapper = require('co-express');
 const Promise = require('promise');
 var algoliasearch = require('./algolia/algoliaSearch.parse.js');
 var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
+const { sendTransactionFailureEmail } = require('../utils/mail');
 //include the JS files which represent each classes (models), and contains their operations
 require("./models/Answer.js");
 require("./models/CampfireUnlock.js");
@@ -984,7 +985,7 @@ Parse.Cloud.define('withdraw', function(request, response){
     // if(process.env.NODE_ENV !== 'production')
     //   paypalEmail = 'krittylor@gmail.xom';
     // Round earningsBalance
-    const roundedEarningsBalance = Math.floor( earningsBalance * Math.pow(10, 2) ) / Math.pow(10, 2) ;
+    let roundedEarningsBalance = Math.floor( earningsBalance * Math.pow(10, 2) ) / Math.pow(10, 2) ;
     var create_payout_json = {
         'RECEIVERTYPE' : 'Email',
         'L_EMAIL0': paypalEmail,
@@ -994,6 +995,21 @@ Parse.Cloud.define('withdraw', function(request, response){
 
     console.log('Payout_Request_Json', create_payout_json);
     paypal.request('MassPay', create_payout_json).then(function(payout) {
+        const transaction = new Parse.Object('Transaction');
+        transaction.set('userRef', request.user);
+        transaction.set('amount', roundedEarningsBalance);
+        transaction.set('paypalEmail', paypalEmail);
+
+        transaction.set('CORRELATIONID', payout.CORRELATIONID);
+        transaction.set('ACK', payout.ACK);
+        transaction.set('L_ERRORCODE0', payout.L_ERRORCODE0);
+        transaction.set('L_SHORTMESSAGE0', payout.L_SHORTMESSAGE0);
+        transaction.set('L_LONGMESSAGE0', payout.L_LONGMESSAGE0);
+        transaction.set('L_SEVERITYCODE0', payout.L_SEVERITYCODE0);
+        transaction.set('TIMESTAMP', payout.TIMESTAMP);
+
+        transaction.save(null, {useMasterKey: true}).then();
+
         //Get Payout Item
 
         console.log("Created Single Payout");
@@ -1010,12 +1026,35 @@ Parse.Cloud.define('withdraw', function(request, response){
             });
         } else {
             response.error(payout);
+            sendTransactionFailureEmail('eric@campfire.fm', {
+                userId: request.user.id,
+                fullName: request.user.get('fullName'),
+                amount: roundedEarningsBalance,
+                paypalEmail: paypalEmail,
+                shortMessage: payout.L_SHORTMESSAGE0,
+                longMessage: payout.L_LONGMESSAGE0,
+                timestamp: payout.TIMESTAMP
+            });
             var errorCode = payout.L_ERRORCODE0;
             console.log(`Something went wrong with payout`);
             console.log(`ErrorCode : ${payout.L_ERRORCODE0}, ${payout.L_SHORTMESSAGE0}`)
         }
     }).catch(function(err){
         console.log(err.response);
+        const transaction = new Parse.Object('Transaction');
+        transaction.set('userRef', request.user);
+        transaction.set('amount', roundedEarningsBalance);
+        transaction.set('paypalEmail', paypalEmail);
+        transaction.save(null, {useMasterKey: true}).then();
+        sendTransactionFailureEmail('eric@campfire.fm', {
+            userId: request.user.id,
+            fullName: request.user.get('fullName'),
+            amount: roundedEarningsBalance,
+            paypalEmail: paypalEmail,
+            shortMessage: 'Masspayout api call failed',
+            longMessage: 'Masspayout api call failed',
+            timestamp: new Date().toISOString()
+        });
         response.error(err);
         throw 'Got an error ' + err.code + ' : ' + err.message;
     });
