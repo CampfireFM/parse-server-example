@@ -84,12 +84,13 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
         //Compose alert text to be sent
         var alert = "";
         var badge = 0;
-
+        var tag;
         const fullName = currentUser ? currentUser.get('fullName') : '';
         switch(type) {
             case 'questions' :
                 alert = fullName + ' asked you a new question.';
                 badge = additionalData;
+                tag = 'question';
                 break;
             case 'expiringQuestions' :
                 if (additionalData > 1)
@@ -99,7 +100,8 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
                 break;
             case 'answers' :
                 alert = fullName + ' answered your question on Campfire!';
-                badge = 1;
+                badge = user.get('unansweredQuestionCount') || 0;
+                tag = 'answer';
                 break;
             case 'unlocks' :
                 alert = fullName + ' unlocked your question & answer.';
@@ -131,6 +133,9 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
             if (badge > 0)
                 data.badge = badge
 
+            if (tag)
+                data.tag = tag;
+            
             Parse.Push.send({
                 where: pushQuery,
                 data: data
