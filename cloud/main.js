@@ -1600,3 +1600,21 @@ Parse.Cloud.job('CheckShadowUsers', function(request, status) {
             status.error(err);
         })
 });
+
+Parse.Cloud.define('setTagsToPerson', function(req, res) {
+    const userId = req.params.userId;
+    const tags = req.params.tags;
+    const query = new Parse.Query(Parse.User);
+    query.get(userId, {useMasterKey: true}).then(function(user) {
+        user.set('tags', tags);
+        user.save(null, {useMasterKey: true}).then(function() {
+            res.success('ok');
+        }, function(err) {
+            console.log(err);
+            res.error(err);
+        })
+    }, function(err) {
+        console.log(err);
+        res.error(err);
+    });
+});
