@@ -1622,11 +1622,11 @@ Parse.Cloud.define('setTagsToPerson', function(req, res) {
 
 Parse.Cloud.define('setTagsToCampfire', function(req, res) {
     const answerId = req.params.answerId;
-    const tags = req.params.tags;
+    const tagIds = req.params.tags;
     const Answer = Parse.Object.extend('Answer');
     const query = new Parse.Query(Answer);
     query.get(answerId, {useMasterKey: true}).then(function(answer) {
-        const tags = tags.map(tagId => pointerTo(tagId, 'Tag'));
+        const tags = tagIds.map(tagId => pointerTo(tagId, 'Tag'));
         answer.set('tags', tags);
         answer.save(null, {useMasterKey: true}).then(function() {
             res.success('ok');
