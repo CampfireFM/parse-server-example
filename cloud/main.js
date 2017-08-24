@@ -580,7 +580,9 @@ Parse.Cloud.define('getPeople', function(req, res) {
     if (req.params.toDate) {
         query.lessThanOrEqualTo("createdAt", req.params.toDate);
     }
-
+    if (req.params.allowShadowUser === false) {
+        query.notEqualTo('isShadowUser', true);
+    }
     // totalpages count
     var count;
     query.count().then(function (result) {
@@ -606,7 +608,8 @@ Parse.Cloud.define('getPeople', function(req, res) {
                         isFeatured: object.get('isFeatured'),
                         fbFollowers: object.get('fbFollowers'),
                         twitterFollowers: object.get('twitterFollowers'),
-                        createdAt: object.get('createdAt').toDateString()
+                        createdAt: object.get('createdAt').toDateString(),
+                        isShadowUser: object.get('isShadowUser')
                     });
                 }
             }
