@@ -1606,7 +1606,8 @@ Parse.Cloud.define('setTagsToPerson', function(req, res) {
     const tags = req.params.tags;
     const query = new Parse.Query(Parse.User);
     query.get(userId, {useMasterKey: true}).then(function(user) {
-        user.set('tags', tags);
+        const profileTags = tags.map(tagId => pointerTo(tagId, 'Tag'));
+        user.set('tags', profileTags);
         user.save(null, {useMasterKey: true}).then(function() {
             res.success('ok');
         }, function(err) {
