@@ -37,6 +37,12 @@ matchValue = 0.1;
 unlockCostMatches = 25;
 unlockMatchValue = 0.002475;
 campfireDefaultUser = null;
+pointsForQuestion = 2;
+pointsForAnswer = 2;
+pointsForUnlock = 2;
+pointsForListen = 1;
+pointsForFollow = 3;
+pointsForLike = 1;
 (function loadDefaultSettings(){
     var Defaults = Parse.Object.extend('Defaults');
     var default_values = null;
@@ -52,6 +58,12 @@ campfireDefaultUser = null;
         unlockCostMatches = defaults[0].get('unlockCostMatches');
         unlockMatchValue = defaults[0].get('unlockMatchValue');
         campfireDefaultUser = defaults[0].get('campfireUserRef');
+        pointsForQuestion = defaults[0].get('pointsForQuestion');
+        pointsForAnswer = defaults[0].get('pointsForAnswer');
+        pointsForUnlock = defaults[0].get('poitnsForUnlock');
+        pointsForLike = defaults[0].get('pointsForLike');
+        pointsForFollow = deafults[0].get('pointsForFollow');
+        pointsForListen = defaults[0].get('pointsForListen');
     }, function(err){
         //set to default value
         transactionFee = 0.3;
@@ -61,6 +73,12 @@ campfireDefaultUser = null;
         matchValue = 0.1;
         unlockCostMatches = 25;
         unlockMatchValue = 0.002475;
+        pointsForQuestion = 2;
+        pointsForAnswer = 2;
+        pointsForUnlock = 2;
+        pointsForListen = 1;
+        pointsForFollow = 3;
+        pointsForLike = 1;
         console.log(err);
     })
 })();
@@ -74,6 +92,12 @@ Parse.Cloud.afterSave('Defaults', function(request){
     unlockCostMatches = request.object.get('unlockCostMatches');
     unlockMatchValue = request.object.get('unlockMatchValue');
     campfireDefaultUser = request.object.get('campfireUserRef');
+    pointsForQuestion = request.object.get('pointsForQuestion') || 2;
+    pointsForAnswer = request.object.get('pointsForAnswer') || 2;
+    pointsForUnlock = request.object.get('poitnsForUnlock') || 2;
+    pointsForLike = request.object.get('pointsForLike') || 1;
+    pointsForFollow = request.object.get('pointsForFollow') || 3;
+    pointsForListen = request.object.get('pointsForListen') || 1;
     if(!transactionPercentage)
         transactionPercentage = 2.9;
     if(!transactionFee)
@@ -1639,3 +1663,68 @@ Parse.Cloud.define('setTagsToCampfire', function(req, res) {
         res.error(err);
     });
 });
+
+Parse.Cloud.define('updatePoint', function(req, res) {
+    const userId = req.params.userId;
+    const action = req.params.action;
+    console.log('UserId: ', userId, 'Action: ', action);
+    const query = new Parse.Query(Parse.User);
+    query.get(userId, {useMasterKey: true}).then(function(user) {
+        let cloutPoints = user.get('cloutPoints') || 0;
+        let plusPoints = 0;
+        switch (action) {
+            case 'question':
+                plusPoints = pointsForQuestion;
+                break;
+            case 'answer':
+                plusPoints = pointsForAnswer;
+                break;
+            case 'unlock':
+                plusPoints = pointsForUnlock;
+                break;
+            case 'like':
+                plusPoints = pointsForLike;
+                break;
+            case 'follow':
+                plusPoints = pointsForFollow;
+                break;
+            case 'listen':
+                plusPoints = pointsForListen;
+                break;
+            default:
+                plusPoints = 0;
+                break;
+        }
+        cloutPoints += plusPoints;
+        // Guess current level of user with cloutpoints, clout levels
+        let userLevel = undefined;
+        const CloutLevel = Parse.Object.extend('CloutLevel');
+        const levelQuery = new Parse.Query(CloutLevel);
+        levelQuery.descending('cloutPoints');
+        levelQuery.find({useMasterKey: true}).then(function(levels) {
+            console.log('levels');
+            for (let i = 0; i < levels.length; i++) {
+                if (levels[i].get('cloutPoints') < cloutPoints) {
+                    userLevel = levels[i];
+                    break;
+                }
+            }
+            user.set('cloutLevel', userLevel);
+            user.set('cloutPoints', cloutPoints);
+            user.save(null, {useMasterKey: true}).then(function(user) {
+                console.log(user);
+                res.success('ok');
+            }, function(err) {
+                console.log(err);
+                res.error(err);
+            });
+        }, function(err) {
+            console.log(err);
+            res.error(err);
+        })
+    }, function(err) {
+        console.log(err);
+        res.error(err);
+    })
+
+})

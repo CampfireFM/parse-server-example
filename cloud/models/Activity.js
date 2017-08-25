@@ -11,6 +11,10 @@ Parse.Cloud.afterSave("Activity", function(request) {
             user.save(null, {useMasterKey: true});
         });
     }
+    Parse.Cloud.run('updatePoint', {userId: request.object.get('fromUser').id, action: request.object.get('type')})
+        .then(function(result) {
+            console.log(result);
+        })
 });
 
 
