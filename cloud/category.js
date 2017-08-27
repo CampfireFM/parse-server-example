@@ -31,10 +31,10 @@ Parse.Cloud.define('getCategories', function(req, res){
             categories.push({
               id: object.id,
               name: object.get('name'),
-              color: object.get('name'),
+              color: object.get('color'),
               desc: object.get('desc'),
               image: object.get('image') ? (object.get('image')).toJSON().url : '',
-              icon: object.get('image') ? (object.get('image')).toJSON().url : '',
+              icon: object.get('icon') ? (object.get('icon')).toJSON().url : '',
               isLive: object.get('isLive')
             });
           }
