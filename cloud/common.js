@@ -22,8 +22,8 @@ const backgroundCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/ass
 const backgroundNoCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/background-nocharity.png';
 const listenUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/listen.png';
 const defaultAvatarUrl = 'https://campfiremedia.herokuapp.com/parse/files/maryhadalittlelamb/cdfa632577c4636d3a93d83cd88407ce_default_avatar.png';
-const backgroundAnswerCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/background-listen-charity.png';
-const backgroundAnswerNoCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/background-listen-nocharity.png';
+const backgroundAnswerCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/bg-new-listen-charity.png';
+const backgroundAnswerNoCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/bg-new-listen-nocharity.png';
 
 function checkPushSubscription(user, type){
     var pushSubscriptions = user.get('pushSubscriptions');
@@ -524,10 +524,10 @@ function generateAnswerShareImage(answerId) {
                     })
                     .then(page => {
                         sitepage = page;
-                        return page.property('viewportSize', {width: 1024, height: 512});
+                        return page.property('viewportSize', {width: 1200, height: 630});
                     })
                     .then(() => {
-                        return sitepage.property('content', '<html><head></head><body><div id="test"><canvas id="canvas" width="1024px" height="512px"></canvas></div></body>')
+                        return sitepage.property('content', '<html><head></head><body><div id="test"><canvas id="canvas" width="1200px" height="630px"></canvas></div></body>')
                     })
                     .then(() => {
                         let charityImageUrl;
@@ -576,26 +576,25 @@ function generateAnswerShareImage(answerId) {
             console.log(err);
             reject(err);
         });
-
     });
 }
 function generateAnswerImage(answererPhoto, askerPhoto, answererName, askerName, charityImage, backUrl, questionText) {
     const isCharity = !!charityImage;
     var canvas = document.getElementById("canvas");
-
+    questionText = questionText + questionText;
     var ctx = canvas.getContext("2d");
     var backImg = loadImage(backUrl, drawBackground);
     var answererImg, charityImg, askerImg;
-    const width = 1024;
-    const height = 512;
+    const width = 1200;
+    const height = 630;
     function drawBackground() {
         ctx.save();
         ctx.drawImage(backImg, 0, 0, width, height);
-        ctx.font = '24px Nunito,sans-serif';
+        ctx.font = '30px Nunito,sans-serif';
         ctx.fillStyle = '#848484';
         ctx.textAlign = 'left';
-        const x = 60.5;
-        const y = 455;
+        const x = 107.53;
+        const y = 551;
         ctx.fillText(askerName + ' asks:', x, y);
         // Draw question text
         /**
@@ -687,10 +686,11 @@ function generateAnswerImage(answererPhoto, askerPhoto, answererName, askerName,
         if (questionText.length > 200) {
             questionText = questionText.substr(0, 197) + '...';
         }
-        fontSize = 30 + (200 - questionText.length) / 8;
+        fontSize = 35 + (200 - questionText.length) / 8;
         //const answerNameFontSize = 35 + Math.min(15 - answererName.length, 0);
-        paint_centered_wrap(38, 52, 522, 348, '"' + questionText.trim() + '"', fontSize, fontSize * 0.1, '#535353', 100);
-        paint_centered_wrap(625, 250, 350, 190, 'Listen to ' + answererName + '\'s answer', 35, 5, 'white', 0);
+
+        paint_centered_wrap(77.53, 50.98, 631.72, 428.20, '"' + questionText.trim() + '"', fontSize, fontSize * 0.1, '#535353', 100);
+        paint_centered_wrap(765, 300, 350, 190, 'Listen to ' + answererName + '\'s answer', 35, 5, 'white', 0);
         ctx.restore();
         answererImg = loadImage(answererPhoto, drawAnswererPhoto);
     }
@@ -699,9 +699,9 @@ function generateAnswerImage(answererPhoto, askerPhoto, answererName, askerName,
 
         ctx.save();
         ctx.beginPath();
-        const x = 796.5;
-        const y = 141.5;
-        const radius = 100;
+        const x = 940.8;
+        const y = 172.3;
+        const radius = 121;
         ctx.arc(x, y, radius, 0, Math.PI * 2, true);
 
         ctx.closePath();
@@ -717,9 +717,9 @@ function generateAnswerImage(answererPhoto, askerPhoto, answererName, askerName,
 
         ctx.save();
         ctx.beginPath();
-        const x = 520.5;
-        const y = 447.5;
-        const radius = 22;
+        const x = 662.3;
+        const y = 541.1;
+        const radius = 26;
         ctx.arc(x, y, radius, 0, Math.PI * 2, true);
 
         ctx.closePath();
@@ -736,9 +736,9 @@ function generateAnswerImage(answererPhoto, askerPhoto, answererName, askerName,
     function drawCharity() {
         ctx.save();
         ctx.beginPath();
-        const x = 908;
-        const y = 85.3;
-        const radius = 45;
+        const x = 1075;
+        const y = 104.3;
+        const radius = 54.5;
 
         ctx.arc(x, y, radius, 0, Math.PI * 2, true);
 
@@ -747,7 +747,7 @@ function generateAnswerImage(answererPhoto, askerPhoto, answererName, askerName,
 
         ctx.drawImage(charityImg, x - radius, y - radius, radius * 2, radius * 2);
         ctx.strokeStyle = "white";
-        ctx.lineWidth   = 4;
+        ctx.lineWidth   = 6;
         ctx.stroke();
         window.isLoaded = true;
         ctx.restore();
