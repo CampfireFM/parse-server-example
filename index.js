@@ -353,7 +353,7 @@ app.get('/meta/*', function(req, res) {
                 answer = answerObj;
 
                 const desc = answer.to.name + " responds to " + answer.from.firstName + "'s" + ' question: "' + answer.question + '" on Campfire.';
-                const title = "Eavesdrop on " + answer.to.name + " - Campfire";
+                const title = "Listen to " + answer.to.name + " - Campfire";
 
                 let imageUrl;
                 if (object.get('image')) {
