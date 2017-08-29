@@ -9,14 +9,26 @@ var job = new CronJob({
     start: false,
     timeZone: 'America/Los_Angeles'
 });
-if (process.env.RUN_CRON === 'true')
+var qotdJob = new CronJob({
+    cronTime: '00 * * * * *',
+    onTick: sendQOTDLivePushNotification,
+    start: false,
+    timeZone: 'America/Los_Angeles'
+});
+
+qotdJob.start();
+if (process.env.RUN_CRON === 'true') {
     job.start();
+
+}
+
 const admins = ['krittylor@gmail.com', 'ericwebb85@yahoo.com', 'luke@lukevink.com', 'christos@campfire.fm', 'nick@campfire.fm'];
 
 function runCron() {
     sendStatisticsEmail();
     notifyExpiringQuestions();
     runSummaryUpdate();
+    sendQOTDLivePushNotification();
 }
 
 function sendStatisticsEmail() {
@@ -258,6 +270,32 @@ function getRecentAnswers(users, callback){
             callback(null, []);
     }, function(err){
         callback(err);
+    })
+}
+
+function sendQOTDLivePushNotification() {
+    const List = Parse.Object.extend('List');
+    const query = new Parse.Query(List);
+    query.equalTo('type', 'qotd');
+    const timestamp = new Date().getTime();
+    query.find({useMasterKey: true}).then(function(lists) {
+        console.log(lists.length);
+        lists.forEach(list => {
+            console.log(list);
+            console.log(list.get('listDate'), list.get('listDate').getTime());
+            if (list.get('liveDate').getTime() >= timestamp && list.get('liveDate').getTime() < (timestamp + 60 * 100)) {
+                const query = new Parse.Query(Parse.Installation);
+                query.equalTo('user', 'SSJQ8mW13x');
+                Parse.Push.send({
+                    where: query,
+                    data: 'QOTD is live!'
+                }).then(function() {
+                    console.log('Successfully send QOTD live notification');
+                }, function(err) {
+                    console.log(err);
+                })
+            }
+        })
     })
 }
 
