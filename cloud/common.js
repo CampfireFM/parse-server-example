@@ -581,7 +581,6 @@ function generateAnswerShareImage(answerId) {
 function generateAnswerImage(answererPhoto, askerPhoto, answererName, askerName, charityImage, backUrl, questionText) {
     const isCharity = !!charityImage;
     var canvas = document.getElementById("canvas");
-    questionText = questionText + questionText;
     var ctx = canvas.getContext("2d");
     var backImg = loadImage(backUrl, drawBackground);
     var answererImg, charityImg, askerImg;
