@@ -353,7 +353,7 @@ Parse.Cloud.define('getMpSignupUnlockFunnel', function(req, res) {
     fromDate = (fromDate.getFullYear() + "-" + fromDate.getMonth() + "-" + fromDate.getDate());
     var toDate = new Date();
     toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
-    panel.events({
+    panel.funnels({
         funnel_id: ["2711170"],
         unit: "day",
         from_date: fromDate,
