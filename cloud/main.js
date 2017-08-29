@@ -347,6 +347,22 @@ Parse.Cloud.define('getMpAvgQuestionsListened', function(req, res) {
     });
 });
 
+Parse.Cloud.define('getMpSignupUnlockFunnel', function(req, res) {
+    var fromDate = new Date();
+    fromDate.setMonth(fromDate.getMonth());
+    fromDate = (fromDate.getFullYear() + "-" + fromDate.getMonth() + "-" + fromDate.getDate());
+    var toDate = new Date();
+    toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
+    panel.events({
+        funnel_id: ["2711170"],
+        unit: "day",
+        from_date: fromDate,
+        to_date: toDate
+    }).then(function (data) {
+        res.success(data);
+    });
+});
+
 Parse.Cloud.define('getMpRetentionFeedLoad', function(req, res) {
     var fromDate = new Date();
     fromDate.setMonth(fromDate.getMonth());
