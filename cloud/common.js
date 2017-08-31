@@ -331,8 +331,11 @@ function generateShareImage(userId) {
                                                 if (!shareImage) {
                                                     const newShareImage = new Parse.Object('ShareImage');
                                                     newShareImage.set('userRef', user);
-                                                    if (charity)
+                                                    newShareImage.set('profilePhotoName', user.get('profilePhoto').name());
+                                                    if (charity) {
                                                         newShareImage.set('charityRef', charity);
+                                                        newShareImage.set('charityImageName', charity.get('image').name());
+                                                    }
                                                     var file = new Parse.File('social' + '.png', {base64: t}, 'image/png');
                                                     newShareImage.set('image', file);
                                                     newShareImage.save(null, {useMasterKey: true}).then((shareImage) => {
@@ -345,6 +348,11 @@ function generateShareImage(userId) {
                                                     });
                                                     console.log(`Creating share image for ${user.get('fullName')}`);
                                                 } else {
+                                                    shareImage.set('profilePhotoName', user.get('profilePhoto').name());
+                                                    shareImage.set('charityRef', charity);
+                                                    if (charity) {
+                                                        shareImage.set('charityImageName', charity.get('image').name());
+                                                    }
                                                     var file = new Parse.File('social' + '.png', {base64: t}, 'image/png');
                                                     shareImage.set('image', file);
                                                     shareImage.save(null, {useMasterKey: true}).then(() => {
