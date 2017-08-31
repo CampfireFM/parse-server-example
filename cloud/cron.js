@@ -289,13 +289,13 @@ function sendQOTDLivePushNotification() {
             if (list.get('liveDate').getTime() >= (timestamp - 60 * 1000 * 24 * 60) && list.get('liveDate').getTime() <= timestamp) {
                 const pushQuery = new Parse.Query(Parse.Installation);
                 pushQuery.equalTo('deviceType', 'ios');
-                const userQuery = new Parse.Query(Parse.User);
-                userQuery.equalTo('objectId', 'SSJQ8mW13x');
-                pushQuery.matchesQuery('user', userQuery);
+                //const userQuery = new Parse.Query(Parse.User);
+                //userQuery.equalTo('objectId', 'SSJQ8mW13x');
+                //pushQuery.matchesQuery('user', userQuery);
                 Parse.Push.send({
                     where: pushQuery,
                     data: {
-                        alert: 'QOTD is live!'
+                        alert: 'Question for you! ' + list.get('name')
                     }
                 }, {useMasterKey: true}).then(function() {
                     console.log('Successfully send QOTD live notification');
