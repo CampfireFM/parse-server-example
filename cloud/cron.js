@@ -10,16 +10,15 @@ var job = new CronJob({
     timeZone: 'America/Los_Angeles'
 });
 var qotdJob = new CronJob({
-    cronTime: '00 * * * * *',
+    cronTime: '00 00 12 * * *',
     onTick: sendQOTDLivePushNotification,
     start: false,
-    timeZone: 'America/Los_Angeles'
+    timeZone: 'America/New_York'
 });
 
-qotdJob.start();
 if (process.env.RUN_CRON === 'true') {
     job.start();
-
+    qotdJob.start();
 }
 
 const admins = ['krittylor@gmail.com', 'ericwebb85@yahoo.com', 'luke@lukevink.com', 'christos@campfire.fm', 'nick@campfire.fm'];
@@ -28,7 +27,7 @@ function runCron() {
     sendStatisticsEmail();
     notifyExpiringQuestions();
     runSummaryUpdate();
-    sendQOTDLivePushNotification();
+    //sendQOTDLivePushNotification();
 }
 
 function sendStatisticsEmail() {
@@ -277,19 +276,28 @@ function sendQOTDLivePushNotification() {
     const List = Parse.Object.extend('List');
     const query = new Parse.Query(List);
     query.equalTo('type', 'qotd');
-    const timestamp = new Date().getTime();
+    const currentTime = new Date();
+    currentTime.setMinutes(0);
+    currentTime.setMilliseconds(0);
+    currentTime.setSeconds(0);
+    const timestamp = currentTime.getTime();
     query.find({useMasterKey: true}).then(function(lists) {
         console.log(lists.length);
         lists.forEach(list => {
             console.log(list);
-            console.log(list.get('listDate'), list.get('listDate').getTime());
-            if (list.get('liveDate').getTime() >= timestamp && list.get('liveDate').getTime() < (timestamp + 60 * 100)) {
-                const query = new Parse.Query(Parse.Installation);
-                query.equalTo('user', 'SSJQ8mW13x');
+            console.log(list.get('liveDate'), list.get('liveDate').getTime(), new Date(timestamp));
+            if (list.get('liveDate').getTime() >= (timestamp - 60 * 1000 * 24 * 60) && list.get('liveDate').getTime() <= timestamp) {
+                const pushQuery = new Parse.Query(Parse.Installation);
+                pushQuery.equalTo('deviceType', 'ios');
+                const userQuery = new Parse.Query(Parse.User);
+                userQuery.equalTo('objectId', 'SSJQ8mW13x');
+                pushQuery.matchesQuery('user', userQuery);
                 Parse.Push.send({
-                    where: query,
-                    data: 'QOTD is live!'
-                }).then(function() {
+                    where: pushQuery,
+                    data: {
+                        alert: 'QOTD is live!'
+                    }
+                }, {useMasterKey: true}).then(function() {
                     console.log('Successfully send QOTD live notification');
                 }, function(err) {
                     console.log(err);
