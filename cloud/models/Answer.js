@@ -1,7 +1,7 @@
 const {checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateAnswerShareImage } = require('../common');
 const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
-var answer_methods = {};
+const {getFollowers} = require('../common');
 
 var config = require('../../config');
 var algoliasearch = require('../algolia/algoliaSearch.parse.js');
@@ -42,21 +42,21 @@ Parse.Cloud.afterSave("Answer", function(request) {
         
         var answer = request.object;
 
-        var currentUser = request.user;
-        currentUser.increment('answerCount', 1);
-        currentUser.save(null, {useMasterKey: true}).then(function(user){
-            console.log(`${currentUser.get('fullName')} has answered ${user.get('answerCount')} questions so far.`);
-        }, function(err){
-            console.log(err);
-            console.log(`Failed to increase the number of answer of ${currentUser.get('fullName')}.`);
-        });
-
         var questionRef = answer.get("questionRef");
         getQuestionAndItsPointers(questionRef.id, function(err_question, question) {
             if(err_question){
                 request.log.error("FAILED IN QUESTION DETAILS FETCH");
                 request.log.error(JSON.stringify(err_question));
             } else {
+
+                var currentUser = question.get('toUser');
+                currentUser.increment('answerCount', 1);
+                currentUser.save(null, {useMasterKey: true}).then(function(user){
+                    console.log(`${currentUser.get('fullName')} has answered ${user.get('answerCount')} questions so far.`);
+                }, function(err){
+                    console.log(err);
+                    console.log(`Failed to increase the number of answer of ${currentUser.get('fullName')}.`);
+                });
 
                 if(question.get('isTest') !== true) {
 
@@ -89,8 +89,21 @@ Parse.Cloud.afterSave("Answer", function(request) {
                             console.log(r);
                         });
                 }
-
                 var fromUser = question.get('fromUser');
+                getFollowers(currentUser)
+                  .then(followers => {
+                      const followUsers = [];
+                      followers.forEach(follower => {
+                          if (follower.get('fromUser').id !== fromUser.id)
+                              followUsers.push(follower.get('fromUser'));
+                      });
+                      if (followUsers.length > 0)
+                        sendPushOrSMS(currentUser, followUsers, 'answerToFollowers', fromUser.get('fullName'));
+                  })
+                  .catch(err => {
+                      console.log(err);
+                  })
+
                 fromUser.fetch({
                     useMasterKey : true,
                     success : function(user) {

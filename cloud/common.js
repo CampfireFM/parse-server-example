@@ -6,14 +6,14 @@ const logTexts = {
     questions : 'Question answerer has not subscribed to receive questions notification yet',
     expiringQuestions: 'Answerer has not subscribed to receive expiring questions notification yet',
     unlocks : 'Question asker/answerer has not subscribed to receive unlocks notification yet',
-    answers : 'Question asker has not subscribed to receive answers sms yet',
+    answers : 'Question asker has not subscribed to receive answers notification/sms yet',
     likes : 'Question ansker/answerer has not subscribed to receive likes notification yet',
     follows : 'The user has not subscribed to receive follows notification yet',
     earnings : 'The user has not subscribed to receive earnings notification yet'
 };
 const branch = require('node-branch-io');
 const subscriptionTypes = ['questions', 'unlocks', 'answers', 'likes', 'follows', 'earnings'];
-const campfireAutoPushTypes = ['friendMatch', 'joinCampfire', 'expiringQuestions'];
+const campfireAutoPushTypes = ['friendMatch', 'joinCampfire', 'expiringQuestions', 'answerToFollowers'];
 
 const activityTypes = ['follow', 'unlock', 'like', 'answer', 'question'];
 
@@ -56,7 +56,7 @@ function checkEmailSubscription(user, type){
  * @param currentUser - The user object in request where this is called
  * @param toUsers - The users who will receive push notification
  * @param type - subscription type of 'questions','answers','unlocks','likes','follows','earnings', campfire push notification of
- *               'friendMatch', 'joinCampfire'
+ *               'friendMatch', 'joinCampfire', 'answerToFollowers'
  */
 function sendPushOrSMS(currentUser, toUsers, type, additionalData){
     if(toUsers.length === undefined){
@@ -100,6 +100,11 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
                 break;
             case 'answers' :
                 alert = fullName + ' answered your question on Campfire!';
+                badge = user.get('unansweredQuestionCount') || 0;
+                tag = 'answer';
+                break;
+            case 'answerToFollowers':
+                alert = fullName + ' answered ' + additionalData + '\'s question on Campfire!';
                 badge = user.get('unansweredQuestionCount') || 0;
                 tag = 'answer';
                 break;
@@ -824,4 +829,18 @@ function getAllAnswers() {
     })
 }
 
-module.exports = {checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers, generateAnswerShareImage, getAllAnswers};
+function getFollowers(user){
+    return new Promise((resolve, reject) => {
+        var Follow = Parse.Object.extend('Follow');
+        var followQuery = new Parse.Query(Follow);
+        followQuery.include('fromUser');
+        followQuery.equalTo('toUser', user);
+        followQuery.find({useMasterKey : true}).then(function(follows){
+            resolve(follows);
+        }, function(err){
+            reject(err);
+        });
+    });
+}
+
+module.exports = {getFollowers, checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers, generateAnswerShareImage, getAllAnswers};
