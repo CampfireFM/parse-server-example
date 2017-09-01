@@ -1290,7 +1290,7 @@ Parse.Cloud.define('getHottestUsers', function(request, response){
 Parse.Cloud.define('getWelcomeQuestion', function(request, response){
 
     // Get firstname of the user
-    const firstName = request.user.get('firstName');
+    const firstName = request.user.get('firstName') || '';
     const welcomeQuestions = [
         `Hey ${firstName}! If you could have picked your name, what would it be?`,
         `Hey ${firstName}! What's your secret super power and what super power do you wish you had?`,
