@@ -23,8 +23,8 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
             const firstName = request.object.get('firstName');
             const lastName = request.object.get('lastName');
             mail.sendWelcomeMail(email);
-            mail.updateMailingList(firstName, lastName, email);
-            return response.success();
+            response.success();
+            //mail.updateMailingList(firstName, lastName, email);
         } else {
             const authData = request.object.get('authData');
 
