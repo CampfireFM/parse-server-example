@@ -14,40 +14,18 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
     if (email && (email.indexOf('@bonfire.fm') > -1 || email.indexOf('camp@gmail.com') > -1)) {
         request.object.set('isShadowUser', true);
     }
-    response.success();
-});
-Parse.Cloud.afterSave(Parse.User, function(request, response) {
-    const userEmail = request.object.get('email');
-    const firstName = request.object.get('firstName');
-    const lastName = request.object.get('lastName');
+    if (!request.object.existed()) {
+        request.object.set('emailSubscriptions', ["earnings","unlocks","questions","summary", "likes"]);
+        request.object.set('pushSubscriptions', ["likes","questions","unlocks","earnings"]);
 
-    if(!(userEmail != undefined && userEmail != '')) {
-        if(request.object.get('isWelcomeEmailSent') != undefined)
-            return;
-        request.object.set('isWelcomeEmailSent', false);
-        request.object.save(null, {useMasterKey : true});
-        return response.success("Email undefined");
-    }
-
-    //Init MixPanel
-    var mixpanel = Mixpanel.init(config.mixpanelToken);
-    //Add user to mailing list and send welcome email if new user or update mailing list
-    //mixpanel.track("played_game");
-
-    //Check if it's first time user signs up to Campfire.
-    var isNewToCampfire = false;
-    if(request.object.get('isWelcomeEmailSent') == true){
-        //Already has account
-        isNewToCampfire = false;
-    } else {
-        //New to campfire, consider email or social login
-        if (request.object.existed() == false && userEmail) //email sign up
-            isNewToCampfire = true;
-        //facebook or twitter login
-        if (request.object.existed() == true && request.object.get('isWelcomeEmailSent') != true) {
-            isNewToCampfire = true;
-            //Look for friends already signed up to campfire
-            var authData = request.object.get('authData');
+        // Email login
+        if (email) {
+            const firstName = request.object.get('firstName');
+            const lastName = request.object.get('lastName');
+            mail.sendWelcomeMail(email);
+            mail.updateMailingList(firstName, lastName, email);
+        } else {
+            const authData = request.object.get('authData');
 
             //Friends in facebook
 
@@ -55,9 +33,10 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
                 var facebookAuth = authData.facebook;
                 graph.setAccessToken(facebookAuth.access_token);
                 graph.get(facebookAuth.id + '/friends', function(err, friends){
-                    if(err)
-                        return console.log(err);
-                    else{
+                    if(err) {
+                        console.log(err);
+                        return response.success();
+                    } else {
                         console.log(friends);
                         //Send notification to the followers
                         if(friends.summary.total_count > 0){
@@ -67,11 +46,12 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
                             getUsersByFacebookIds(friendIds, function(err, campfireFriends){
                                 if (err) {
                                     console.log(err);
+                                    response.success();
                                 } else {
                                     // Send push notification to user's friends
-                                    sendPushOrSMS(request.user, campfireFriends, 'joinCampfire');
+                                    // sendPushOrSMS(request.user, campfireFriends, 'joinCampfire');
                                     request.object.set('fbFollowers', campfireFriends.length);
-                                    request.object.save(null, {useMasterKey: true});
+                                    response.success();
                                 }
                             });
                         }
@@ -101,38 +81,41 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
                         getUsersByTwitterIds(friendIds, function(err, campfireFriends){
                             if (err) {
                                 console.log(err);
+                                response.success();
                             } else {
                                 // Send push notification to user's friend
-                                sendPushOrSMS(request.user, campfireFriends, 'joinCampfire');
+                                // sendPushOrSMS(request.user, campfireFriends, 'joinCampfire');
                                 request.object.set('twitterFollowers', campfireFriends.length);
-                                request.object.save(null, {useMasterKey: true});
+                                response.success();
                             }
                         })
+                    } else {
+                        response.success();
                     }
                 });
             }
         }
     }
+});
+Parse.Cloud.afterSave(Parse.User, function(request, response) {
+    const userEmail = request.object.get('email');
+    const firstName = request.object.get('firstName') || '';
+    const lastName = request.object.get('lastName') || '';
+    const twitterId = request.object.get('twitterId');
+    const facebookId = request.object.get('facebookId');
+    //Init MixPanel
+    var mixpanel = Mixpanel.init(config.mixpanelToken);
+    //Add user to mailing list and send welcome email if new user or update mailing list
+    //mixpanel.track("played_game");
 
-    if(isNewToCampfire) {
-        if (userEmail) {
-            mail.sendWelcomeMail(userEmail);
-            mail.updateMailingList(firstName, lastName, userEmail);
-        }
-
-        //Add user to MixPanel        
+    if(!request.object.existed()) {
+        //Add user to MixPanel
         mixpanel.people.set(request.object.get('username'), {
             $first_name: firstName,
             $last_name: lastName,
             $email: userEmail ? userEmail : '',
             $created: (new Date()).toISOString()
         });
-        request.object.set('isWelcomeEmailSent', true);
-        //Set default values
-        request.object.set('emailSubscriptions', ["earnings","unlocks","questions","summary", "likes"]);
-        request.object.set('pushSubscriptions', ["likes","questions","unlocks","earnings"]);
-        request.object.save(null, {useMasterKey : true});
-
         // Save user to algolia
         let index = algoliaClient.initIndex('users');
         // Convert Parse.Object to JSON
@@ -144,9 +127,11 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
             }
         });
     } else {
+        if (!userEmail && !facebookId && !twitterId)
+          return response.success();
         if (userEmail) {
             mail.updateMailingList(firstName, lastName, userEmail)
-        };
+        }
         //Update user at mixpanel
 
         mixpanel.people.set(request.object.get('username'), {
@@ -154,8 +139,8 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
             $last_name: lastName,
             $email: userEmail ? userEmail : ''
         });
-        generateShareImage(request.object.id).then();
 
+        generateShareImage(request.object.id).then();
         // Save user to algolia
         let index = algoliaClient.initIndex('users');
         // Convert Parse.Object to JSON

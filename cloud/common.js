@@ -515,9 +515,9 @@ function generateAnswerShareImage(answerId) {
             if (!question.get('toUser') || !question.get('toUser').get('profilePhoto'))
                 return reject('Can not find toUser');
             const askerPhoto = question.get('fromUser').get('profilePhoto').url();
-            const askerName = question.get('fromUser').get('fullName');
+            const askerName = question.get('fromUser').get('fullName') || '';
             const answererPhoto = question.get('toUser').get('profilePhoto').url();
-            const answererName = question.get('toUser').get('fullName');
+            const answererName = question.get('toUser').get('fullName') || '';
             const charity = question.get('charity');
             let backUrl = backgroundAnswerNoCharityImageUrl;
             let charityImage;
