@@ -115,13 +115,16 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
     }
 
     if(isNewToCampfire) {
-        mail.sendWelcomeMail(userEmail);
-        mail.updateMailingList(firstName, lastName, userEmail);
+        if (userEmail) {
+            mail.sendWelcomeMail(userEmail);
+            mail.updateMailingList(firstName, lastName, userEmail);
+        }
+
         //Add user to MixPanel        
         mixpanel.people.set(request.object.get('username'), {
             $first_name: firstName,
             $last_name: lastName,
-            $email: userEmail,
+            $email: userEmail ? userEmail : '',
             $created: (new Date()).toISOString()
         });
         request.object.set('isWelcomeEmailSent', true);
@@ -131,9 +134,9 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
         request.object.save(null, {useMasterKey : true});
 
         // Save user to algolia
-        var index = algoliaClient.initIndex('users');
+        let index = algoliaClient.initIndex('users');
         // Convert Parse.Object to JSON
-        var objectToSave = parseToAlgoliaObjects(request.object)[0];
+        let objectToSave = parseToAlgoliaObjects(request.object)[0];
         // Add or update object
         index.saveObject(objectToSave, function (err, content) {
             if (err) {
@@ -141,20 +144,22 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
             }
         });
     } else {
-        mail.updateMailingList(firstName, lastName, oldEmail, userEmail);
+        if (userEmail) {
+            mail.updateMailingList(firstName, lastName, userEmail)
+        };
         //Update user at mixpanel
 
         mixpanel.people.set(request.object.get('username'), {
             $first_name: firstName,
             $last_name: lastName,
-            $email: userEmail
+            $email: userEmail ? userEmail : ''
         });
         generateShareImage(request.object.id).then();
 
         // Save user to algolia
-        var index = algoliaClient.initIndex('users');
+        let index = algoliaClient.initIndex('users');
         // Convert Parse.Object to JSON
-        var objectToSave = parseToAlgoliaObjects(request.object)[0];
+        let objectToSave = parseToAlgoliaObjects(request.object)[0];
         // Add or update object
         index.saveObject(objectToSave, function (err, content) {
             if (err) {
