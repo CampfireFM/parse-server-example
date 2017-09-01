@@ -1265,6 +1265,7 @@ Parse.Cloud.define('getSuggestedUsers', function(request, response){
                     question.save(null, {useMasterkey: true});
                     const fromUser = question.get('fromUser');
                     fromUser.increment('matchCount', question.get('price') / matchValue);
+                    fromUser.increment('unansweredQuestionCount', -1);
                     fromUser.save(null, {useMasterKey : true});
                 });
             }

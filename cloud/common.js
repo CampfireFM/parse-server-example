@@ -105,7 +105,7 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
                 break;
             case 'answerToFollowers':
                 alert = fullName + ' answered ' + additionalData + '\'s question on Campfire!';
-                badge = user.get('unansweredQuestionCount') || 0;
+                //badge = user.get('unansweredQuestionCount') || 0;
                 tag = 'answer';
                 break;
             case 'unlocks' :
