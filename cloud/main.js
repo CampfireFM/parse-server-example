@@ -1665,6 +1665,26 @@ Parse.Cloud.define('setTagsToPerson', function(req, res) {
     });
 });
 
+Parse.Cloud.define('setTagsToCampfire', function(req, res) {
+    const answerId = req.params.answerId;
+    const tagIds = req.params.tags;
+    const Answer = Parse.Object.extend('Answer');
+    const query = new Parse.Query(Answer);
+    query.get(answerId, {useMasterKey: true}).then(function(answer) {
+        const tags = tagIds.map(tagId => pointerTo(tagId, 'Tag'));
+        answer.set('tags', tags);
+        answer.save(null, {useMasterKey: true}).then(function() {
+            res.success('ok');
+        }, function(err) {
+            console.log(err);
+            res.error(err);
+        })
+    }, function(err) {
+        console.log(err);
+        res.error(err);
+    });
+});
+
 Parse.Cloud.define('setPersonTestUser', function(req, res) {
     const userId = req.params.userId;
     const isATestUser = req.params.setTestUser;
@@ -1683,15 +1703,13 @@ Parse.Cloud.define('setPersonTestUser', function(req, res) {
     });
 });
 
-Parse.Cloud.define('setTagsToCampfire', function(req, res) {
-    const answerId = req.params.answerId;
-    const tagIds = req.params.tags;
-    const Answer = Parse.Object.extend('Answer');
-    const query = new Parse.Query(Answer);
-    query.get(answerId, {useMasterKey: true}).then(function(answer) {
-        const tags = tagIds.map(tagId => pointerTo(tagId, 'Tag'));
-        answer.set('tags', tags);
-        answer.save(null, {useMasterKey: true}).then(function() {
+Parse.Cloud.define('setPersonShadowUser', function(req, res) {
+    const userId = req.params.userId;
+    const isAShadowUser = req.params.setShadowUser;
+    const query = new Parse.Query(Parse.User);
+    query.get(userId, {useMasterKey: true}).then(function(user) {
+        user.set('isShadowUser', isAShadowUser);
+        user.save(null, {useMasterKey: true}).then(function() {
             res.success('ok');
         }, function(err) {
             console.log(err);
