@@ -1785,3 +1785,59 @@ Parse.Cloud.define('updatePoint', function(req, res) {
     })
 
 })
+
+Parse.Cloud.define('getFeaturedUsersApp', function(request, response) {
+    const Defaults = Parse.Object.extend('Defaults');
+    const query = new Parse.Query(Defaults);
+    query.first({useMasterKey: true}).then(function(defaultSettings) {
+        const featuredUserIds = defaultSettings.get('featuredPeople');
+        const userQuery = new Parse.Query(Parse.User);
+        userQuery.containedIn('objectId', featuredUserIds);
+        userQuery.include(['charityRef']);
+        const Answer = Parse.Object.extend('Answer');
+        const featuredUsersList = [];
+        userQuery.find({useMasterKey: true}).then(wrapper(function*(featuredUsers) {
+            for (let i = 0; i < featuredUsers.length; i++) {
+                try {
+                    const lastAnswer = yield new Promise((resolve, reject) => {
+                        const answerQuery = new Parse.Query(Answer);
+                        answerQuery.equalTo('userRef', featuredUsers[i])
+                        answerQuery.descending('createdAt');
+                        answerQuery.limit(1);
+                        answerQuery.include('questionRef');
+                        answerQuery.first({useMasterKey: true}).then(function (answer) {
+                            console.log(answer);
+                            resolve(answer);
+                        }, function (err) {
+                            console.log(err);
+                            reject(err);
+                        });
+                    });
+                    console.log(lastAnswer);
+                    const featuredUserAppObj = {
+                        id: featuredUsers[i].id,
+                        fullName: featuredUsers[i].get('fullName'),
+                        profilePhoto: featuredUsers[i].get('profilePhoto').url(),
+                        tags: featuredUsers[i].get('tags'),
+                        charityName: featuredUsers[i].get('charityRef') ? featuredUsers[i].get('charityRef').get('name') : '',
+                        charityImage: featuredUsers[i].get('charityRef') ? featuredUsers[i].get('charityRef').get('image').url() : '',
+                        verified: featuredUsers[i].get('emailVerified') === true,
+                        lastQuestionText: lastAnswer.get('questionRef').get('text')
+                    };
+                    featuredUsersList.push(featuredUserAppObj);
+                } catch (err) {
+                    console.log('Failed to fetch last answer for featured user', featuredUsers[i].id);
+                }
+            }
+            featuredUsersList.sort(function(a, b) {
+                if (featuredUserIds.indexOf(a.id) < featuredUserIds.indexOf(b.id))
+                  return -1;
+                else
+                  return 1;
+            });
+            response.success(featuredUsersList);
+        }), function(err) {
+            response.error(err);
+        });
+    });
+});
