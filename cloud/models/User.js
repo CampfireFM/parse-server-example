@@ -119,16 +119,18 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
             $email: userEmail ? userEmail : '',
             $created: (new Date()).toISOString()
         });
-        // Save user to algolia
-        let index = algoliaClient.initIndex('users');
-        // Convert Parse.Object to JSON
-        let objectToSave = parseToAlgoliaObjects(request.object)[0];
-        // Add or update object
-        index.saveObject(objectToSave, function (err, content) {
-            if (err) {
-                throw err;
-            }
-        });
+        if (request.object.get('isTestUser') !== true) {
+            // Save user to algolia
+            let index = algoliaClient.initIndex('users');
+            // Convert Parse.Object to JSON
+            let objectToSave = parseToAlgoliaObjects(request.object)[0];
+            // Add or update object
+            index.saveObject(objectToSave, function (err, content) {
+                if (err) {
+                    throw err;
+                }
+            });
+        }
     } else {
         if (!userEmail && !facebookId && !twitterId)
           return response.success();
@@ -144,16 +146,19 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
         });
 
         generateShareImage(request.object.id).then();
-        // Save user to algolia
-        let index = algoliaClient.initIndex('users');
-        // Convert Parse.Object to JSON
-        let objectToSave = parseToAlgoliaObjects(request.object)[0];
-        // Add or update object
-        index.saveObject(objectToSave, function (err, content) {
-            if (err) {
-                throw err;
-            }
-        });
+        if (request.object.get('isTestUser') !== true) {
+            // Save user to algolia
+            let index = algoliaClient.initIndex('users');
+            // Convert Parse.Object to JSON
+            let objectToSave = parseToAlgoliaObjects(request.object)[0];
+            // Add or update object
+            index.saveObject(objectToSave, function (err, content) {
+                if (err) {
+                    throw err;
+                }
+            });
+        }
+
     }
     response.success('ok');
 });
