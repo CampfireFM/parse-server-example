@@ -14,9 +14,12 @@ Parse.Cloud.define('getCategories', function(req, res){
   var page = req.params.currentPage || 1;
   var limit = req.params.perPage || 6;
   var skip = (page - 1) * limit;
-
+  const Answer = Parse.Object.extend('Answer');
   // totalpages count
   var count;
+  // filter live
+  if (onlyLive)
+    query.equalTo('isLive', true);
   query.count().then(function(result){
     count = result;
     sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy);
@@ -30,13 +33,22 @@ Parse.Cloud.define('getCategories', function(req, res){
     query.limit(limit);
     query.skip(skip);
 
-    // filter live
-    if (onlyLive)
-      query.equalTo('isLive', true);
-    query.find().then(function(objects) {
+    query.find({useMasterKey: true}).then(wrapper(function*(objects) {
       if (objects.length) {
         for (var i = 0; i < objects.length; i++) {
           var object = objects[i];
+          const tags = object.get('tags');
+          let answerCount = 0;
+          for (let j = 0; j < tags.length; j++) {
+            const tagRef = pointerTo(tags[j], 'Tag');
+            const answerQuery = new Parse.Query(Answer);
+            answerQuery.containsAll('tags', [tagRef]);
+            answerCount += yield new Promise((resolve, reject) => {
+              answerQuery.count({useMasterKey: true})
+                .then(count => resolve(count))
+                .catch(err => resolve(0))
+            });
+          }
           categories.push({
             id: object.id,
             name: object.get('name'),
@@ -44,12 +56,20 @@ Parse.Cloud.define('getCategories', function(req, res){
             desc: object.get('desc'),
             image: object.get('image') ? (object.get('image')).toJSON().url : '',
             icon: object.get('icon') ? (object.get('icon')).toJSON().url : '',
-            isLive: object.get('isLive')
+            isLive: object.get('isLive'),
+            answerCount: answerCount
           });
         }
       }
+      categories.sort((a, b) => {
+        if (a.answerCount > b.answerCount)
+          return -1;
+        else if (a.answerCount < b.answerCount)
+          return 1;
+        return 0;
+      });
       res.success({categories: categories, totalItems: count});
-    },function(error) {
+    }),function(error) {
       res.error(error.message);
     })
   },function(error) {
