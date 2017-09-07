@@ -1,4 +1,4 @@
-const { sendPushOrSMS, generateShareImage, getAllUsers } = require('./common');
+const { sendPushOrSMS, generateShareImage, getAllUsers, getFollows } = require('./common');
 const config = require('../config.js');
 const stripe = require('stripe')(config.stripe_live_key);
 // var paypal = require('paypal-rest-sdk');
@@ -297,6 +297,32 @@ Parse.Cloud.define('getFeaturedAnswers', function(req, res) {
         }
     })
 });
+
+Parse.Cloud.define('getFeaturedFollowAnswers', function(request, response) {
+    const skip = request.params.skip || 0;
+    const limit = request.params.limit || 6;
+    const Answer = Parse.Object.extend('Answer');
+    const Follow = Parse.Object.extend('Follow');
+    const featuredAnswerQuery = new Parse.Query(Answer);
+    featuredAnswerQuery.containsAll('lists', [pointerTo('CTsXJi51Qc', 'List')]);
+    const followQuery = new Parse.Query(Follow);
+    followQuery.equalTo('fromUser', request.user);
+    const followAnswerQuery = new Parse.Query(Answer);
+    followAnswerQuery.matchesKeyInQuery('userRef', 'toUser', followQuery);
+    const compoundQuery =  Parse.Query.or(featuredAnswerQuery, followAnswerQuery);
+    compoundQuery.include(['questionRef', 'questionRef.toUser',
+        'questionRef.fromUser', 'questionRef.charity', 'questionRef.list', 'userRef']);
+    compoundQuery.notEqualTo('isTest', true);
+    compoundQuery.descending('createdAt');
+    compoundQuery.lessThan('liveDate', new Date());
+    compoundQuery.limit(limit);
+    compoundQuery.skip(skip);
+    compoundQuery.find({useMasterKey: true}).then(function(answers) {
+        response.success(answers);
+    }, function(err) {
+        response.error(err);
+    })
+})
 
 Parse.Cloud.define('convertToCoins', function(req, res) {
     const userId = req.user.id;
