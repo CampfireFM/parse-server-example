@@ -298,6 +298,23 @@ Parse.Cloud.define('getFeaturedAnswers', function(req, res) {
     })
 });
 
+Parse.Cloud.define('convertToCoins', function(req, res) {
+    const userId = req.user.id;
+    const userQuery = new Parse.Query(Parse.User);
+    userQuery.get(userId, {useMasterKey: true}).then(function(user) {
+        user.increment('matchCount', Math.round(user.get('earningsBalance') * 100));
+        user.set('earningsBalance', 0);
+         user.save(null, {useMasterKey: true}).then(function(user) {
+            res.success(user);
+        }, function(err) {
+            console.log(err);
+            res.error(err);
+        })
+    }, function(err) {
+        console.log(err);
+        res.error(err);
+    });
+});
 Parse.Cloud.define('getMpActiveUsers', function(req, res) {
     var fromDate = new Date();
     fromDate.setMonth(fromDate.getMonth());
