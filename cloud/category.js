@@ -68,7 +68,10 @@ Parse.Cloud.define('getCategories', function(req, res){
           return 1;
         return 0;
       });
-      res.success(categories);
+      if (req.params.isAdmin)
+        res.success({categories: categories, totalItems: count});
+      else
+        res.success(categories);
     }),function(error) {
       res.error(error.message);
     })
