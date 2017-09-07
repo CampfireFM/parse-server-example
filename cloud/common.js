@@ -852,4 +852,19 @@ function getFollowers(user){
     });
 }
 
-module.exports = {getFollowers, checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers, generateAnswerShareImage, getAllAnswers};
+function getFollows(user){
+    return new Promise((resolve, reject) => {
+        if (!user)
+            return resolve([]);
+        var Follow = Parse.Object.extend('Follow');
+        var followQuery = new Parse.Query(Follow);
+        followQuery.include('toUser');
+        followQuery.equalTo('fromUser', user);
+        followQuery.find({useMasterKey : true}).then(function(follows){
+            resolve(follows);
+        }, function(err){
+            reject(err);
+        });
+    })
+}
+module.exports = {getFollowers, getFollows, checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers, generateAnswerShareImage, getAllAnswers};

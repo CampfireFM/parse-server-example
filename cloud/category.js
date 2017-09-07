@@ -68,7 +68,7 @@ Parse.Cloud.define('getCategories', function(req, res){
           return 1;
         return 0;
       });
-      res.success({categories: categories, totalItems: count});
+      res.success(categories);
     }),function(error) {
       res.error(error.message);
     })

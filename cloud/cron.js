@@ -1,5 +1,5 @@
 const CronJob = require('cron').CronJob;
-const { sendPushOrSMS, getAllUsers, sendSummaryEmail, checkEmailSubscription } = require('./common');
+const { sendPushOrSMS, getAllUsers, sendSummaryEmail, checkEmailSubscription, getFollows } = require('./common');
 const Promise = require('promise');
 const wrapper = require('co-express');
 const { sendAdminSummaryEmail } = require('../utils/mail');
@@ -190,67 +190,55 @@ function runSummaryUpdate(){
                 //Cancel getting summary if user has not subscribed to receive summary email
                 if (checkEmailSubscription(user, 'summary') == false)
                     return;
-                getFollows(user, function (err, follows) {
-                    if (err) {
-                        console.log(err.message);
-                        return;
-                    }
-                    if (follows.length == 0)
-                        return;
-                    follows = follows.reduce(function (pre, follow) {
-                        pre.push(follow.get('toUser'));
-                        return pre;
-                    }, []);
-                    getRecentAnswers(follows, function (err, answers) {
-                        if (err) {
-                            console.log(err.message);
+                getFollows(user)
+                    .then(follows => {
+                        if (follows.length == 0)
                             return;
-                        }
-                        if (answers.length == 0)
-                            return;
-                        const moreAnswersCount = answers.length > 5 ? answers.length - 5 : 0;
-                        answers = answers.slice(0, 5);
-
-                        var summaries = answers.reduce(function (pre, answer) {
-                            //Get userId from answer
-                            pre.push({
-                                answerId: answer.id,
-                                questionId: answer.get('questionRef').id,
-                                question: answer.get('questionRef').get('text'),
-                                userName: answer.get('userRef').get('fullName'),
-                                profilePhoto: answer.get('userRef').get('profilePhoto').url()
-                            });
+                        follows = follows.reduce(function (pre, follow) {
+                            pre.push(follow.get('toUser'));
                             return pre;
                         }, []);
+                        getRecentAnswers(follows, function (err, answers) {
+                            if (err) {
+                                console.log(err.message);
+                                return;
+                            }
+                            if (answers.length == 0)
+                                return;
+                            const moreAnswersCount = answers.length > 5 ? answers.length - 5 : 0;
+                            answers = answers.slice(0, 5);
 
-                        console.log("SummaryMap : ", summaries);
-                        //Generate email with template
+                            var summaries = answers.reduce(function (pre, answer) {
+                                //Get userId from answer
+                                pre.push({
+                                    answerId: answer.id,
+                                    questionId: answer.get('questionRef').id,
+                                    question: answer.get('questionRef').get('text'),
+                                    userName: answer.get('userRef').get('fullName'),
+                                    profilePhoto: answer.get('userRef').get('profilePhoto').url()
+                                });
+                                return pre;
+                            }, []);
 
-                        //send to test email in development
-                        // var testEmail = process.env.TEST_EMAIL ? process.env.TEST_EMAIL : 'krittylor@gmail.com';
-                        if (process.env.SEND_SUMMARY == 'production')
-                            sendSummaryEmail(user.get('email'), summaries, moreAnswersCount);
-                        // else
-                        //     sendSummaryEmail('ericwebb85@yahoo.com', summaries, moreAnswersCount);
-                    });
-                });
+                            console.log("SummaryMap : ", summaries);
+                            //Generate email with template
+
+                            //send to test email in development
+                            // var testEmail = process.env.TEST_EMAIL ? process.env.TEST_EMAIL : 'krittylor@gmail.com';
+                            if (process.env.SEND_SUMMARY == 'production')
+                                sendSummaryEmail(user.get('email'), summaries, moreAnswersCount);
+                            // else
+                            //     sendSummaryEmail('ericwebb85@yahoo.com', summaries, moreAnswersCount);
+                        });
+                    })
+                    .catch(err => {
+                        console.log(err.message);
+                    })
             });
         })
         .catch(err => {
             console.log(err);
         });
-}
-
-function getFollows(user, callback){
-    var Follow = Parse.Object.extend('Follow');
-    var followQuery = new Parse.Query(Follow);
-    followQuery.include('toUser');
-    followQuery.equalTo('fromUser', user);
-    followQuery.find({useMasterKey : true}).then(function(follows){
-        callback(null, follows);
-    }, function(err){
-        callback(err, null);
-    });
 }
 
 function getRecentAnswers(users, callback){
