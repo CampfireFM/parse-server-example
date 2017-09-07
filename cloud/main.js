@@ -298,7 +298,7 @@ Parse.Cloud.define('getFeaturedAnswers', function(req, res) {
     })
 });
 
-Parse.Cloud.define('getFeaturedFollowAnswers', function(request, response) {
+Parse.Cloud.define('getFeaturedFollowsAnswers', function(request, response) {
     const skip = request.params.skip || 0;
     const limit = request.params.limit || 6;
     const Answer = Parse.Object.extend('Answer');
