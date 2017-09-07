@@ -55,8 +55,9 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
                                     response.success();
                                 }
                             });
+                        } else {
+                            response.success();
                         }
-
                     }
                 });
             }
@@ -75,6 +76,8 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
 
                 client.get('followers/ids.json', {stringify_ids : true}, function(error, tweets, response) {
                     if (!error) {
+                        if (!ids || ids.length === 0)
+                          return response.success();
                         var ids = JSON.parse(response.body).ids;
                         var friendIds = ids.map(function(id){
                             return id.toString();
