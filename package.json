@@ -11,6 +11,7 @@
   "dependencies": {
     "@google-cloud/speech": "^0.9.1",
     "@google-cloud/storage": "^1.1.0",
+    "@risingstack/trace": "^3.16.0",
     "co-express": "^2.0.0",
     "cors": "^2.8.2",
     "cron": "^1.2.1",

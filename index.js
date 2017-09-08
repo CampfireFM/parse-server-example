@@ -1,6 +1,9 @@
 // Example express application adding the parse-server module to expose Parse
 // compatible API routes.
 
+// Add risingstack trace
+require('@risingstack/trace');
+
 var express = require('express');
 var ParseServer = require('parse-server').ParseServer;
 var path = require('path');
