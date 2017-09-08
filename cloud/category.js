@@ -98,7 +98,7 @@ Parse.Cloud.define('getCategory', function(req, res) {
     const Answer = Parse.Object.extend('Answer');
     let answers = [];
     wrapper(function*() {
-      for (let i = 0; i < tags.length; i++) {
+      for (let i = 0; tags && i < tags.length; i++) {
         const answerQuery = new Parse.Query(Answer);
         answerQuery.notEqualTo('isTest', false);
         const tagRef = pointerTo(tags[i], 'Tag');
@@ -132,7 +132,7 @@ Parse.Cloud.define('getCategory', function(req, res) {
       let people = [];
 
       const userQuery = new Parse.Query(Parse.User);
-      for (let i = 0; i < tags.length; i++) {
+      for (let i = 0; i < tags && tags.length; i++) {
         const tagRef = pointerTo(tags[i], 'Tag');
         userQuery.containsAll('profileTags', [tagRef]);
         userQuery.notEqualTo('isTestUser', false);
