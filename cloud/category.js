@@ -132,7 +132,7 @@ Parse.Cloud.define('getCategory', function(req, res) {
       let people = [];
 
       const userQuery = new Parse.Query(Parse.User);
-      for (let i = 0; i < tags && tags.length; i++) {
+      for (let i = 0; tags && i < tags.length; i++) {
         const tagRef = pointerTo(tags[i], 'Tag');
         userQuery.containsAll('profileTags', [tagRef]);
         userQuery.notEqualTo('isTestUser', false);
@@ -147,7 +147,7 @@ Parse.Cloud.define('getCategory', function(req, res) {
           });
           people = people.concat(tagUsers);
         } catch(err) {
-
+          console.log(err);
         }
       }
       people.sort(function(a, b) {
