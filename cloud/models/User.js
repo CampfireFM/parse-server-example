@@ -74,11 +74,11 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
                 });
 
 
-                client.get('followers/ids.json', {stringify_ids : true}, function(error, tweets, response) {
+                client.get('followers/ids.json', {stringify_ids : true}, function(error, tweets, res) {
                     if (!error) {
+                        var ids = res.body ? JSON.parse(res.body).ids : [];
                         if (!ids || ids.length === 0)
-                          return response.success();
-                        var ids = JSON.parse(response.body).ids;
+                            return response.success();
                         var friendIds = ids.map(function(id){
                             return id.toString();
                         });
