@@ -58,7 +58,7 @@ function checkEmailSubscription(user, type){
  * @param type - subscription type of 'questions','answers','unlocks','likes','follows','earnings', campfire push notification of
  *               'friendMatch', 'joinCampfire', 'answerToFollowers'
  */
-function sendPushOrSMS(currentUser, toUsers, type, additionalData){
+function sendPushOrSMS(currentUser, toUsers, type, additionalData, additionalId){
     if(toUsers.length === undefined){
         toUsers = [toUsers];
     }
@@ -85,11 +85,13 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
         var alert = "";
         var badge = 0;
         var tag;
+        var objectId;
         const fullName = currentUser ? currentUser.get('fullName') : '';
         switch(type) {
             case 'questions' :
                 alert = fullName + ' asked you a new question.';
                 badge = additionalData;
+                objectId = additionalId;
                 tag = 'question';
                 break;
             case 'expiringQuestions' :
@@ -102,11 +104,13 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
                 alert = fullName + ' answered your question on Campfire!';
                 badge = user.get('unansweredQuestionCount') || 0;
                 tag = 'answer';
+                objectId = additionalId;
                 break;
             case 'answerToFollowers':
                 alert = fullName + ' answered ' + additionalData + '\'s question on Campfire!';
                 //badge = user.get('unansweredQuestionCount') || 0;
                 tag = 'answer';
+                objectId = additionalId;
                 break;
             case 'unlocks' :
                 alert = fullName + ' unlocked your question & answer.';
@@ -140,6 +144,9 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData){
 
             if (tag)
                 data.tag = tag;
+
+            if (objectId)
+                data.objectId = objectId;
             
             Parse.Push.send({
                 where: pushQuery,
