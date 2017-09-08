@@ -115,7 +115,10 @@ Parse.Cloud.define('getCategory', function(req, res) {
               resolve([]);
             })
           });
-          answers = answers.concat(answersForTag);
+          answersForTag.forEach(newAnswer => {
+            if (!answers.find(answer => answer.id === newAnswer.id))
+              answers.push(newAnswer);
+          });
         } catch(err) {
           
         }
@@ -145,7 +148,10 @@ Parse.Cloud.define('getCategory', function(req, res) {
               resolve([]);
             });
           });
-          people = people.concat(tagUsers);
+          tagUsers.forEach(newUser => {
+            if (!people.find(user => user.id === newUser.id))
+              people.push(newUser);
+          });
         } catch(err) {
           console.log(err);
         }
