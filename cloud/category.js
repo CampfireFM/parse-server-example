@@ -100,7 +100,7 @@ Parse.Cloud.define('getCategory', function(req, res) {
     wrapper(function*() {
       for (let i = 0; tags && i < tags.length; i++) {
         const answerQuery = new Parse.Query(Answer);
-        answerQuery.notEqualTo('isTest', false);
+        answerQuery.notEqualTo('isTest', true);
         const tagRef = pointerTo(tags[i], 'Tag');
         answerQuery.containsAll('tags', [tagRef]);
         answerQuery.lessThanOrEqualTo('liveDate', new Date());
@@ -138,7 +138,7 @@ Parse.Cloud.define('getCategory', function(req, res) {
       for (let i = 0; tags && i < tags.length; i++) {
         const tagRef = pointerTo(tags[i], 'Tag');
         userQuery.containsAll('profileTags', [tagRef]);
-        userQuery.notEqualTo('isTestUser', false);
+        userQuery.notEqualTo('isTestUser', true);
         try {
           const tagUsers = yield new Promise((resolve, reject) => {
             userQuery.find({useMasterKey: true}).then(function(users) {
