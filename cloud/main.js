@@ -28,7 +28,7 @@ require("./tag");
 require("./topic");
 require("./transcript");
 require("./cron");
-
+require("./campaigns/university");
 transactionPercentage = 2.9;
 transactionFee = 0.3;
 answerPercentageToCampfire = 0.2;
