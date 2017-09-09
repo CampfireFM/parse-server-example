@@ -98,7 +98,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                               followUsers.push(follower.get('fromUser'));
                       });
                       if (followUsers.length > 0)
-                        sendPushOrSMS(currentUser, followUsers, 'answerToFollowers', fromUser.get('fullName'));
+                        sendPushOrSMS(currentUser, followUsers, 'answerToFollowers', fromUser.get('fullName'), answer.id);
                   })
                   .catch(err => {
                       console.log(err);
@@ -112,7 +112,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                         addActivity('answer', currentUser, user, question, answer);
 
                         //Send answers push notification to question asker
-                        sendPushOrSMS(currentUser, user, 'answers', answer.id);
+                        sendPushOrSMS(currentUser, user, 'answers', answer.id, answer.id);
 
                         //Check for email subscription of questionAsker
                         if (!checkEmailSubscription(user, 'answers')){
