@@ -138,7 +138,7 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
         if (!userEmail && !facebookId && !twitterId)
           return response.success();
         if (userEmail) {
-            mail.updateMailingList(firstName, lastName, userEmail)
+            // mail.updateMailingList(firstName, lastName, userEmail)
         }
         //Update user at mixpanel
 
