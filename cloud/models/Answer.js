@@ -23,8 +23,14 @@ Parse.Cloud.beforeSave("Answer", function(request, response) {
                 }
                 if (question.get('isAnswered') === true)
                     response.error(new Error('Duplicated answer for same question'));
-                else
-                    response.success();
+                else {
+                    question.set('isAnswered', true);
+                    question.save(null, {useMasterKey: true}).then(function(question) {
+                        response.success();
+                    }, function(err) {
+                        response.error(err);
+                    });
+                }
             } else {
                 response.error(new Error('Can not find question of the answer'));
             }
