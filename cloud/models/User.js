@@ -40,7 +40,7 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
                     } else {
                         console.log(friends);
                         //Send notification to the followers
-                        if(friends.summary.total_count > 0){
+                        if(friends && friends.summary && friends.summary.total_count > 0){
                             var friendIds = friends.data.map(function(friend){
                                 return friend.id;
                             });
@@ -138,7 +138,7 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
         if (!userEmail && !facebookId && !twitterId)
           return response.success();
         if (userEmail) {
-            mail.updateMailingList(firstName, lastName, userEmail)
+            // mail.updateMailingList(firstName, lastName, userEmail)
         }
         //Update user at mixpanel
 
