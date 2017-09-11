@@ -364,7 +364,7 @@ Parse.Cloud.define('getMixpanelData', function(req, res) {
     toDate = (toDate.getFullYear() + "-" + (toDate.getMonth() + 1) + "-" + toDate.getDate());
     panel.events({
         event: ["Unlock", "Viewed: Ask - Question Submitted"],
-        type: "unique",
+        type: "general",
         unit: "day",
         from_date: fromDate,
         to_date: toDate
