@@ -46,16 +46,12 @@ var twitter = new Twitter({
 
 var _requestSecret;
 
-
-//
 throng({
   workers: WORKERS,
   lifetime: Infinity
 }, start);
 
 function start() {
-
-
   var api = new ParseServer({
     verbose: true,
     databaseURI: config['databaseURI'],
@@ -140,6 +136,11 @@ function start() {
             subject: 'Transaction Failure',
             pathPlainText: resolve(__dirname, './templates/transactionFailure.txt'),
             pathHtml: resolve(__dirname, './templates/transactionFailure.html'),
+          },
+          warningEmail: {
+            subject: 'Warning',
+            pathPlainText: resolve(__dirname, './templates/warning.txt'),
+            pathHtml: resolve(__dirname, './templates/warning.html'),
           }
         }
       }

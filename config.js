@@ -33,25 +33,27 @@ configs = {
             api_key: "a20f53207d150c2e7a293d9dfe62d6ae",
             api_secret: "e2ce4394690de18852ceb8c18f852976"
         },
-        mixpanelToken : 'a09156a83517cda592357ca818137887',
-        algolia : {
-            app_id : 'SQIZQNTD1E',
-            api_key : '6063c6a1e68779c80c7965f85074148b'
+        mixpanelToken: 'a09156a83517cda592357ca818137887',
+        algolia: {
+            app_id: 'SQIZQNTD1E',
+            api_key: '6063c6a1e68779c80c7965f85074148b'
         },
-        paypal : {
+        paypal: {
             mode: process.env.PAYPAL_MODE,
-            username : process.env.PAYPAL_USERNAME,
-            password : process.env.PAYPAL_PASSWORD,
-            signature : process.env.PAYPAL_SIGNATURE,
+            username: process.env.PAYPAL_USERNAME,
+            password: process.env.PAYPAL_PASSWORD,
+            signature: process.env.PAYPAL_SIGNATURE,
         },
-        twilio : {
-            number : '14844168181',
-            accountSid : 'AC5d07bea4ae1346c5143af33ec13f074d',
-            authToken : '8961a3e9ba921dc52ee5d385ea9771f3'
+        twilio: {
+            number: '14844168181',
+            accountSid: 'AC5d07bea4ae1346c5143af33ec13f074d',
+            authToken: '8961a3e9ba921dc52ee5d385ea9771f3'
         },
-        branchKey: 'key_live_edqtcFM19DZEOY1Mk2wMimjptFfWP3dv'
+        branchKey: 'key_live_edqtcFM19DZEOY1Mk2wMimjptFfWP3dv',
+        imageGeneratorUrl: process.env.IMAGE_GENERATOR_URL || 'https://k49dg9x0j2.execute-api.us-east-1.amazonaws.com/dev',
+        warningReceivers: ['krittylor@gmail.com']
     },
-	production : {
+    production: {
         appName: process.env.APP_NAME || 'campfiremedia',
         databaseURI: process.env.DATABASE_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/dev',
         appId: process.env.APP_ID || 'maryhadalittlelamb',
@@ -82,24 +84,26 @@ configs = {
             api_key: "a20f53207d150c2e7a293d9dfe62d6ae",
             api_secret: "e2ce4394690de18852ceb8c18f852976"
         },
-        mixpanelToken : '09b2a637be266aeb72c61a05ea51e81d',
-        algolia : {
-            app_id : 'SQIZQNTD1E',
-            api_key : '6063c6a1e68779c80c7965f85074148b'
+        mixpanelToken: '09b2a637be266aeb72c61a05ea51e81d',
+        algolia: {
+            app_id: 'SQIZQNTD1E',
+            api_key: '6063c6a1e68779c80c7965f85074148b'
         },
-        paypal : {
+        paypal: {
             mode: process.env.PAYPAL_MODE,
-            username : process.env.PAYPAL_USERNAME,
-            password : process.env.PAYPAL_PASSWORD,
-            signature : process.env.PAYPAL_SIGNATURE,
+            username: process.env.PAYPAL_USERNAME,
+            password: process.env.PAYPAL_PASSWORD,
+            signature: process.env.PAYPAL_SIGNATURE,
         },
-        twilio : {
-            number : '14844168181',
-            accountSid : 'AC5d07bea4ae1346c5143af33ec13f074d',
-            authToken : '8961a3e9ba921dc52ee5d385ea9771f3'
+        twilio: {
+            number: '14844168181',
+            accountSid: 'AC5d07bea4ae1346c5143af33ec13f074d',
+            authToken: '8961a3e9ba921dc52ee5d385ea9771f3'
         },
-        branchKey: 'key_live_edqtcFM19DZEOY1Mk2wMimjptFfWP3dv'
-	}
+        branchKey: 'key_live_edqtcFM19DZEOY1Mk2wMimjptFfWP3dv',
+        imageGeneratorUrl: process.env.IMAGE_GENERATOR_URL || 'https://nog8z7rjof.execute-api.us-east-1.amazonaws.com/prod',
+        warningReceivers: ['krittylor@gmail.com', 'eric@campfire.fm']
+    }
 };
 
 const env = process.env.NODE_ENV || 'development';

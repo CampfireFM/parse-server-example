@@ -2,6 +2,7 @@ const phantom = require('phantom');
 const Twilio = require('twilio');
 const config = require('../config');
 const Promise = require('promise');
+const request = require('superagent');
 const logTexts = {
     questions : 'Question answerer has not subscribed to receive questions notification yet',
     expiringQuestions: 'Answerer has not subscribed to receive expiring questions notification yet',
@@ -256,6 +257,28 @@ function parseToAlgoliaObjects(objects){
     return algoliaObjects;
 }
 
+//function getShareImageAndExistence(user, charity) {
+//    return new Promise((resolve, reject) => {
+//        const ShareImage = Parse.Object.extend('ShareImage');
+//        const query = new Parse.Query(ShareImage);
+//        query.equalTo('userRef', user);
+//        query.equalTo('charityRef', charity);
+//        query.include(['charityRef', 'userRef']);
+//        query.first({useMasterKey: true}).then(function(shareImage) {
+//            if (!shareImage) {
+//                return resolve({isExisting: false});
+//            }
+//            const charityImageName = (shareImage.get('charityRef') && shareImage.get('charityRef').get('image').name());
+//            const profilePhotoName = (user.get('profilePhoto') && user.get('profilePhoto').name());
+//            if (charityImageName === shareImage.get('charityImageName') && profilePhotoName === shareImage.get('profilePhotoName'))
+//                return resolve({isExisting: true, shareImage});
+//            return resolve({isExisting: false, shareImage});
+//        }, function(err) {
+//            reject(err);
+//        });
+//    });
+//}
+
 function getShareImageAndExistence(user, charity) {
     return new Promise((resolve, reject) => {
         const ShareImage = Parse.Object.extend('ShareImage');
@@ -264,14 +287,32 @@ function getShareImageAndExistence(user, charity) {
         query.equalTo('charityRef', charity);
         query.include(['charityRef', 'userRef']);
         query.first({useMasterKey: true}).then(function(shareImage) {
-            if (!shareImage) {
-                return resolve({isExisting: false});
-            }
-            const charityImageName = (shareImage.get('charityRef') && shareImage.get('charityRef').get('image').name());
+            const charityImageName = (charity && charity.get('image').name());
             const profilePhotoName = (user.get('profilePhoto') && user.get('profilePhoto').name());
-            if (charityImageName === shareImage.get('charityImageName') && profilePhotoName === shareImage.get('profilePhotoName'))
+            if (!shareImage) {
+                const shareImage = new ShareImage();
+                shareImage.set('userRef', user);
+                shareImage.set('charityRef', charity);
+                shareImage.set('profilePhotoName', profilePhotoName);
+                shareImage.set('charityImageName', charityImageName);
+                shareImage.save().then(function(shareImage) {
+                    resolve({isExisting: false, shareImage})
+                }, function(err) {
+                    reject(err);
+                });
+            } else if (charityImageName === shareImage.get('charityImageName') && profilePhotoName === shareImage.get('profilePhotoName')) {
                 return resolve({isExisting: true, shareImage});
-            return resolve({isExisting: false, shareImage});
+            } else {
+                if (charityImageName)
+                    shareImage.set('charityImageName', charityImageName);
+                if (profilePhotoName)
+                    shareImage.set('profilePhotoName', profilePhotoName);
+                shareImage.save().then(function(shareImage) {
+                    resolve({isExisting: false, shareImage});
+                }, function(err) {
+                    reject(err);
+                });
+            }
         }, function(err) {
             reject(err);
         });
@@ -279,507 +320,47 @@ function getShareImageAndExistence(user, charity) {
 }
 
 function generateShareImage(userId) {
-    return new Promise((resolve, reject) => {
-
-        const userQuery = new Parse.Query(Parse.User);
-        userQuery.include(['charityRef']);
-        userQuery.get(userId, {useMasterKey: true}).then(function (user) {
-            const charity = user.get('charityRef');
-            getShareImageAndExistence(user, charity)
-                .then(({isExisting, shareImage}) => {
-                    (function generateSocialImage() {
-                        if (!isExisting) {
-                            let sitepage = null;
-                            let phInstance = null;
-                            let attempts = 0;
-                            const MAX_ATTEMPTS = 5;
-                            phantom.create()
-                                .then(instance => {
-                                    phInstance = instance;
-                                    return instance.createPage();
-                                })
-                                .then(page => {
-                                    sitepage = page;
-                                    return page.property('viewportSize', {width: 1024, height: 512});
-                                })
-                                .then(() => {
-                                    return sitepage.property('content', '<html><head></head><body><div id="test"><canvas id="canvas" width="1024px" height="512px"></canvas></div></body>')
-                                })
-                                .then(() => {
-                                    let charityImageUrl;
-                                    let backgroundImageUrl;
-                                    let charityOrgName;
-                                    if (charity) {
-                                        charityImageUrl = charity.get('image').url();
-                                        backgroundImageUrl = backgroundCharityImageUrl;
-                                        charityOrgName = charity.get('name');
-                                    } else {
-                                        charityImageUrl = listenUrl;
-                                        backgroundImageUrl = backgroundNoCharityImageUrl;
-                                    }
-                                    let profilePhotoUrl;
-                                    if (user.get('profilePhoto'))
-                                        profilePhotoUrl = user.get('profilePhoto').url();
-                                    else
-                                        profilePhotoUrl = defaultAvatarUrl;
-
-                                    sitepage.evaluate(generateImage, profilePhotoUrl, charityImageUrl, logoImageUrl, backgroundImageUrl, charityOrgName).then();
-
-                                    setTimeout(() => {
-                                        sitepage.evaluate(function () {
-                                            if (window.isLoaded)
-                                                return document.getElementById('canvas').toDataURL();
-                                            return 'NOT_LOADED';
-                                        }).then(res => {
-                                            const t = res;
-                                            console.log(t.substr(0, 10));
-                                            if (t !== 'NOT_LOADED') {
-                                                // Save share image
-                                                if (!shareImage) {
-                                                    const newShareImage = new Parse.Object('ShareImage');
-                                                    newShareImage.set('userRef', user);
-                                                    newShareImage.set('profilePhotoName', user.get('profilePhoto').name());
-                                                    if (charity) {
-                                                        newShareImage.set('charityRef', charity);
-                                                        newShareImage.set('charityImageName', charity.get('image').name());
-                                                    }
-                                                    var file = new Parse.File('social' + '.png', {base64: t}, 'image/png');
-                                                    newShareImage.set('image', file);
-                                                    newShareImage.save(null, {useMasterKey: true}).then((shareImage) => {
-                                                        phInstance.exit();
-                                                        resolve(shareImage.get('image').url());
-                                                    }, err => {
-                                                        console.log(err);
-                                                        phInstance.exit();
-                                                        reject(err);
-                                                    });
-                                                    console.log(`Creating share image for ${user.get('fullName')}`);
-                                                } else {
-                                                    shareImage.set('profilePhotoName', user.get('profilePhoto').name());
-                                                    shareImage.set('charityRef', charity);
-                                                    if (charity) {
-                                                        shareImage.set('charityImageName', charity.get('image').name());
-                                                    }
-                                                    var file = new Parse.File('social' + '.png', {base64: t}, 'image/png');
-                                                    shareImage.set('image', file);
-                                                    shareImage.save(null, {useMasterKey: true}).then(() => {
-                                                        resolve(shareImage.get('image').url());
-                                                        phInstance.exit();
-                                                    }, err => {
-                                                        console.log(err);
-                                                        phInstance.exit();
-                                                        reject(err);
-                                                    });
-                                                    console.log(`Updating share image for ${user.get('fullName')}`);
-                                                }
-                                            } else {
-                                                console.log(`Retrying to generate share image for ${user.get('fullName')}`);
-                                                attempts++;
-                                                if (attempts > MAX_ATTEMPTS)
-                                                    return reject(new Error(`Can not generate share image for ${user.get('fullName')}`))
-                                                generateSocialImage();
-                                            }
-                                        })
-                                    }, 5000);
-                                })
-                                .catch(err => {
-                                    console.log(err);
-                                    reject(err);
-                                })
+    const userQuery = new Parse.Query(Parse.User);
+    userQuery.include(['charityRef']);
+    userQuery.get(userId, {useMasterKey: true}).then(function (user) {
+        const charity = user.get('charityRef');
+        getShareImageAndExistence(user, charity)
+            .then(({isExisting, shareImage}) => {
+                if (isExisting)
+                    return console.log('Skipping duplicated image generation');
+                request.post(config.imageGeneratorUrl + '/user')
+                    .set('Content-Type', 'application/json')
+                    .set('Accept', 'application/json')
+                    .send({userId})
+                    .end((err, res) => {
+                        if (err) {
+                            console.log(err);
+                            reject(err);
                         } else {
-                            console.log('Skipping to generate image that already exists');
-                            resolve(shareImage.get('image').url());
+                            console.log(res.body);
                         }
-                    })();
-                })
-                .catch(err => {
-                    console.log(err);
-                    reject(err);
-                })
-        }, function (err) {
-            console.log(err);
-            reject(err);
-        })
+                    });
+            })
+            .catch(err => {
+                console.log(err);
+            })
+    }, err => {
+        console.log(err);
     });
-}
-
-function generateImage(profilePhoto, coverPhoto, logoUrl, backUrl, charityName) {
-    window.isLoaded = false;
-    const isCharity = !!charityName;
-    var canvas = document.getElementById("canvas");
-
-    var ctx = canvas.getContext("2d");
-    console.log(backUrl);
-    var img2 = loadImage(backUrl, drawBackground);
-    var img1, img3, img4;
-    const width = 1024;
-    const height = 512;
-    const widthUnit = width / 10;
-    const radius = widthUnit;
-    const centerY = isCharity ? height * 2 / 3 : height * 0.613;
-    var loadedImages = 0;
-
-    function checkAndUploadShareImage() {
-        if (loadedImages === 3) {
-            // const xhr = new XMLHttpRequest();
-            // console.log(xhr);
-            // xhr.open("POST", "http://4f3b72cb.ngrok.io/uploadSocialImage");
-            // xhr.setRequestHeader("Content-Type", "application/json");
-            // const data = canvas.toDataURL();
-            // // xhr.send(JSON.stringify({ userId: userId, charityId:charityId , base64Image: canvas.toDataURL()}));
-            // xhr.send(JSON.stringify({ userId: "SSJQ8mW13x", base64Image: data}));
-            window.isLoaded = true;
-        }
-    }
-    function drawBackground() {
-        ctx.save();
-        ctx.drawImage(img2, 0, 0, width, height);
-        ctx.font = '36px Nunito,sans-serif';
-        ctx.fillStyle = 'white';
-        ctx.textAlign = 'center';
-        if (isCharity) {
-            if (charityName.length > 12)
-                ctx.font = '29px Nunito,sans-serif';
-            ctx.fillText('Ask me a question, support ' + charityName, width / 2, height * 1.7 / 5);
-
-        }
-        ctx.restore();
-        img1 = loadImage(profilePhoto, drawProfilePhoto);
-        img3 = loadImage(coverPhoto, drawCharity);
-        img4 = loadImage(logoUrl, drawCampfireLogo);
-    }
-
-    function drawCampfireLogo() {
-        ctx.save();
-        ctx.beginPath();
-
-        ctx.arc(widthUnit * 2, centerY, radius - 3, 0, Math.PI * 2, true);
-
-        ctx.closePath();
-        ctx.clip();
-
-        ctx.drawImage(img4, widthUnit * 2 - radius + 3, centerY - radius, radius * 2, radius * 2);
-
-        ctx.restore();
-        loadedImages++;
-        checkAndUploadShareImage();
-    }
-
-    function drawProfilePhoto() {
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(widthUnit * 5 + 0.5, centerY, radius - 3, 0, Math.PI * 2, true);
-
-        ctx.closePath();
-        ctx.clip();
-
-        ctx.drawImage(img1, widthUnit * 5 - radius + 3, centerY - radius, radius * 2, radius * 2);
-
-        ctx.restore();
-        loadedImages++;
-        checkAndUploadShareImage();
-    }
-
-    function drawCharity() {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(widthUnit * 8 + 1.5, centerY, radius - 3, 0, Math.PI * 2, true);
-
-        ctx.closePath();
-        ctx.clip();
-
-        ctx.drawImage(img3, widthUnit * 8 - radius + 3, centerY - radius, radius * 2, radius * 2);
-
-        ctx.restore();
-        loadedImages++;
-        checkAndUploadShareImage();
-    }
-
-    function loadImage(src, onload) {
-        var img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.onload = onload;
-        img.src = src;
-        return img;
-    }
 }
 
 function generateAnswerShareImage(answerId) {
-    return new Promise((resolve, reject) => {
-
-        const Answer = Parse.Object.extend('Answer');
-        const answerQuery = new Parse.Query(Answer);
-        answerQuery.equalTo('objectId', answerId);
-        answerQuery.include(['questionRef.fromUser', 'questionRef.toUser', 'questionRef.charity']);
-        answerQuery.first({useMasterKey: true}).then(function(answer) {
-            const question = answer.get('questionRef');
-            if (!question)
-                return reject('Can not find question');
-            const questionText = question.get('text');
-            if (!question.get('fromUser') || !question.get('fromUser').get('profilePhoto'))
-                return reject('Can not find fromUser');
-            if (!question.get('toUser') || !question.get('toUser').get('profilePhoto'))
-                return reject('Can not find toUser');
-            const askerPhoto = question.get('fromUser').get('profilePhoto').url();
-            const askerName = question.get('fromUser').get('fullName') || '';
-            const answererPhoto = question.get('toUser').get('profilePhoto').url();
-            const answererName = question.get('toUser').get('fullName') || '';
-            const charity = question.get('charity');
-            let backUrl = backgroundAnswerNoCharityImageUrl;
-            let charityImage;
-            if (charity) {
-                backUrl = backgroundAnswerCharityImageUrl;
-                charityImage = charity.get('image').url();
+    request.post(config.imageGeneratorUrl + '/answer')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .send({answerId})
+        .end((err, res) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(res.body);
             }
-            (function generateImage() {
-                let sitepage = null;
-                let phInstance = null;
-                let attempts = 0;
-                const MAX_ATTEMPTS = 5;
-                phantom.create()
-                    .then(instance => {
-                        phInstance = instance;
-                        return instance.createPage();
-                    })
-                    .then(page => {
-                        sitepage = page;
-                        return page.property('viewportSize', {width: 1200, height: 630});
-                    })
-                    .then(() => {
-                        return sitepage.property('content', '<html><head></head><body><div id="test"><canvas id="canvas" width="1200px" height="630px"></canvas></div></body>')
-                    })
-                    .then(() => {
-                        let charityImageUrl;
-                        let backgroundImageUrl;
-                        let charityOrgName;
-
-                        sitepage.evaluate(generateAnswerImage, answererPhoto, askerPhoto, answererName, askerName, charityImage, backUrl, questionText).then();
-
-                        setTimeout(() => {
-                            sitepage.evaluate(function () {
-                                if (window.isLoaded)
-                                    return document.getElementById('canvas').toDataURL();
-                                return 'NOT_LOADED';
-                            }).then(res => {
-                                const t = res;
-                                console.log(t.substr(0, 10));
-                                if (t !== 'NOT_LOADED') {
-                                    // Save share image
-                                    var file = new Parse.File('answer' + '.png', {base64: t}, 'image/png');
-                                    answer.set('image', file);
-                                    answer.save(null, {useMasterKey: true}).then((answer) => {
-                                        phInstance.exit();
-                                        resolve(answer.get('image').url());
-                                    }, err => {
-                                        console.log(err);
-                                        phInstance.exit();
-                                        reject(err);
-                                    });
-                                    console.log(`Creating share image for ${answer.id}`);
-                                } else {
-                                    console.log(`Retrying to generate share image for ${answer.id}`);
-                                    attempts++;
-                                    if (attempts > MAX_ATTEMPTS)
-                                        return reject(new Error(`Can not generate share image for ${answer.id}`))
-                                    generateImage();
-                                }
-                            })
-                        }, 10000);
-                    })
-                    .catch(err => {
-                        console.log(err);
-                        reject(err);
-                    })
-            })();
-        }, function(err) {
-            console.log(err);
-            reject(err);
         });
-    });
-}
-function generateAnswerImage(answererPhoto, askerPhoto, answererName, askerName, charityImage, backUrl, questionText) {
-    const isCharity = !!charityImage;
-    var canvas = document.getElementById("canvas");
-    var ctx = canvas.getContext("2d");
-    var backImg = loadImage(backUrl, drawBackground);
-    var answererImg, charityImg, askerImg;
-    const width = 1200;
-    const height = 630;
-    function drawBackground() {
-        ctx.save();
-        ctx.drawImage(backImg, 0, 0, width, height);
-        ctx.font = '30px Nunito,sans-serif';
-        ctx.fillStyle = '#848484';
-        ctx.textAlign = 'left';
-        const x = 107.53;
-        const y = 551;
-        ctx.fillText(askerName + ' asks:', x, y);
-        // Draw question text
-        /**
-         * @param canvas : The canvas object where to draw .
-         *                 This object is usually obtained by doing:
-         *                 canvas = document.getElementById('canvasId');
-         * @param x     :  The x position of the rectangle.
-         * @param y     :  The y position of the rectangle.
-         * @param w     :  The width of the rectangle.
-         * @param h     :  The height of the rectangle.
-         * @param text  :  The text we are going to centralize.
-         * @param fh    :  The font height (in pixels).
-         * @param spl   :  Vertical space between lines
-         */
-        const paint_centered_wrap = function(x, y, w, h, text, fh, spl, color, px) {
-            // The painting properties
-            // Normally I would write this as an input parameter
-            var Paint = {
-                RECTANGLE_STROKE_STYLE : 'black',
-                RECTANGLE_LINE_WIDTH : 1,
-                VALUE_FONT : 'normal ' + fh + 'Px Ninuto,sans-serif',
-                VALUE_FILL_STYLE : 'red'
-            }
-            /*
-             * @param ctx   : The 2d context
-             * @param mw    : The max width of the text accepted
-             * @param font  : The font used to draw the text
-             * @param text  : The text to be splitted   into
-             */
-            var split_lines = function(ctx, mw, font, text) {
-                // We give a little "padding"
-                // This should probably be an input param
-                // but for the sake of simplicity we will keep it
-                // this way
-                mw = mw - px;
-                // We setup the text font to the context (if not already)
-                ctx.font = font;
-                // We split the text by words
-                var words = text.split(' ');
-                var new_line = words[0];
-                var lines = [];
-                for(var i = 1; i < words.length; ++i) {
-                    if (ctx.measureText(new_line + " " + words[i]).width < mw) {
-                        new_line += " " + words[i];
-                    } else {
-                        lines.push(new_line);
-                        new_line = words[i];
-                    }
-                }
-                lines.push(new_line);
-                // DEBUG
-                // for(var j = 0; j < lines.length; ++j) {
-                //    console.log("line[" + j + "]=" + lines[j]);
-                // }
-                return lines;
-            };
-            if (ctx) {
-                // draw rectangular
-                //ctx.strokeStyle=Paint.RECTANGLE_STROKE_STYLE;
-                ctx.lineWidth = Paint.RECTANGLE_LINE_WIDTH;
-                ctx.fillStyle = color;
-                //ctx.strokeRect(x, y, w, h);
-                // Paint text
-                var lines = split_lines(ctx, w, Paint.VALUE_FONT, text);
-                // Block of text height
-                var both = lines.length * (fh + spl);
-                if (both >= h) {
-                    // We won't be able to wrap the text inside the area
-                    // the area is too small. We should inform the user
-                    // about this in a meaningful way
-                } else {
-                    // We determine the y of the first line
-                    var ly = (h - both)/2 + y + spl*lines.length;
-                    var lx = 0;
-                    for (var j = 0; j < lines.length; ++j, ly+=fh+spl) {
-                        // We continue to centralize the lines
-                        lx = x + w / 2 - ctx.measureText(lines[j]).width/2;
-                        // DEBUG
-                        console.log("ctx2d.fillText('"+ lines[j] +"', "+ lx +", " + ly + ")");
-                        ctx.fillText(lines[j], lx, ly);
-                    }
-                }
-            }
-        };
-        // Get font size
-
-        var fontSize;
-        //questionText = 'Parse.Query defines a query that is used to fetch Parse.Objects. The most common use case is finding all objects that match a query through the find method. For example, this sample code fetches all objects of class MyClass. It calls a different function depending on whether the fetch succeeded or not.';
-        if (questionText.length > 200) {
-            questionText = questionText.substr(0, 197) + '...';
-        }
-        fontSize = 35 + (200 - questionText.length) / 8;
-        //const answerNameFontSize = 35 + Math.min(15 - answererName.length, 0);
-
-        paint_centered_wrap(77.53, 50.98, 631.72, 428.20, '"' + questionText.trim() + '"', fontSize, fontSize * 0.1, '#535353', 100);
-        paint_centered_wrap(765, 300, 350, 190, 'Listen to ' + answererName + '\'s answer', 35, 5, 'white', 0);
-        ctx.restore();
-        answererImg = loadImage(answererPhoto, drawAnswererPhoto);
-    }
-
-    function drawAnswererPhoto() {
-
-        ctx.save();
-        ctx.beginPath();
-        const x = 940.8;
-        const y = 172.3;
-        const radius = 121;
-        ctx.arc(x, y, radius, 0, Math.PI * 2, true);
-
-        ctx.closePath();
-        ctx.clip();
-
-        ctx.drawImage(answererImg, x - radius, y - radius, radius * 2, radius * 2);
-
-        ctx.restore();
-        askerImg = loadImage(askerPhoto, drawAskerPhoto);
-    }
-
-    function drawAskerPhoto() {
-
-        ctx.save();
-        ctx.beginPath();
-        const x = 662.3;
-        const y = 541.1;
-        const radius = 26;
-        ctx.arc(x, y, radius, 0, Math.PI * 2, true);
-
-        ctx.closePath();
-        ctx.clip();
-
-        ctx.drawImage(askerImg, x - radius, y - radius, radius * 2, radius * 2);
-        if (isCharity)
-            charityImg = loadImage(charityImage, drawCharity);
-        else
-            window.isLoaded = true;
-        ctx.restore();
-    }
-
-    function drawCharity() {
-        ctx.save();
-        ctx.beginPath();
-        const x = 1075;
-        const y = 104.3;
-        const radius = 54.5;
-
-        ctx.arc(x, y, radius, 0, Math.PI * 2, true);
-
-        ctx.closePath();
-        ctx.clip();
-
-        ctx.drawImage(charityImg, x - radius, y - radius, radius * 2, radius * 2);
-        ctx.strokeStyle = "white";
-        ctx.lineWidth   = 6;
-        ctx.stroke();
-        window.isLoaded = true;
-        ctx.restore();
-
-    }
-
-    function loadImage(src, onload) {
-        var img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.onload = onload;
-        img.src = src;
-        return img;
-    }
 }
 
 function getAllUsers() {

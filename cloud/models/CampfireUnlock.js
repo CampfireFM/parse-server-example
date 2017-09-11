@@ -98,8 +98,8 @@ function splitUnlockEarnings(params){
         // The following should probably go inside a payout or donation success block
 
         fromUser.increment("earningsTotal", total_user_unlock_earnings);
-        fromUser.increment("earningsBalance", split_asker);
-        fromUser.increment("earningsFromUnlocks", split_asker);
+        fromUser.increment("earningsBalance", split_asker_final);
+        fromUser.increment("earningsFromUnlocks", split_asker_final);
         fromUser.increment("earningsDonated", split_asker_charity);
         fromUser.save(null, {useMasterKey: true});
     }
@@ -127,19 +127,20 @@ function splitUnlockEarnings(params){
 
     var donation_answerer_params = {
         amount: split_answerer_charity,
-        charityRef: question.get("charityRef"),
+        charityRef: question.get("charity"),
         questionRef: question,
         userRef: toUser,
         isPaid: false
     };
+
     createDonationForUnlock(donation_answerer_params, function (e, r) {
         console.log(e);
         console.log();
     });
 
     toUser.increment("earningsTotal", total_user_unlock_earnings);
-    toUser.increment("earningsBalance", split_answerer);
-    toUser.increment("earningsFromUnlocks", split_answerer);
+    toUser.increment("earningsBalance", split_answerer_final);
+    toUser.increment("earningsFromUnlocks", split_answerer_final);
     toUser.increment("earningsDonated", split_answerer_charity);
     toUser.save(null, {useMasterKey: true});
 }
