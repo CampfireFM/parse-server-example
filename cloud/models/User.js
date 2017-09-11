@@ -148,7 +148,7 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
             $email: userEmail ? userEmail : ''
         });
 
-        generateShareImage(request.object.id).then();
+        generateShareImage(request.object.id);
         if (request.object.get('isTestUser') !== true) {
             // Save user to algolia
             let index = algoliaClient.initIndex('users');

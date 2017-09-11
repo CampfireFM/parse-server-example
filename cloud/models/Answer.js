@@ -134,7 +134,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 });
             }
         });
-        generateAnswerShareImage(request.object.id).then();
+        generateAnswerShareImage(request.object.id);
         //ENDS HERE - TO BE UNCOMMENTED
     }
 });
