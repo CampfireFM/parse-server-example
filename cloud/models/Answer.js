@@ -43,8 +43,11 @@ Parse.Cloud.afterSave("Answer", function(request) {
 
     console.log("starting afterSave of Answer");
 
+    var createdAt = request.object.get("createdAt");
+    var updatedAt = request.object.get("updatedAt");
+    var objectExisted = (createdAt.getTime() != updatedAt.getTime());
     //check if its a new record.
-    if (request.object.existed() == false) {
+    if (objectExisted == false) {
         
         var answer = request.object;
 
