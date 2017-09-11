@@ -47,11 +47,11 @@ var twitter = new Twitter({
 var _requestSecret;
 
 
-//
-throng({
-  workers: WORKERS,
-  lifetime: Infinity
-}, start);
+////
+//throng({
+//  workers: WORKERS,
+//  lifetime: Infinity
+//}, start);
 
 function start() {
 
