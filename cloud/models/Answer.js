@@ -4,6 +4,7 @@ var paymenthandler = require('../../utils/paymenthandler.js');
 const {getFollowers} = require('../common');
 
 var config = require('../../config');
+const warningReceivers = config.warningReceivers;
 var algoliasearch = require('../algolia/algoliaSearch.parse.js');
 var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
 function pointerTo(objectId, klass) {
@@ -167,7 +168,7 @@ function getQuestionAndItsPointers(questionId,callback){
 
 //This function calculates the payments for user, donation and creates payouts
 function splitAndMakePayments(question, callback){
-
+    
     var qAsker = question.get("fromUser");
     var qAnswerer = question.get("toUser");
     var charity = question.get("charity");
@@ -196,9 +197,32 @@ function splitAndMakePayments(question, callback){
             isPaid : false
         };
 
-        createPayout(payout_params, function(e,r){
-            console.log(e);
-            console.log(r);
+        createPayout(payout_params, function(err, res){
+            if (err) {
+                console.log(err);
+                // Send warning email
+                warningReceivers.forEach(receiver => {
+                    mail.sendWarningEmail(receiver, {
+                        message: `Failed to create payout: \n params: ${JSON.stringify(payout_params, null, 2)}, err: ${JSON.stringify(err, null, 2)}`
+                    });
+                });
+            } else {
+                qAnswerer.increment("earningsTotal", total_user_answer_earnings);
+                qAnswerer.increment("earningsBalance", split_answerer);
+                qAnswerer.increment("earningsFromAnswers", split_answerer);
+                qAnswerer.save(null, {useMasterKey: true}).then(res => {
+
+                }, err => {
+                    console.log(err);
+                    // Send warning email
+                    warningReceivers.forEach(receiver => {
+                        mail.sendWarningEmail(receiver, {
+                            message: `Failed to update earningsTotal, earningsBalance, earningsFromAnswer to ${total_user_answer_earnings}, ${split_answerer}, ${split_answerer} of user ${qAnswerer.id} \n err: ${JSON.stringify(err, null, 2)}`
+                        });
+                    });
+                })
+            }
+
         });
     }
 
@@ -211,20 +235,32 @@ function splitAndMakePayments(question, callback){
             charityRef: charity
         };
 
-        createDonation(donation_params, function(e,r){
-            console.log(e);
-            console.log(r);
+        createDonation(donation_params, function(err, res){
+            if (err) {
+                console.log(err);
+                // Send warning email
+                warningReceivers.forEach(receiver => {
+                    mail.sendWarningEmail(receiver, {
+                        message: `Failed to create donation: \n params: ${JSON.stringify(donation_params, null, 2)} \n err: ${JSON.stringify(err, null, 2)}`
+                    });
+                });
+
+            } else {
+                qAnswerer.increment("earningsDonated", split_charity);
+                qAnswerer.save(null, {useMasterKey: true}).then(res => {
+
+                }, err => {
+                    console.log(err);
+                    // Send warning email
+                    warningReceivers.forEach(receiver => {
+                        mail.sendWarningEmail(receiver, {
+                            message: `Failed to update earningsDonated: \n params: ${split_charity}, user: ${qAnswerer.id} \n ${JSON.stringify(err, null, 2)}`
+                        });
+                    });
+                });
+            }
         });
     }
-
-    // should probably go in a success block
-
-    qAnswerer.increment("earningsTotal", total_user_answer_earnings);
-    qAnswerer.increment("earningsBalance", split_answerer);
-    qAnswerer.increment("earningsFromAnswers", split_answerer);
-    qAnswerer.increment("earningsDonated", split_charity);
-    qAnswerer.save(null, {useMasterKey: true});
-
 }
 
 /*

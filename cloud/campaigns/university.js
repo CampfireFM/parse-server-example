@@ -30,9 +30,6 @@ Parse.Cloud.job('CreateUniversityCampaignUrls', (req, res) => {
       let index = 0;
       universities.forEach(wrapper(function*(university) {
         try {
-          index++;
-          if (index > 1)
-            return;
           const ebUrl = yield generateCampaignUrl(university.id, university.get('universityName'), 'ENTREPRENEUR/BUSINESS');
           const lgbtqUrl = yield generateCampaignUrl(university.id, university.get('universityName'), 'LGBTQ');
           const fwRightsUrl = yield generateCampaignUrl(university.id, university.get('universityName'), `FEMINISM/WOMEN'S RIGHTS`);

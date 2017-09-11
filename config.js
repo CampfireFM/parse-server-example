@@ -50,7 +50,8 @@ configs = {
             authToken: '8961a3e9ba921dc52ee5d385ea9771f3'
         },
         branchKey: 'key_live_edqtcFM19DZEOY1Mk2wMimjptFfWP3dv',
-        imageGeneratorUrl: process.env.IMAGE_GENERATOR_URL || ''
+        imageGeneratorUrl: process.env.IMAGE_GENERATOR_URL || 'https://k49dg9x0j2.execute-api.us-east-1.amazonaws.com/dev',
+        warningReceivers: ['krittylor@gmail.com']
     },
     production: {
         appName: process.env.APP_NAME || 'campfiremedia',
@@ -100,7 +101,8 @@ configs = {
             authToken: '8961a3e9ba921dc52ee5d385ea9771f3'
         },
         branchKey: 'key_live_edqtcFM19DZEOY1Mk2wMimjptFfWP3dv',
-        imageGeneratorUrl: process.env.IMAGE_GENERATOR_URL || ''
+        imageGeneratorUrl: process.env.IMAGE_GENERATOR_URL || 'https://nog8z7rjof.execute-api.us-east-1.amazonaws.com/prod',
+        warningReceivers: ['krittylor@gmail.com', 'eric@campfire.fm']
     }
 };
 
