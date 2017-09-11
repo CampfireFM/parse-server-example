@@ -85,15 +85,12 @@ Parse.Cloud.afterSave("Answer", function(request) {
 
                 //Check if the question is already answered.
                 //If not answered yet, this is first time for the question to be answered then charge user and split payment.
-                if(question.get('isAnswered') == false){
-                    question.set("isAnswered", true);
-                    question.save(null, { useMasterKey: true });
                     //Charge user and split payment.
-                    if(question.get('price') != undefined && question.get('price') != 0)
-                        splitAndMakePayments(question, function(e,r){
-                            console.log(e);
-                            console.log(r);
-                        });
+                if(question.get('price') != undefined && question.get('price') != 0) {
+                    splitAndMakePayments(question, function (e, r) {
+                        console.log(e);
+                        console.log(r);
+                    });
                 }
                 var fromUser = question.get('fromUser');
                 getFollowers(currentUser)
