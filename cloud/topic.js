@@ -3,7 +3,6 @@ Parse.Cloud.define('getTopics', function(req, res){
   var List = Parse.Object.extend('List');
   var query = new Parse.Query(List);
   query.include(['questionRef', 'questionRef.toUser','questionRef.fromUser', 'questionRef.charity', 'userRef']);
-  query.ascending('updatedAt');
   query.find({
     success: function(objects) {
       if (objects.length) {
@@ -14,6 +13,7 @@ Parse.Cloud.define('getTopics', function(req, res){
             name: object.get('name'),
             type: object.get('type'),
             liveDate: object.get('liveDate'),
+            updatedAt: object.get('updatedAt'),
             image: object.get('image') ? (object.get('image')).toJSON().url : ''
           });
         }
