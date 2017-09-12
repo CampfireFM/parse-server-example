@@ -1,4 +1,3 @@
-const phantom = require('phantom');
 const Twilio = require('twilio');
 const config = require('../config');
 const Promise = require('promise');
@@ -17,14 +16,6 @@ const subscriptionTypes = ['questions', 'unlocks', 'answers', 'likes', 'follows'
 const campfireAutoPushTypes = ['friendMatch', 'joinCampfire', 'expiringQuestions', 'answerToFollowers'];
 
 const activityTypes = ['follow', 'unlock', 'like', 'answer', 'question'];
-
-const logoImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/logo.png';
-const backgroundCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/background-charity.png';
-const backgroundNoCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/background-nocharity.png';
-const listenUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/listen.png';
-const defaultAvatarUrl = 'https://campfiremedia.herokuapp.com/parse/files/maryhadalittlelamb/cdfa632577c4636d3a93d83cd88407ce_default_avatar.png';
-const backgroundAnswerCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/bg-new-listen-charity.png';
-const backgroundAnswerNoCharityImageUrl = 'http://campfiremedia.herokuapp.com/public/assets/images/bg-new-listen-nocharity.png';
 
 function checkPushSubscription(user, type){
     var pushSubscriptions = user.get('pushSubscriptions');
