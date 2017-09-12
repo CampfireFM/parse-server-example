@@ -62,6 +62,7 @@ Parse.Cloud.define('getFeaturedTopics-web', function(req, res) {
     var List = Parse.Object.extend('List');
     var query = new Parse.Query(List);
     query.containedIn('objectId', spotlightedLists);
+    query.ascending('updatedAt');
     query.find({useMasterKey: true}).then(function(topics){
         res.success({topics: topics, spotlightedLists: spotlightedLists });
         //res.success(topics);
