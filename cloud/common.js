@@ -326,7 +326,6 @@ function generateShareImage(userId) {
                     .end((err, res) => {
                         if (err) {
                             console.log(err);
-                            reject(err);
                         } else {
                             console.log(res.body);
                         }
