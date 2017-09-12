@@ -82,6 +82,8 @@ Parse.Cloud.define('getCategories', function(req, res){
 
 Parse.Cloud.define('getCategory', function(req, res) {
   const id = req.params.id;
+  const skip = req.params.skip || 0;
+  const limit = req.params.limit || 10;
   const Category = Parse.Object.extend('Category');
   const categoryQuery = new Parse.Query(Category);
   categoryQuery.get(id, {useMasterKey: true}).then(function(category) {
@@ -94,10 +96,12 @@ Parse.Cloud.define('getCategory', function(req, res) {
       icon: category.get('icon') ? (category.get('icon')).toJSON().url : '',
       isLive: category.get('isLive')
     };
-    const tags = category.get('tags');
+    let tags = category.get('tags');
+    tags = tags.splice(0, 2);
     const Answer = Parse.Object.extend('Answer');
     let answers = [];
     wrapper(function*() {
+      let parentQuery;
       for (let i = 0; tags && i < tags.length; i++) {
         const answerQuery = new Parse.Query(Answer);
         answerQuery.notEqualTo('isTest', true);
@@ -106,22 +110,21 @@ Parse.Cloud.define('getCategory', function(req, res) {
         answerQuery.lessThanOrEqualTo('liveDate', new Date());
         answerQuery.include(['questionRef', 'questionRef.toUser',
           'questionRef.fromUser', 'questionRef.charity', 'questionRef.list', 'userRef']);
-        try {
-          const answersForTag = yield new Promise((resolve, reject) => {
-            answerQuery.find({useMasterKey: true}).then(function (answers) {
-              resolve(answers);
-            }, function (err) {
-              console.log(err);
-              resolve([]);
-            })
-          });
-          answersForTag.forEach(newAnswer => {
-            if (!answers.find(answer => answer.id === newAnswer.id))
-              answers.push(newAnswer);
-          });
-        } catch(err) {
-          
-        }
+        parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
+      }
+      parentQuery.skip(skip);
+      parentQuery.limit(limit);
+      try {
+        answers = yield new Promise((resolve, reject) => {
+          parentQuery.find({useMasterKey: true}).then(res => {
+            resolve(res);
+          }, err => {
+            console.log(err);
+            reject(err);
+          })
+        });
+      } catch(err) {
+        answers = [];
       }
       answers.sort((a, b) => {
         if (a.get('createdAt') > b.get('createdAt'))
@@ -135,27 +138,15 @@ Parse.Cloud.define('getCategory', function(req, res) {
       let people = [];
 
       const userQuery = new Parse.Query(Parse.User);
-      for (let i = 0; tags && i < tags.length; i++) {
-        const tagRef = pointerTo(tags[i], 'Tag');
-        userQuery.containsAll('profileTags', [tagRef]);
-        userQuery.notEqualTo('isTestUser', true);
-        try {
-          const tagUsers = yield new Promise((resolve, reject) => {
-            userQuery.find({useMasterKey: true}).then(function(users) {
-              resolve(users);
-            }, function(err) {
-              console.log(err);
-              resolve([]);
-            });
-          });
-          tagUsers.forEach(newUser => {
-            if (!people.find(user => user.id === newUser.id))
-              people.push(newUser);
-          });
-        } catch(err) {
+      userQuery.containedIn('objectId', category.get('featuredUsers'));
+      people = yield new Promise((resolve, reject) => {
+        userQuery.find({useMasterKey: true}).then(users => {
+          resolve(users);
+        }, err => {
           console.log(err);
-        }
-      }
+          reject(err);
+        });
+      });
       people.sort(function(a, b) {
         if (a.get('isFeatured') && b.get('isFeatured')) {
           return ((a.get('answerCount') || 0) > (b.get('answerCount') || 0)) === true ? -1 : 1;
