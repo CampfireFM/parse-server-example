@@ -102,18 +102,27 @@ Parse.Cloud.define('getCategory', function(req, res) {
     let answers = [];
     wrapper(function*() {
       let parentQuery;
-      for (let i = 0; tags && i < tags.length; i++) {
-        const answerQuery = new Parse.Query(Answer);
-        answerQuery.notEqualTo('isTest', true);
-        const tagRef = pointerTo(tags[i], 'Tag');
-        answerQuery.containsAll('tags', [tagRef]);
-        answerQuery.lessThanOrEqualTo('liveDate', new Date());
-        answerQuery.include(['questionRef', 'questionRef.toUser',
-          'questionRef.fromUser', 'questionRef.charity', 'questionRef.list', 'userRef']);
-        parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
+      if (id !== 'sbL2KrW3wJ') {
+        for (let i = 0; tags && i < tags.length; i++) {
+          const answerQuery = new Parse.Query(Answer);
+
+          const tagRef = pointerTo(tags[i], 'Tag');
+          answerQuery.containsAll('tags', [tagRef]);
+          parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
+        }
+      } else {
+        parentQuery = new Parse.Query(Answer);
+        const featuredUserIds = category.get('featuredUsers') || [];
+        const featuredUsers = featuredUserIds.map(id => pointerTo(id, '_User'));
+        parentQuery.containedIn('userRef', featuredUsers);
       }
+      parentQuery.notEqualTo('isTest', true);
+      parentQuery.lessThanOrEqualTo('liveDate', new Date());
+      parentQuery.include(['questionRef', 'questionRef.toUser',
+        'questionRef.fromUser', 'questionRef.charity', 'questionRef.list', 'userRef']);
       parentQuery.skip(skip);
       parentQuery.limit(limit);
+      parentQuery.descending('createdAt');
       try {
         answers = yield new Promise((resolve, reject) => {
           parentQuery.find({useMasterKey: true}).then(res => {
@@ -126,13 +135,6 @@ Parse.Cloud.define('getCategory', function(req, res) {
       } catch(err) {
         answers = [];
       }
-      answers.sort((a, b) => {
-        if (a.get('createdAt') > b.get('createdAt'))
-          return -1;
-        else if(a.get('createdAt') < b.get('createdAt'))
-          return 1;
-        return 0;
-      });
 
       categoryObj.answers = answers;
       let people = [];
