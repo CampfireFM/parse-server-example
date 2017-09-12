@@ -1534,7 +1534,7 @@ Parse.Cloud.define('searchUser', function(request, response) {
     indexUsers.search(keyword, {
         page: 1,
         offset: 0,
-        length: 5
+        length: 10
     }, function searchDone(err, content) {
         if (err) {
             console.error(err);
