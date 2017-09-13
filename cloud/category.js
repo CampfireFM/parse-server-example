@@ -8,7 +8,7 @@ Parse.Cloud.define('getCategories', function(req, res){
   var categories = [];
   var Category = Parse.Object.extend('Category');
   var query = new Parse.Query(Category);
-  var onlyLive = (req.params.onlyLive === undefined) ? true : req.params.onlyLive;
+  var isAdmin = req.params.isAdmin;
   var sortedBy = req.params.sortedBy || 'createdAt';
   var sortDir = req.params.sortDir || 'desc';
   var page = req.params.currentPage || 1;
@@ -18,7 +18,7 @@ Parse.Cloud.define('getCategories', function(req, res){
   // totalpages count
   var count;
   // filter live
-  if (onlyLive)
+  if (!isAdmin)
     query.equalTo('isLive', true);
   query.count().then(function(result){
     count = result;
