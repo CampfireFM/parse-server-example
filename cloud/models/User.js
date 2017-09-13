@@ -11,9 +11,15 @@ var oldEmail = '';
 
 Parse.Cloud.beforeSave(Parse.User, function(request, response) {
     const email = request.object.get('email');
+    if (email) {
+        let isReal = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
+        if (!isReal)
+            request.object.unset('email');
+    }
     if (email && (email.indexOf('@bonfire.fm') > -1 || email.indexOf('camp@gmail.com') > -1)) {
         request.object.set('isShadowUser', true);
     }
+
     if (!request.object.existed()) {
         request.object.set('emailSubscriptions', ["earnings","unlocks","questions","summary", "likes"]);
         request.object.set('pushSubscriptions', ["likes","questions","unlocks","earnings"]);
