@@ -25,6 +25,7 @@ require("./shareImage");
 
 require("./category");
 require("./tag");
+require("./question");
 require("./topic");
 require("./transcript");
 require("./cron");
