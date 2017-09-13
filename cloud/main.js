@@ -663,6 +663,9 @@ Parse.Cloud.define('getPeople', function(req, res) {
     if (req.params.toDate) {
         query.lessThanOrEqualTo("createdAt", req.params.toDate);
     }
+    if (req.params.allowKOLUser === false) {
+        query.notEqualTo('isAdminKOL', true);
+    }
     if (req.params.allowShadowUser === false) {
         query.notEqualTo('isShadowUser', true);
     }
@@ -696,7 +699,8 @@ Parse.Cloud.define('getPeople', function(req, res) {
                         twitterFollowers: object.get('twitterFollowers'),
                         createdAt: object.get('createdAt').toDateString(),
                         isShadowUser: object.get('isShadowUser'),
-                        isTestUser: object.get('isTestUser')
+                        isTestUser: object.get('isTestUser'),
+                        isKOLUser: object.get('isAdminKOL')
                     });
                 }
             }
@@ -1752,6 +1756,24 @@ Parse.Cloud.define('setPersonShadowUser', function(req, res) {
     const query = new Parse.Query(Parse.User);
     query.get(userId, {useMasterKey: true}).then(function(user) {
         user.set('isShadowUser', isAShadowUser);
+        user.save(null, {useMasterKey: true}).then(function() {
+            res.success('ok');
+        }, function(err) {
+            console.log(err);
+            res.error(err);
+        })
+    }, function(err) {
+        console.log(err);
+        res.error(err);
+    });
+});
+
+Parse.Cloud.define('setPersonKOLUser', function(req, res) {
+    const userId = req.params.userId;
+    const isAKOLUser = req.params.setKOLUser;
+    const query = new Parse.Query(Parse.User);
+    query.get(userId, {useMasterKey: true}).then(function(user) {
+        user.set('isAdminKOL', isAKOLUser);
         user.save(null, {useMasterKey: true}).then(function() {
             res.success('ok');
         }, function(err) {
