@@ -8,7 +8,7 @@ Parse.Cloud.define('getCategories', function(req, res){
   var categories = [];
   var Category = Parse.Object.extend('Category');
   var query = new Parse.Query(Category);
-  var onlyLive = req.params.onlyLive || false;
+  var onlyLive = (req.params.onlyLive === undefined) ? true : req.params.onlyLive;
   var sortedBy = req.params.sortedBy || 'createdAt';
   var sortDir = req.params.sortDir || 'desc';
   var page = req.params.currentPage || 1;
