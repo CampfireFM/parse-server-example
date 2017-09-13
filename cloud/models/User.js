@@ -60,44 +60,46 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
                         }
                     }
                 });
+            } else {
+                response.success();
             }
 
             //Friends in twitter
 
-            if(authData && authData.twitter){
-                var twitterAuth = authData.twitter;
-                var client = new Twitter({
-                    consumer_key: config.auth.twitter.consumer_key,
-                    consumer_secret: config.auth.twitter.consumer_secret,
-                    access_token_key: twitterAuth.auth_token,
-                    access_token_secret: twitterAuth.auth_token_secret
-                });
-
-
-                client.get('followers/ids.json', {stringify_ids : true}, function(error, tweets, res) {
-                    if (!error) {
-                        var ids = res.body ? JSON.parse(res.body).ids : [];
-                        if (!ids || ids.length === 0)
-                            return response.success();
-                        var friendIds = ids.map(function(id){
-                            return id.toString();
-                        });
-                        getUsersByTwitterIds(friendIds, function(err, campfireFriends){
-                            if (err) {
-                                console.log(err);
-                                response.success();
-                            } else {
-                                // Send push notification to user's friend
-                                // sendPushOrSMS(request.user, campfireFriends, 'joinCampfire');
-                                request.object.set('twitterFollowers', campfireFriends.length);
-                                response.success();
-                            }
-                        })
-                    } else {
-                        response.success();
-                    }
-                });
-            }
+            //if(authData && authData.twitter){
+            //    var twitterAuth = authData.twitter;
+            //    var client = new Twitter({
+            //        consumer_key: config.auth.twitter.consumer_key,
+            //        consumer_secret: config.auth.twitter.consumer_secret,
+            //        access_token_key: twitterAuth.auth_token,
+            //        access_token_secret: twitterAuth.auth_token_secret
+            //    });
+            //
+            //
+            //    client.get('followers/ids.json', {stringify_ids : true}, function(error, tweets, res) {
+            //        if (!error) {
+            //            var ids = res.body ? JSON.parse(res.body).ids : [];
+            //            if (!ids || ids.length === 0)
+            //                return response.success();
+            //            var friendIds = ids.map(function(id){
+            //                return id.toString();
+            //            });
+            //            getUsersByTwitterIds(friendIds, function(err, campfireFriends){
+            //                if (err) {
+            //                    console.log(err);
+            //                    response.success();
+            //                } else {
+            //                    // Send push notification to user's friend
+            //                    // sendPushOrSMS(request.user, campfireFriends, 'joinCampfire');
+            //                    request.object.set('twitterFollowers', campfireFriends.length);
+            //                    response.success();
+            //                }
+            //            })
+            //        } else {
+            //            response.success();
+            //        }
+            //    });
+            //}
         }
     } else {
         response.success();
