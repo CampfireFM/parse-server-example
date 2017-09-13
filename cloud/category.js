@@ -81,12 +81,15 @@ Parse.Cloud.define('getCategories', function(req, res){
 });
 
 Parse.Cloud.define('getCategory', function(req, res) {
+  console.log('getCategory', 'started', new Date().toISOString());
   const id = req.params.id;
   const skip = req.params.skip || 0;
   const limit = req.params.limit || 10;
   const Category = Parse.Object.extend('Category');
   const categoryQuery = new Parse.Query(Category);
+
   categoryQuery.get(id, {useMasterKey: true}).then(function(category) {
+    console.log('getCategory', 'fetched category object', new Date().toISOString());
     const categoryObj = {
       id: category.id,
       name: category.get('name'),
@@ -100,77 +103,63 @@ Parse.Cloud.define('getCategory', function(req, res) {
     tags = tags.splice(0, 2);
     const Answer = Parse.Object.extend('Answer');
     let answers = [];
-    wrapper(function*() {
-      let parentQuery;
-      if (id !== 'sbL2KrW3wJ') {
-        for (let i = 0; tags && i < tags.length; i++) {
-          const answerQuery = new Parse.Query(Answer);
-
-          const tagRef = pointerTo(tags[i], 'Tag');
-          answerQuery.containsAll('tags', [tagRef]);
-          parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
-        }
-      } else {
-        parentQuery = new Parse.Query(Answer);
-        const featuredUserIds = category.get('featuredUsers') || [];
-        const featuredUsers = featuredUserIds.map(id => pointerTo(id, '_User'));
-        parentQuery.containedIn('userRef', featuredUsers);
+    let parentQuery;
+    if (id !== 'sbL2KrW3wJ') {
+      for (let i = 0; tags && i < tags.length; i++) {
+        const answerQuery = new Parse.Query(Answer);
+        const tagRef = pointerTo(tags[i], 'Tag');
+        answerQuery.containsAll('tags', [tagRef]);
+        parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
       }
-      parentQuery.notEqualTo('isTest', true);
-      parentQuery.lessThanOrEqualTo('liveDate', new Date());
-      parentQuery.include(['questionRef', 'questionRef.toUser',
-        'questionRef.fromUser', 'questionRef.charity', 'questionRef.list', 'userRef']);
-      parentQuery.skip(skip);
-      parentQuery.limit(limit);
-      parentQuery.descending('createdAt');
-      try {
-        answers = yield new Promise((resolve, reject) => {
-          parentQuery.find({useMasterKey: true}).then(res => {
-            resolve(res);
-          }, err => {
-            console.log(err);
-            reject(err);
-          })
-        });
-      } catch(err) {
-        answers = [];
-      }
-
+    } else {
+      parentQuery = new Parse.Query(Answer);
+      const featuredUserIds = category.get('featuredUsers') || [];
+      const featuredUsers = featuredUserIds.map(id => pointerTo(id, '_User'));
+      parentQuery.containedIn('userRef', featuredUsers);
+    }
+    parentQuery.notEqualTo('isTest', true);
+    parentQuery.lessThanOrEqualTo('liveDate', new Date());
+    parentQuery.include(['questionRef', 'questionRef.toUser',
+      'questionRef.fromUser', 'questionRef.charity', 'questionRef.list', 'userRef']);
+    parentQuery.skip(skip);
+    parentQuery.limit(limit);
+    parentQuery.descending('createdAt');
+    parentQuery.find({useMasterKey: true}).then(answers => {
+      console.log('getCategory', 'fetched category answers', new Date().toISOString());
       categoryObj.answers = answers;
-      let people = [];
-
       const userQuery = new Parse.Query(Parse.User);
       userQuery.containedIn('objectId', category.get('featuredUsers'));
-      people = yield new Promise((resolve, reject) => {
-        userQuery.find({useMasterKey: true}).then(users => {
-          resolve(users);
-        }, err => {
-          console.log(err);
-          reject(err);
-        });
-      });
-      people.sort(function(a, b) {
-        if (a.get('isFeatured') && b.get('isFeatured')) {
-          return ((a.get('answerCount') || 0) > (b.get('answerCount') || 0)) === true ? -1 : 1;
-        }
-        else if (a.get('isFeatured'))
-          return -1;
-        else if (b.get('isFeatured'))
-          return 1;
-        else {
-          if (a.get('answerCount') > b.get('answerCount')) {
+      userQuery.find({useMasterKey: true}).then(users => {
+        console.log('getCategory', 'fetched users', new Date().toISOString());
+        users.sort(function(a, b) {
+          if (a.get('isFeatured') && b.get('isFeatured')) {
+            return ((a.get('answerCount') || 0) > (b.get('answerCount') || 0)) === true ? -1 : 1;
+          }
+          else if (a.get('isFeatured'))
             return -1;
-          }
-          if (a.get('answerCount') < b.get('answerCount')) {
+          else if (b.get('isFeatured'))
             return 1;
+          else {
+            if (a.get('answerCount') > b.get('answerCount')) {
+              return -1;
+            }
+            if (a.get('answerCount') < b.get('answerCount')) {
+              return 1;
+            }
+            return 0;
           }
-          return 0;
-        }
+        });
+        categoryObj.people = users;
+        console.log('getCategory', 'sending response', new Date().toISOString());
+        res.success(categoryObj);
+      }, err => {
+        console.log(err);
+        res.error(err);
       });
-      categoryObj.people = people;
-      res.success(categoryObj);
-    })();
-
+    }, err => {
+      console.log(err);
+      res.error(err);
+    });
   }, function(err) {
     res.error(err);
   })
