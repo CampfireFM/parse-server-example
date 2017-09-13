@@ -20,6 +20,7 @@
     "express-co": "^0.4.0",
     "fbgraph": "^1.4.1",
     "fluent-ffmpeg": "^2.1.2",
+    "json2csv": "^3.11.1",
     "kerberos": "~0.0.x",
     "mailgun-js": "^0.10.1",
     "mixpanel": "^0.7.0",
