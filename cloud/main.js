@@ -1756,7 +1756,7 @@ Parse.Cloud.define('setPersonShadowUser', function(req, res) {
 Parse.Cloud.define('setCategoryIsLive', function(req, res) {
     const categoryId = req.params.categoryId;
     const isLive = req.params.setIsLive;
-    const query = new Parse.Query(Category);
+    const query = new Parse.Query(Parse.Category);
     query.get(categoryId, {useMasterKey: true}).then(function(category) {
         category.set('isLive', isLive);
         category.save(null, {useMasterKey: true}).then(function() {
