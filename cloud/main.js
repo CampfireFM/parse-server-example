@@ -664,7 +664,7 @@ Parse.Cloud.define('getPeople', function(req, res) {
         query.lessThanOrEqualTo("createdAt", req.params.toDate);
     }
     if (req.params.allowKOLUser === true) {
-        query.EqualTo('isAdminKOL', true);
+        query.equalTo('isAdminKOL', true);
     }
     if (req.params.allowShadowUser === false) {
         query.notEqualTo('isShadowUser', true);
