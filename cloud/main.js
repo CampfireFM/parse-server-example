@@ -538,6 +538,7 @@ Parse.Cloud.define('getCampfires', function(req, res) {
                                             eavesdrops: object.get("unlockCount"),
                                             likes: object.get('likeCount'),
                                             charity: (charity) ? charity.get('name') : 'None',
+                                            charityImage: (charity) ? charity.get('image').url() : '',
                                             transcription: object.get('transcription'),
                                             transcriptStatus: object.get('transcriptStatus'),
                                             recordingLength: object.get('recordingLength')
