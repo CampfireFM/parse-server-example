@@ -534,7 +534,7 @@ Parse.Cloud.define('getCampfires', function(req, res) {
                                             answererName: toUser.get('fullName'),
                                             answererAskerName: (fromUser) ? fromUser.get('fullName') : '',
                                             question: object.get('questionRef').get('text'),
-                                            date: date..toLocaleDateString(),
+                                            date: date.toLocaleDateString(),
                                             eavesdrops: object.get("unlockCount"),
                                             likes: object.get('likeCount'),
                                             charity: (charity) ? charity.get('name') : 'None',
