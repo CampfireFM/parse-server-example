@@ -24,10 +24,9 @@ Parse.Cloud.define('getQuestions', function(req, res) {
     toUserQuery.notEqualTo('isTestUser', true);
     toUserQuery.notEqualTo('isDummyUser', true);
 
-    var Charity = Parse.Object.extend('Charity');
-    var charityQuery = new Parse.Query(Charity);
+    var charity = Parse.Object.extend('Charity');
+    var charityQuery = new Parse.Query(charity);
     charityQuery.select("objectId", "name");
-
 
     // filtering
     if (req.params.answererName) {
@@ -54,6 +53,7 @@ Parse.Cloud.define('getQuestions', function(req, res) {
     // Exclude test data
     query.matchesQuery('toUser', toUserQuery);
     query.matchesQuery('fromUser', fromUserQuery);
+    query.matchesQuery('charity', charityQuery);
     
     
     if (req.params.fromDate) {
@@ -130,28 +130,68 @@ Parse.Cloud.define('getQuestions', function(req, res) {
     }
 });
 
-Parse.Cloud.define('getAutoQuestions', function(req, res){
-  var autoQuestions = [];
-  var AutoQuestions = Parse.Object.extend('AutoQuestions');
-  var query = new Parse.Query(AutoQuestions);  
-  query.find({
-    success: function(objects) {
-      if (objects.length) {
-        for (var i = 0; i < objects.length; i++) {
-        var object = objects[i];
-          autoQuestions.push({
-            id: object.id,
-            question: object.get('text'),
-            isLive: object.get('isLive'),
-            createdAt: object.get('createdAt'),
-            updatedAt: object.get('updatedAt')            
-          });
-        }
-      }
-      res.success(autoQuestions);
-    },
-    error: function(error) {
-      res.error(error);
+Parse.Cloud.define('getAutoQuestions', function(req, res){    
+    var autoQuestions = [];
+    var sortedBy = req.params.sortedBy || 'createdAt';
+    var sortDir = req.params.sortDir || 'desc';
+    var page = req.params.currentPage || 1;
+    var limit = req.params.perPage || 6;
+    var skip = (page - 1) * limit;
+
+    var AutoQuestions = Parse.Object.extend('AutoQuestions');
+    var query = new Parse.Query(AutoQuestions);
+
+    // sorting
+    sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
+
+    // totalpages count
+    var count = 0;
+
+    var findAutoQuestions = function () {
+        query.find({
+            success: function(objects) {
+                if (objects.length > 0) {
+                    return Parse.Promise.as().then(function () {
+                        var promise = Parse.Promise.as();
+
+                        objects.forEach(function (object) {
+                            promise = promise.then(function () {
+                                autoQuestions.push({
+                                    id: object.id,
+                                    question: object.get('text'),
+                                    isLive: object.get('isLive'),
+                                    createdAt: object.get('createdAt'),
+                                    updatedAt: object.get('updatedAt')
+                                });
+                            });
+                        });
+                        return promise;
+                    }).then(function () {
+                        return res.success({autoQuestions: autoQuestions, totalItems: count});
+                    }, function (error) {
+                        res.error(error);
+                    });
+                }
+                else
+                {
+                  return res.success({autoQuestions: [], totalItems: 0});
+                }
+            },
+            error: function(error) {
+              res.error(error);
+            }
+        })
     }
-  })
+
+    if (!req.params.noPagination) {
+        query.count().then(function (result) {
+            count = result;
+            // pagination
+            query.limit(limit);
+            query.skip(skip);
+            findAutoQuestions();
+        });
+    } else {
+        findAutoQuestions();
+    }
 });
