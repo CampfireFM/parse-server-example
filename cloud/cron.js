@@ -184,61 +184,61 @@ function notifyExpiringQuestions() {
 
 function runSummaryUpdate(){
     console.log('Sending Summary emails..........');
-    getAllUsers()
-        .then(users => {
-            users.forEach(user => {
-                //Cancel getting summary if user has not subscribed to receive summary email
-                if (checkEmailSubscription(user, 'summary') == false)
-                    return;
-                getFollows(user)
-                    .then(follows => {
-                        if (follows.length == 0)
-                            return;
-                        follows = follows.reduce(function (pre, follow) {
-                            pre.push(follow.get('toUser'));
-                            return pre;
-                        }, []);
-                        getRecentAnswers(follows, function (err, answers) {
-                            if (err) {
-                                console.log(err.message);
-                                return;
-                            }
-                            if (answers.length == 0)
-                                return;
-                            const moreAnswersCount = answers.length > 5 ? answers.length - 5 : 0;
-                            answers = answers.slice(0, 5);
-
-                            var summaries = answers.reduce(function (pre, answer) {
-                                //Get userId from answer
-                                pre.push({
-                                    answerId: answer.id,
-                                    questionId: answer.get('questionRef').id,
-                                    question: answer.get('questionRef').get('text'),
-                                    userName: answer.get('userRef').get('fullName'),
-                                    profilePhoto: answer.get('userRef').get('profilePhoto').url()
-                                });
-                                return pre;
-                            }, []);
-
-                            console.log("SummaryMap : ", summaries);
-                            //Generate email with template
-
-                            //send to test email in development
-                            // var testEmail = process.env.TEST_EMAIL ? process.env.TEST_EMAIL : 'krittylor@gmail.com';
-                            if (process.env.SEND_SUMMARY == 'production')
-                                sendSummaryEmail(user.get('email'), summaries, moreAnswersCount);
-                            // else
-                            //     sendSummaryEmail('ericwebb85@yahoo.com', summaries, moreAnswersCount);
-                        });
-                    })
-                    .catch(err => {
-                        console.log(err.message);
-                    })
-            });
-        })
-        .catch(err => {
-            console.log(err);
-        });
+    // getAllUsers()
+    //     .then(users => {
+    //         users.forEach(user => {
+    //             //Cancel getting summary if user has not subscribed to receive summary email
+    //             if (checkEmailSubscription(user, 'summary') == false)
+    //                 return;
+    //             getFollows(user)
+    //                 .then(follows => {
+    //                     if (follows.length == 0)
+    //                         return;
+    //                     follows = follows.reduce(function (pre, follow) {
+    //                         pre.push(follow.get('toUser'));
+    //                         return pre;
+    //                     }, []);
+    //                     getRecentAnswers(follows, function (err, answers) {
+    //                         if (err) {
+    //                             console.log(err.message);
+    //                             return;
+    //                         }
+    //                         if (answers.length == 0)
+    //                             return;
+    //                         const moreAnswersCount = answers.length > 5 ? answers.length - 5 : 0;
+    //                         answers = answers.slice(0, 5);
+    //
+    //                         var summaries = answers.reduce(function (pre, answer) {
+    //                             //Get userId from answer
+    //                             pre.push({
+    //                                 answerId: answer.id,
+    //                                 questionId: answer.get('questionRef').id,
+    //                                 question: answer.get('questionRef').get('text'),
+    //                                 userName: answer.get('userRef').get('fullName'),
+    //                                 profilePhoto: answer.get('userRef').get('profilePhoto').url()
+    //                             });
+    //                             return pre;
+    //                         }, []);
+    //
+    //                         console.log("SummaryMap : ", summaries);
+    //                         //Generate email with template
+    //
+    //                         //send to test email in development
+    //                         // var testEmail = process.env.TEST_EMAIL ? process.env.TEST_EMAIL : 'krittylor@gmail.com';
+    //                         if (process.env.SEND_SUMMARY == 'production')
+    //                             sendSummaryEmail(user.get('email'), summaries, moreAnswersCount);
+    //                         // else
+    //                         //     sendSummaryEmail('ericwebb85@yahoo.com', summaries, moreAnswersCount);
+    //                     });
+    //                 })
+    //                 .catch(err => {
+    //                     console.log(err.message);
+    //                 })
+    //         });
+    //     })
+    //     .catch(err => {
+    //         console.log(err);
+    //     });
 }
 
 function getRecentAnswers(users, callback){
