@@ -14,6 +14,12 @@ Parse.Cloud.define('getCategories', function(req, res){
   var page = req.params.currentPage || 1;
   var limit = req.params.perPage || 6;
   var skip = (page - 1) * limit;
+  if (!isAdmin) {
+    limit = req.params.limit || 6;
+    skip = req.params.skip || 0;
+    sortedBy = 'answerCount';
+    sortDir = 'desc';
+  }
   const Answer = Parse.Object.extend('Answer');
   // totalpages count
   var count;
@@ -61,14 +67,14 @@ Parse.Cloud.define('getCategories', function(req, res){
           });
         }
       }
-      categories.sort((a, b) => {
-        if (a.answerCount > b.answerCount)
-          return -1;
-        else if (a.answerCount < b.answerCount)
-          return 1;
-        return 0;
-      });
-      if (req.params.isAdmin)
+      // categories.sort((a, b) => {
+      //   if (a.answerCount > b.answerCount)
+      //     return -1;
+      //   else if (a.answerCount < b.answerCount)
+      //     return 1;
+      //   return 0;
+      // });
+      if (isAdmin)
         res.success({categories: categories, totalItems: count});
       else
         res.success(categories);
