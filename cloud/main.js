@@ -518,6 +518,7 @@ Parse.Cloud.define('getCampfires', function(req, res) {
                                     var CampfireUnlock = Parse.Object.extend('CampfireUnlock');
                                     var CuQuery = new Parse.Query(CampfireUnlock);
                                     var answer = object.get('answerFile');
+                                    var tags = object.get('tags');
                                     var answerFile = answer ? answer.toJSON().url : ''
                                     date = new Date(object.get('createdAt'));
 
