@@ -17,8 +17,8 @@ var qotdJob = new CronJob({
 });
 
 if (process.env.RUN_CRON === 'true') {
-    job.start();
-    qotdJob.start();
+    //job.start();
+    //qotdJob.start();
 }
 
 const admins = ['krittylor@gmail.com', 'ericwebb85@yahoo.com', 'luke@lukevink.com', 'christos@campfire.fm', 'nick@campfire.fm'];
