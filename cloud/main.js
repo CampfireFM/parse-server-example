@@ -441,9 +441,7 @@ Parse.Cloud.define('getCampfires', function(req, res) {
     query.notEqualTo('isTest', true);
 
     if (req.params.topic_id) {
-        var topic = new Parse.Object("List");
-        topic.id = req.params.topic_id;
-        query.equalTo('lists', topic);
+        query.containsAll('lists', pointerTo(req.params.topic_id, 'Tag'));
     }
 
     query.include(['questionRef', 'questionRef.fromUser.fullName',
