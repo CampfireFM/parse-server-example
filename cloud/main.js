@@ -571,17 +571,13 @@ Parse.Cloud.define('getCampfires', function(req, res) {
         })
     }
 
-    if (!(req.params.topic_id && req.params.noPagination)) {
-        query.count().then(function (result) {
-            count = result;
-            // pagination
-            query.limit(limit);
-            query.skip(skip);
-            findCampfires();
-        });
-    } else {
+    query.count().then(function (result) {
+        count = result;
+        // pagination
+        query.limit(limit);
+        query.skip(skip);
         findCampfires();
-    }
+    });
 });
 
 Parse.Cloud.define('gettopCharityUsers', function(req, res) {
