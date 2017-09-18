@@ -26,14 +26,14 @@ Parse.Cloud.define('getCategories', function(req, res){
   // filter live
   if (!isAdmin)
     query.equalTo('isLive', true);
+
+  // filtering
+  if (req.params.name) {
+    query.contains('name', req.params.name);
+  }
   query.count().then(function(result){
     count = result;
     sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy);
-
-    // filtering
-    if (req.params.name) {
-      query.contains('name', req.params.name);
-    }
 
     // pagination
     query.limit(limit);
