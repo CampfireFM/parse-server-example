@@ -67,13 +67,13 @@ Parse.Cloud.define('getCategories', function(req, res){
           });
         }
       }
-      // categories.sort((a, b) => {
-      //   if (a.answerCount > b.answerCount)
-      //     return -1;
-      //   else if (a.answerCount < b.answerCount)
-      //     return 1;
-      //   return 0;
-      // });
+       categories.sort((a, b) => {
+         if (a.answerCount > b.answerCount)
+           return -1;
+         else if (a.answerCount < b.answerCount)
+           return 1;
+         return 0;
+       });
       if (isAdmin)
         res.success({categories: categories, totalItems: count});
       else
