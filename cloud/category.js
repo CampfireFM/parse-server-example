@@ -42,18 +42,26 @@ Parse.Cloud.define('getCategories', function(req, res){
     query.find({useMasterKey: true}).then(wrapper(function*(objects) {
       if (objects.length) {
         for (var i = 0; i < objects.length; i++) {
-          var object = objects[i];
-          const tags = object.get('tags');
           let answerCount = 0;
-          for (let j = 0; j < tags.length; j++) {
-            const tagRef = pointerTo(tags[j], 'Tag');
-            const answerQuery = new Parse.Query(Answer);
-            answerQuery.containsAll('tags', [tagRef]);
+          try {
+            var object = objects[i];
+            const tags = object.get('tags');
+            let parentQuery;
+            for (let j = 0; j < tags.length; j++) {
+              const tagRef = pointerTo(tags[j], 'Tag');
+              const answerQuery = new Parse.Query(Answer);
+              answerQuery.containsAll('tags', [tagRef]);
+              parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
+            }
+
             answerCount += yield new Promise((resolve, reject) => {
-              answerQuery.count({useMasterKey: true})
+              parentQuery.count({useMasterKey: true})
                 .then(count => resolve(count))
                 .catch(err => resolve(0))
             });
+          } catch(err) {
+            console.log("Error occured", err);
+            answerCount = 0;
           }
           categories.push({
             id: object.id,
@@ -66,18 +74,18 @@ Parse.Cloud.define('getCategories', function(req, res){
             answerCount: answerCount
           });
         }
+        categories.sort((a, b) => {
+          if (a.answerCount > b.answerCount)
+            return -1;
+          else if (a.answerCount < b.answerCount)
+            return 1;
+          return 0;
+        });
+        if (isAdmin)
+          res.success({categories: categories, totalItems: count});
+        else
+          res.success(categories);
       }
-       categories.sort((a, b) => {
-         if (a.answerCount > b.answerCount)
-           return -1;
-         else if (a.answerCount < b.answerCount)
-           return 1;
-         return 0;
-       });
-      if (isAdmin)
-        res.success({categories: categories, totalItems: count});
-      else
-        res.success(categories);
     }),function(error) {
       res.error(error.message);
     })

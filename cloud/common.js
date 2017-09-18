@@ -378,7 +378,7 @@ function getAllUsers() {
             query.find({useMasterKey: true}).then(function (res) {
                 processCallback(res);
             }, function (error) {
-                reject(err);
+                reject(error);
             });
         };
         process(false);
