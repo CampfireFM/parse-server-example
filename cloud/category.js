@@ -46,12 +46,20 @@ Parse.Cloud.define('getCategories', function(req, res){
           try {
             var object = objects[i];
             const tags = object.get('tags');
+            const answersFromUsers = object.get('answersFromUsers') || false;
             let parentQuery;
-            for (let j = 0; j < tags.length; j++) {
-              const tagRef = pointerTo(tags[j], 'Tag');
-              const answerQuery = new Parse.Query(Answer);
-              answerQuery.containsAll('tags', [tagRef]);
-              parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
+            if (answersFromUsers) {
+              parentQuery = new Parse.Query(Answer);
+              const featuredUserIds = object.get('featuredUsers') || [];
+              const featuredUsers = featuredUserIds.map(id => pointerTo(id, '_User'));
+              parentQuery.containedIn('userRef', featuredUsers);
+            } else {
+              for (let j = 0; j < tags.length; j++) {
+                const tagRef = pointerTo(tags[j], 'Tag');
+                const answerQuery = new Parse.Query(Answer);
+                answerQuery.containsAll('tags', [tagRef]);
+                parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
+              }
             }
 
             answerCount += yield new Promise((resolve, reject) => {
