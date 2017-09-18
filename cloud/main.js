@@ -1350,7 +1350,12 @@ Parse.Cloud.define('getHottestUsers', function(request, response){
 Parse.Cloud.define('getWelcomeQuestion', function(request, response){
 
     // Get firstname of the user
-    const firstName = request.user.get('firstName') || '';
+    let firstName = request.user.get('firstName');
+    const lastName = request.user.get('lastName');
+    if (!firstName && !lastName)
+      return response.success({});
+    if (!firstName)
+      firstName = '';
     const AutoQuestion = Parse.Object.extend('AutoQuestions');
     const autoQuestionQuery = new Parse.Query(AutoQuestion);
     autoQuestionQuery.equalTo('isLive', true);
