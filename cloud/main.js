@@ -1304,7 +1304,7 @@ Parse.Cloud.define('getSuggestedUsers', function(request, response){
         query.lessThanOrEqualTo('createdAt', end);
         query.equalTo('isAnswered', false);
         query.notEqualTo('isRefunded', true);
-        query.include('fromUser');
+        query.include(['fromUser', 'toUser']);
         query.find({useMasterKey: true}).then(function(questions){
             if(questions.length){
                 questions.forEach(function(question){
