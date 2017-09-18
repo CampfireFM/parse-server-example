@@ -9,16 +9,16 @@ Parse.Cloud.define('getTags', function(req, res){
   var limit = req.params.perPage || 6;
   var skip = (page - 1) * limit;
 
+  // filtering
+  if (req.params.name) {
+    query.contains('name', req.params.name);
+  }
+
   // totalpages count
   var count;
   query.count().then(function(result){
     count = result;
     sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy);
-
-    // filtering
-    if (req.params.name) {
-      query.contains('name', req.params.name);
-    }
 
     // pagination
     query.limit(limit);
