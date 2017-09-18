@@ -153,6 +153,7 @@ function sendQuestionEmail(recipient, questionId, questionAskerProfilePhoto, que
         }
     }).then(function(link){
         // Invoke the send method with an options object
+        questionPrice = Math.floor((questionPrice / 2) * Math.pow(10, 4)) / Math.pow(10, 4);
         MailgunAdapter.send({
             templateName: 'questionEmail',
             recipient: recipient,
