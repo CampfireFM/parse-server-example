@@ -1308,10 +1308,20 @@ Parse.Cloud.define('getSuggestedUsers', function(request, response){
         query.find({useMasterKey: true}).then(function(questions){
             if(questions.length){
                 questions.forEach(function(question){
+                    if (!question.get('fromUser') && question.get('isAnswered') === false) {
+                        question.destroy({useMasterKey: true});
+                        console.log('Destroying null question', question.id);
+                        return;
+                    }
+                    if (!question.get('toUser') && question.get('isAnswered') === false) {
+                        question.destroy({useMasterKey: true});
+                        console.log('Destroying null question', question.id);
+                        return;
+                    }
                     console.log('Refunding money for question ', question.get('text'));
                     question.set('isExpired', true);
                     question.set('isRefunded', true);
-                    question.save(null, {useMasterkey: true});
+                    question.save(null, {useMasterKey: true});
                     const fromUser = question.get('fromUser');
                     fromUser.increment('matchCount', question.get('price') / matchValue);
                     fromUser.increment('unansweredQuestionCount', -1);
