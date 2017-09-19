@@ -1,8 +1,8 @@
-const {checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateAnswerShareImage } = require('../common');
+const {trackEvent, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateAnswerShareImage } = require('../common');
 const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 const {getFollowers} = require('../common');
-
+const Mixpanel = require('mixpanel');
 var config = require('../../config');
 const warningReceivers = config.warningReceivers;
 var algoliasearch = require('../algolia/algoliaSearch.parse.js');
@@ -275,7 +275,7 @@ function createDonation(params, callback){
     for(key in params){
         donation.set(key,params[key]);
     }
-
+    trackEvent(params.userRef, 'DONATION', params);
     donation.save(null, {
         useMasterKey: true,
         success: function(donationrecord){
@@ -298,7 +298,7 @@ function createPayout(params, callback){
     for(key in params){
         payout.set(key,params[key]);
     }
-
+    trackEvent(params.userRef, 'PAYOUT', params);
     payout.save(null, {
         useMasterKey: true,
         success: function(payoutrecord){

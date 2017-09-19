@@ -2,6 +2,7 @@ const Twilio = require('twilio');
 const config = require('../config');
 const Promise = require('promise');
 const request = require('superagent');
+const Mixpanel = require('mixpanel');
 const logTexts = {
     questions : 'Question answerer has not subscribed to receive questions notification yet',
     expiringQuestions: 'Answerer has not subscribed to receive expiring questions notification yet',
@@ -445,4 +446,38 @@ function getFollows(user){
         });
     })
 }
-module.exports = {getFollowers, getFollows, checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers, generateAnswerShareImage, getAllAnswers};
+
+function trackEvent(user, type, params) {
+    const userId = user.get('username');
+    const mixpanel = Mixpanel.init(config.mixpanelToken);
+    
+    switch(type) {
+        case 'PAYOUT':
+            mixpanel.track('Payout', {
+                distinct_id: userId,
+                'First Name': user.get('firstName'),
+                'Last Name': user.get('lastName'),
+                'Amount': params.amount,
+                'Source': params.type[0].toUpperCase() + params.type.substr(2),
+                'QuestionId': params.questionRef ? params.questionRef.id : '',
+                'UnlockRef': params.unlockRef ? params.unlockRef.id : ''
+            });
+            mixpanel.increment(userId, {Payout: params.amount});
+            break;
+        case 'DONATION':
+            mixpanel.track('Donation', {
+                distinct_id: userId,
+                'First Name': user.get('firstName'),
+                'Last Name': user.get('lastName'),
+                'Amount': params.amount,
+                'QuestionId': params.questionRef ? params.questionRef.id : '',
+                'CharityId': params.charityRef ? params.charityRef.id : ''
+            });
+            mixpanel.increment(userId, {Donation: params.amount});
+            break;
+        default:
+            break;
+    }
+}
+
+module.exports = {trackEvent, getFollowers, getFollows, checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers, generateAnswerShareImage, getAllAnswers};

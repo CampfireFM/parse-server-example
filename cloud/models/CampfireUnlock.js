@@ -1,4 +1,4 @@
-const {sendPushOrSMS, addActivity} = require('../common');
+const {sendPushOrSMS, addActivity, trackEvent} = require('../common');
 
 Parse.Cloud.afterSave("CampfireUnlock", function(request) {
 
@@ -160,6 +160,7 @@ function createDonationForUnlock(params, callback) {
         donation.set(key, params[key]);
     }
 
+    trackEvent(params.userRef, 'DONATION', params);
     donation.save(null, {
         useMasterKey: true,
         success: function (donationrecord) {
@@ -187,6 +188,7 @@ function createPayoutForUnlock(params, callback) {
         payout.set(key, params[key]);
     }
 
+    trackEvent(params.userRef, 'PAYOUT', params);
     payout.save(null, {
         useMasterKey: true,
         success: function (payoutrecord) {
