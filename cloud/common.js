@@ -462,7 +462,7 @@ function trackEvent(user, type, params) {
                 'QuestionId': params.questionRef ? params.questionRef.id : '',
                 'UnlockRef': params.unlockRef ? params.unlockRef.id : ''
             });
-            mixpanel.increment(userId, {Payout: params.amount});
+            mixpanel.people.increment(userId, {Payout: params.amount});
             break;
         case 'DONATION':
             mixpanel.track('Donation', {
@@ -473,7 +473,7 @@ function trackEvent(user, type, params) {
                 'QuestionId': params.questionRef ? params.questionRef.id : '',
                 'CharityId': params.charityRef ? params.charityRef.id : ''
             });
-            mixpanel.increment(userId, {Donation: params.amount});
+            mixpanel.people.increment(userId, {Donation: params.amount});
             break;
         default:
             break;
