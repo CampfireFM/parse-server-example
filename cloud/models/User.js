@@ -36,35 +36,60 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
 
             //Friends in facebook
 
-            if(authData && authData.facebook){
+            if(authData && authData.facebook) {
                 var facebookAuth = authData.facebook;
                 graph.setAccessToken(facebookAuth.access_token);
-                graph.get(facebookAuth.id + '/friends', function(err, friends){
-                    if(err) {
-                        console.log(err);
-                        return response.success();
+                //graph.get(facebookAuth.id + '/friends', function(err, friends){
+                //    if(err) {
+                //        console.log(err);
+                //        return response.success();
+                //    } else {
+                //        console.log(friends);
+                //        //Send notification to the followers
+                //        if(friends && friends.summary && friends.summary.total_count > 0){
+                //            var friendIds = friends.data.map(function(friend){
+                //                return friend.id;
+                //            });
+                //            getUsersByFacebookIds(friendIds, function(err, campfireFriends){
+                //                if (err) {
+                //                    console.log(err);
+                //                    response.success();
+                //                } else {
+                //                    // Send push notification to user's friends
+                //                    // sendPushOrSMS(request.user, campfireFriends, 'joinCampfire');
+                //                    request.object.set('fbFollowers', campfireFriends.length);
+                //                    response.success();
+                //                }
+                //            });
+                //        } else {
+                //            response.success();
+                //        }
+                //    }
+                //});
+                graph.get('/me?fields=id,email', function (err, res) {
+                    if (err) {
+                        return response.reject(err);
                     } else {
-                        console.log(friends);
-                        //Send notification to the followers
-                        if(friends && friends.summary && friends.summary.total_count > 0){
-                            var friendIds = friends.data.map(function(friend){
-                                return friend.id;
-                            });
-                            getUsersByFacebookIds(friendIds, function(err, campfireFriends){
-                                if (err) {
-                                    console.log(err);
-                                    response.success();
-                                } else {
-                                    // Send push notification to user's friends
-                                    // sendPushOrSMS(request.user, campfireFriends, 'joinCampfire');
-                                    request.object.set('fbFollowers', campfireFriends.length);
-                                    response.success();
-                                }
-                            });
-                        } else {
-                            response.success();
-                        }
+                        const email = res.email;
+                        request.object.set('email', email);
+                        response.success();
                     }
+                });
+            } else if (authData && authData.twitter) {
+                var twitterAuth = authData.twitter;
+                var client = new Twitter({
+                    consumer_key: config.auth.twitter.consumer_key,
+                    consumer_secret: config.auth.twitter.consumer_secret,
+                    access_token_key: twitterAuth.auth_token,
+                    access_token_secret: twitterAuth.auth_token_secret
+                });
+                client.get('/account/verify_credentials.json?include_email=true&skip_status=true&include_entities=true', function(err, tweets, res) {
+                    if (err) {
+                        return response.error(err);
+                    }
+                    const email = tweets.email;
+                    request.object.set('email', email);
+                    response.success();
                 });
             } else {
                 response.success();
