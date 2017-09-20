@@ -20,6 +20,8 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
         request.object.set('isShadowUser', true);
     }
 
+    if (request.object.get('firstName') === 'Test' || request.object.get('lastName') === 'Test')
+        request.object.set('isTestUser', true);
     if (!request.object.existed()) {
         request.object.set('emailSubscriptions', ["earnings","unlocks","questions","summary", "likes"]);
         request.object.set('pushSubscriptions', ["likes","questions","unlocks","earnings"]);

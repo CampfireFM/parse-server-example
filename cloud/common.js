@@ -374,6 +374,8 @@ function getAllUsers() {
             //query.select(['profilePhoto', 'charityRef']);
             query.include(['charityRef']);
             query.notEqualTo('isTestUser', true);
+            query.notEqualTo('lastName', 'Test');
+            query.notEqualTo('firstName', 'Test');
             query.limit(chunk_size);
             query.ascending("objectId");
             query.find({useMasterKey: true}).then(function (res) {
