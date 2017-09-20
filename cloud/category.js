@@ -123,12 +123,13 @@ Parse.Cloud.define('getCategory', function(req, res) {
       icon: category.get('icon') ? (category.get('icon')).toJSON().url : '',
       isLive: category.get('isLive')
     };
+    const answersFromUsers = category.get('answersFromUsers');
     let tags = category.get('tags');
     tags = tags.splice(0, 2);
     const Answer = Parse.Object.extend('Answer');
     let answers = [];
     let parentQuery;
-    if (id !== 'sbL2KrW3wJ') {
+    if (!answersFromUsers) {
       for (let i = 0; tags && i < tags.length; i++) {
         const answerQuery = new Parse.Query(Answer);
         const tagRef = pointerTo(tags[i], 'Tag');
