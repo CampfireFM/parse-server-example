@@ -94,7 +94,7 @@ Parse.Cloud.define('getCategories', function(req, res){
         if (isAdmin)
           res.success({categories: categories, totalItems: count});
         else
-          res.success(categories);
+          res.success(objects);
       }
     }),function(error) {
       res.error(error.message);
