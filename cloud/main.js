@@ -63,7 +63,7 @@ pointsForLike = 1;
         pointsForAnswer = defaults[0].get('pointsForAnswer');
         pointsForUnlock = defaults[0].get('poitnsForUnlock');
         pointsForLike = defaults[0].get('pointsForLike');
-        pointsForFollow = deafults[0].get('pointsForFollow');
+        pointsForFollow = defaults[0].get('pointsForFollow');
         pointsForListen = defaults[0].get('pointsForListen');
     }, function(err){
         //set to default value
