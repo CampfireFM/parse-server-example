@@ -18,6 +18,9 @@ var MixpanelExport = require('mixpanel-data-export');
 var uniqid = require('uniqid');
 var ipn = require('paypal-ipn');
 var bodyParser = require('body-parser');
+var RedisCacheAdapter = require('parse-server').RedisCacheAdapter;
+var redisOptions = {url: config.redisUrl}
+var redisCache = new RedisCacheAdapter(redisOptions);
 panel = new MixpanelExport({
   api_key: config.mixpanel.api_key,
   api_secret: config.mixpanel.api_secret
@@ -63,6 +66,7 @@ function start() {
     publicServerURL: config['serverURL'],
     auth: config['auth'],
     filesAdapter: s3Adapter,
+    cacheAdapter: redisCache,
     push: {
       ios: [{
         pfx:        './keys/APNS-PROD.p12', // The filename of private key and certificate in PFX or PKCS12 format from disk
