@@ -17,6 +17,8 @@ Parse.Cloud.beforeSave("Answer", function(request, response) {
         const unlockCount = request.object.get('unlockCount') || 0;
         const cloutPoint = listenCount * pointsForListen + likeCount + pointsForLike + unlockCount * pointsForUnlock;
         request.object.set('cloutPoint', cloutPoint);
+        if (request.object.get('tags'))
+          request.object.set('tags', request.object.get('tags').slice(0, 3));
         return response.success();
     }
     else {
