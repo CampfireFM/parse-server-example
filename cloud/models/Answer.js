@@ -11,8 +11,14 @@ function pointerTo(objectId, klass) {
     return { __type:"Pointer", className:klass, objectId:objectId };
 }
 Parse.Cloud.beforeSave("Answer", function(request, response) {
-    if (request.object.existed())
+    if (request.object.existed()) {
+        const listenCount = request.object.get('listenCount') || 0;
+        const likeCount = request.object.get('likeCount') || 0;
+        const unlockCount = request.object.get('unlockCount') || 0;
+        const cloutPoint = listenCount * pointsForListen + likeCount + pointsForLike + unlockCount * pointsForUnlock;
+        request.object.set('cloutPoint', cloutPoint);
         return response.success();
+    }
     else {
         request.object.set('liveDate', new Date());
         getQuestionAndItsPointers(request.object.get('questionRef').id, (err, question) => {
