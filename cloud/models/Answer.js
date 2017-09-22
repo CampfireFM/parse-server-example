@@ -94,6 +94,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                     const answer = request.object;
                     var answerToSave = answer.toJSON();
                     answerToSave.objectID = request.object.id;
+                    answerToSave.createdTimestamp = request.object.get('createdAt').getTime();
                     answerToSave.questionRef = question.toJSON();
                     answerToSave.questionRef.toUser = question.get('toUser').toJSON();
                     var indexAnswer = client.initIndex(config.algolia.answerIndex);

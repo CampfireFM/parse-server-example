@@ -243,7 +243,7 @@ function parseToAlgoliaObjects(objects){
     var algoliaObjects = objects.map(function(obj){
         var object = obj.toJSON();
         object.objectID = obj.id;
-
+        object.createdTimestamp = obj.get('createdAt').getTime();
         return object;
     });
     return algoliaObjects;
