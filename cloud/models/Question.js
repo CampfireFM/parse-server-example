@@ -9,7 +9,7 @@ Parse.Cloud.beforeSave('Question', function(request, response) {
     toUser.fetch({useMasterKey: true}).then(toUser => {
         fromUser.fetch({useMasterKey: true}).then(fromUser => {
             const isTest = fromUser.get('isTestUser') === true || toUser.get('isTestUser') === true;
-            request.object.set('isTest', isTest);
+            request.object.set('isTest', request.object.get('isTest') || isTest);
             response.success();
         })
     }, err => {

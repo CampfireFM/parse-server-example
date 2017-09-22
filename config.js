@@ -36,7 +36,10 @@ configs = {
         mixpanelToken: 'a09156a83517cda592357ca818137887',
         algolia: {
             app_id: 'SQIZQNTD1E',
-            api_key: '6063c6a1e68779c80c7965f85074148b'
+            api_key: '6063c6a1e68779c80c7965f85074148b',
+            answerIndex: process.env.ANSWER_INDEX || 'dev_answers',
+            questionIndex: process.env.QUESTION_INDEX || 'questions',
+            questionByUserNameIndex: process.env.QUESTION_USERNAME_INDEX || 'questions_by_username'
         },
         paypal: {
             mode: process.env.PAYPAL_MODE,
@@ -88,7 +91,10 @@ configs = {
         mixpanelToken: '09b2a637be266aeb72c61a05ea51e81d',
         algolia: {
             app_id: 'SQIZQNTD1E',
-            api_key: '6063c6a1e68779c80c7965f85074148b'
+            api_key: '6063c6a1e68779c80c7965f85074148b',
+            answerIndex: process.env.ANSWER_INDEX || 'prod_answers',
+            questionIndex: process.env.QUESTION_INDEX || 'questions',
+            questionByUserNameIndex: process.env.QUESTION_USERNAME_INDEX || 'questions_by_username'
         },
         paypal: {
             mode: process.env.PAYPAL_MODE,

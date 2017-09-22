@@ -71,7 +71,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 if(question.get('isTest') !== true) {
 
                     var index = client.initIndex('questions');
-                    // Convert Parse.Object to JSON
+                    //Convert Parse.Object to JSON
                     var objectToSave = parseToAlgoliaObjects(question)[0];
                     // Add or update object
                     index.saveObject(objectToSave, function (err, content) {
@@ -83,6 +83,15 @@ Parse.Cloud.afterSave("Answer", function(request) {
                     indexByUsername.saveObject(objectToSave, function (err, content) {
                         if (err) {
                             throw err;
+                        }
+                    });
+                    const answer = request.object;
+                    var answerToSave = answer.toJSON();
+                    answerToSave.questionRef = question.toJSON();
+                    var indexAnswer = client.initIndex(config.algolia.answerIndex);
+                    indexAnswer.saveObject(answerToSave, (err, content) => {
+                        if (err) {
+                            console.log(err);
                         }
                     });
                 }
