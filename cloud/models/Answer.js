@@ -161,6 +161,22 @@ Parse.Cloud.afterSave("Answer", function(request) {
         });
         generateAnswerShareImage(request.object.id);
         //ENDS HERE - TO BE UNCOMMENTED
+    } else {
+        var indexAnswer = client.initIndex(config.algolia.answerIndex);
+        const partialUpdate = {
+            objectID: request.object.id,
+            unlockCount: request.object.get('unlockCount'),
+            likeCount: request.object.get('likeCount'),
+            listenCount: request.object.get('listenCount'),
+            tags: request.object.get('tags'),
+            lists: request.object.get('lists'),
+            cloutPoint: request.object.get('cloutPoint'),
+            isFreeToListen: request.object.get('isFreeToListen'),
+            flagCount: request.object.get('flagCount')
+        };
+        index.partialUpdateObject(partialUpdate, function(err, content) {
+            console.log(content);
+        });
     }
 });
 //end of afterSave function
