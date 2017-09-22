@@ -159,7 +159,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 });
             }
         });
-        generateAnswerShareImage(request.object.id);
+        //generateAnswerShareImage(request.object.id);
         //ENDS HERE - TO BE UNCOMMENTED
     } else {
         var indexAnswer = client.initIndex(config.algolia.answerIndex);
@@ -174,7 +174,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
             isFreeToListen: request.object.get('isFreeToListen'),
             flagCount: request.object.get('flagCount')
         };
-        index.partialUpdateObject(partialUpdate, function(err, content) {
+        indexAnswer.partialUpdateObject(partialUpdate, function(err, content) {
             console.log(content);
         });
     }
