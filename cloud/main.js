@@ -19,7 +19,7 @@ require("./models/List.js");
 require("./models/Activity");
 require("./algolia/algoliaQuestions.js");
 require("./algolia/algoliaUsers.js");
-
+require("./algolia/algoliaAnswers");
 require("./common");
 require("./shareImage");
 
