@@ -30,6 +30,8 @@ Parse.Cloud.beforeSave("Answer", function(request, response) {
                     const answerLists = [pointerTo(list.id, 'List')];
                     request.object.set('lists', answerLists);
                 }
+                request.object.set('questionAsker', question.get('fromUser'));
+                request.object.get('charityRef', question.get('charity'));
                 if (question.get('isAnswered') === true)
                     response.error(new Error('Duplicated answer for same question'));
                 else {
@@ -57,7 +59,6 @@ Parse.Cloud.afterSave("Answer", function(request) {
     var objectExisted = (createdAt.getTime() != updatedAt.getTime());
     //check if its a new record.
     if (objectExisted == false) {
-        
         var answer = request.object;
 
         var questionRef = answer.get("questionRef");
