@@ -55,7 +55,8 @@ configs = {
         branchKey: 'key_live_edqtcFM19DZEOY1Mk2wMimjptFfWP3dv',
         imageGeneratorUrl: process.env.IMAGE_GENERATOR_URL || 'https://k49dg9x0j2.execute-api.us-east-1.amazonaws.com/dev',
         warningReceivers: ['krittylor@gmail.com'],
-        redisUrl: process.env.REDISCLOUD_URL || 'redis://localhost:6379'
+        redisSchemaUrl: process.env.REDISCLOUD_URL || 'redis://localhost:6379',
+        redisCloudCodeUrl: process.env.REDISURL || 'redis://localhost:6379'
     },
     production: {
         appName: process.env.APP_NAME || 'campfiremedia',
@@ -110,7 +111,8 @@ configs = {
         branchKey: 'key_live_edqtcFM19DZEOY1Mk2wMimjptFfWP3dv',
         imageGeneratorUrl: process.env.IMAGE_GENERATOR_URL || 'https://nog8z7rjof.execute-api.us-east-1.amazonaws.com/prod',
         warningReceivers: ['krittylor@gmail.com', 'eric@campfire.fm'],
-        redisUrl: process.env.REDISCLOUD_URL || 'redis://localhost:6379'
+        redisUrl: process.env.REDISCLOUD_URL || 'redis://localhost:6379',
+        redisCloudCodeUrl: process.env.REDISURL || 'redis://localhost:6379'
     }
 };
 

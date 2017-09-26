@@ -1,106 +1,141 @@
 const Promise = require('promise');
 const wrapper = require('co-express');
-
+const redisClient = require('./redis');
 function pointerTo(objectId, klass) {
   return { __type: 'Pointer', className: klass, objectId: objectId};
 }
 Parse.Cloud.define('getCategories', function(req, res){
-  var categories = [];
-  var Category = Parse.Object.extend('Category');
-  var query = new Parse.Query(Category);
+  let hashKey;
   var isAdmin = req.params.isAdmin;
-  var sortedBy = req.params.sortedBy || 'views';
-  var sortDir = req.params.sortDir || 'desc';
-  var page = req.params.currentPage || 1;
-  var limit = req.params.perPage || 6;
-  var skip = (page - 1) * limit;
   if (!isAdmin) {
-    limit = req.params.limit || 6;
-    skip = req.params.skip || 0;
+    hashKey = 'categories:app';
+  } else {
+    hashKey = 'categories:admin';
   }
-  const Answer = Parse.Object.extend('Answer');
-  // totalpages count
-  var count;
-  // filter live
-  if (!isAdmin)
-    query.equalTo('isLive', true);
-
-  // filtering
-  if (req.params.name) {
-    query.contains('name', req.params.name);
-  }
-  query.count().then(function(result){
-    count = result;
-    sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy);
-
-    // pagination
-    if (isAdmin) {
-      query.limit(limit);
-      query.skip(skip);
-    }
-
-    query.find({useMasterKey: true}).then(wrapper(function*(objects) {
-      if (objects.length) {
-        for (var i = 0; i < objects.length; i++) {
-          //let answerCount = 0;
-          //try {
-          //  var object = objects[i];
-          //  const tags = object.get('tags');
-          //  const answersFromUsers = object.get('answersFromUsers') || false;
-          //  let parentQuery;
-          //  if (answersFromUsers) {
-          //    parentQuery = new Parse.Query(Answer);
-          //    const featuredUserIds = object.get('featuredUsers') || [];
-          //    const featuredUsers = featuredUserIds.map(id => pointerTo(id, '_User'));
-          //    parentQuery.containedIn('userRef', featuredUsers);
-          //  } else {
-          //    for (let j = 0; j < tags.length; j++) {
-          //      const tagRef = pointerTo(tags[j], 'Tag');
-          //      const answerQuery = new Parse.Query(Answer);
-          //      answerQuery.containsAll('tags', [tagRef]);
-          //      parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
-          //    }
-          //  }
-          //
-          //  answerCount += yield new Promise((resolve, reject) => {
-          //    parentQuery.count({useMasterKey: true})
-          //      .then(count => resolve(count))
-          //      .catch(err => resolve(0))
-          //  });
-          //} catch(err) {
-          //  console.log("Error occured", err);
-          //  answerCount = 0;
-          //}
-          const object = objects[i];
-          categories.push({
-            id: object.id,
-            name: object.get('name'),
-            color: object.get('color'),
-            desc: object.get('desc'),
-            image: object.get('image') ? (object.get('image')).toJSON().url : '',
-            icon: object.get('icon') ? (object.get('icon')).toJSON().url : '',
-            isLive: object.get('isLive'),
-            views: object.get('views')
-            //answerCount: answerCount
-          });
-        }
-        //categories.sort((a, b) => {
-        //  if (a.answerCount > b.answerCount)
-        //    return -1;
-        //  else if (a.answerCount < b.answerCount)
-        //    return 1;
-        //  return 0;
-        //});
-        if (isAdmin)
-          res.success({categories: categories, totalItems: count});
-        else
-          res.success(objects);
+  redisClient.get(hashKey, (err, reply) => {
+    if (reply) {
+      console.log(reply, JSON.parse(reply))
+      let result = JSON.parse(reply);
+      if (!isAdmin) {
+        result = result.map(category => {
+          category.className = 'Category';
+          return Parse.Object.fromJSON(category);
+        })
+        res.success(result);
+      } else {
+        res.success(JSON.parse(reply))
       }
-    }),function(error) {
-      res.error(error.message);
-    })
-  },function(error) {
-    res.error(error.message);
+    } else {
+      var categories = [];
+      var Category = Parse.Object.extend('Category');
+      var query = new Parse.Query(Category);
+
+      var sortedBy = req.params.sortedBy || 'views';
+      var sortDir = req.params.sortDir || 'desc';
+      var page = req.params.currentPage || 1;
+      var limit = req.params.perPage || 6;
+      var skip = (page - 1) * limit;
+      if (!isAdmin) {
+        limit = req.params.limit || 6;
+        skip = req.params.skip || 0;
+      }
+      const Answer = Parse.Object.extend('Answer');
+      // totalpages count
+      var count;
+      // filter live
+      if (!isAdmin)
+        query.equalTo('isLive', true);
+
+      // filtering
+      if (req.params.name) {
+        query.contains('name', req.params.name);
+      }
+      query.count().then(function(result){
+        count = result;
+        sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy);
+
+        // pagination
+        if (isAdmin) {
+          query.limit(limit);
+          query.skip(skip);
+        }
+
+        query.find({useMasterKey: true}).then(wrapper(function*(objects) {
+          if (objects.length) {
+            for (var i = 0; i < objects.length; i++) {
+              let answerCount = 0;
+              try {
+                var object = objects[i];
+                const tags = object.get('tags');
+                const answersFromUsers = object.get('answersFromUsers') || false;
+                let parentQuery;
+                if (answersFromUsers) {
+                  parentQuery = new Parse.Query(Answer);
+                  const featuredUserIds = object.get('featuredUsers') || [];
+                  const featuredUsers = featuredUserIds.map(id => pointerTo(id, '_User'));
+                  parentQuery.containedIn('userRef', featuredUsers);
+                } else {
+                  for (let j = 0; j < tags.length; j++) {
+                    const tagRef = pointerTo(tags[j], 'Tag');
+                    const answerQuery = new Parse.Query(Answer);
+                    answerQuery.containsAll('tags', [tagRef]);
+                    parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
+                  }
+                }
+
+                answerCount += yield new Promise((resolve, reject) => {
+                  parentQuery.count({useMasterKey: true})
+                    .then(count => resolve(count))
+                    .catch(err => resolve(0))
+                });
+              } catch(err) {
+                console.log("Error occured", err);
+                answerCount = 0;
+              }
+              categories.push({
+                id: object.id,
+                name: object.get('name'),
+                color: object.get('color'),
+                desc: object.get('desc'),
+                image: object.get('image') ? (object.get('image')).toJSON().url : '',
+                icon: object.get('icon') ? (object.get('icon')).toJSON().url : '',
+                isLive: object.get('isLive'),
+                views: object.get('views'),
+                answerCount: answerCount
+              });
+              object.set('answerCount', answerCount);
+              console.log(answerCount, object.get('name'));
+            }
+            let result;
+            if (isAdmin) {
+              categories.sort((a, b) => {
+                if (a.answerCount > b.answerCount)
+                  return -1;
+                else if (a.answerCount < b.answerCount)
+                  return 1;
+                return 0;
+              });
+              result = {categories: categories, totalItems: count};
+            } else {
+              objects.sort((a, b) => {
+                if (a.get('answerCount') > b.get('answerCount'))
+                  return -1;
+                else if (a.get('answerCount') < b.get('answerCount'))
+                  return 1;
+                return 0;
+              });
+              result = objects;
+            }
+            if (!isAdmin) redisClient.set(hashKey, JSON.stringify(result));
+            res.success(result);
+          }
+        }),function(error) {
+          res.error(error.message);
+        })
+      },function(error) {
+        res.error(error.message);
+      })
+    }
   })
 });
 
@@ -128,6 +163,20 @@ Parse.Cloud.define('getCategory', function(req, res) {
     tags = tags.splice(0, 2);
     const Answer = Parse.Object.extend('Answer');
     let answers = [];
+    //  let parentQuery;
+    //  if (answersFromUsers) {
+    //    parentQuery = new Parse.Query(Answer);
+    //    const featuredUserIds = object.get('featuredUsers') || [];
+    //    const featuredUsers = featuredUserIds.map(id => pointerTo(id, '_User'));
+    //    parentQuery.containedIn('userRef', featuredUsers);
+    //  } else {
+    //    for (let j = 0; j < tags.length; j++) {
+    //      const tagRef = pointerTo(tags[j], 'Tag');
+    //      const answerQuery = new Parse.Query(Answer);
+    //      answerQuery.containsAll('tags', [tagRef]);
+    //      parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
+    //    }
+    //  }
     let parentQuery;
     if (!answersFromUsers) {
       for (let i = 0; tags && i < tags.length; i++) {
@@ -206,4 +255,9 @@ Parse.Cloud.define('deleteCategories', function(req, res){
       res.error(error);
     }
   })
+})
+Parse.Cloud.afterSave('Category', (req, res) => {
+  redisClient.del('categories:app');
+  redisClient.del('categories:admin');
+  res.success();
 })

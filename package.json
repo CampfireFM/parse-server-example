@@ -36,6 +36,7 @@
     "paypal-nvp-api": "^1.2.27",
     "paypal-rest-sdk": "git://github.com/xcraftdev/PayPal-node-SDK.git",
     "promise": "^8.0.0",
+    "redis": "^2.8.0",
     "request": "^2.81.0",
     "stripe": "^4.12.0",
     "superagent": "^3.6.0",

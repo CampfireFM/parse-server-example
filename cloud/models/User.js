@@ -7,7 +7,30 @@ const graph = require('fbgraph');
 const uniqid = require('uniqid');
 const algoliasearch = require('../algolia/algoliaSearch.parse.js');
 const algoliaClient = algoliasearch(config.algolia.app_id, config.algolia.api_key);
-var oldEmail = '';
+const branch = require('node-branch-io');
+const Promise = require('promise');
+const wrapper = require('co-express');
+
+const generateUserInviteUrl = (userId) => {
+    return new Promise((resolve, reject) => {
+        branch.link.create(config.branchKey, {
+            channel: 'Invite Links',
+            campaign: 'Invite for Matches',
+            feature: 'invites',
+            alias: `i${userId}v`,
+            tags: ['invite', 'inviteForMatches'],
+            data: {
+                inviter_userID: userId,
+                clickedOn: 'Invite for Matches'
+            }
+        }).then(function(link) {
+            resolve(link.url);
+        }).catch(function(err){
+            console.log(err);
+            reject(err);
+        })
+    })
+};
 
 Parse.Cloud.beforeSave(Parse.User, function(request, response) {
     const email = request.object.get('email');
@@ -135,7 +158,18 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
             //}
         }
     } else {
-        response.success();
+        if (!request.object.get('invitationUrl')) {
+            generateUserInviteUrl(request.object.id)
+                .then(link => {
+                    request.object.set('invitationUrl', link.url);
+                    response.success();
+                })
+                .catch(err => {
+                    response.success();
+                })
+        } else {
+            response.success();
+        }
     }
 });
 Parse.Cloud.afterSave(Parse.User, function(request, response) {
