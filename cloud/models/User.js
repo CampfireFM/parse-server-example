@@ -161,7 +161,7 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
         if (!request.object.get('invitationUrl')) {
             generateUserInviteUrl(request.object.id)
                 .then(link => {
-                    request.object.set('invitationUrl', link.url);
+                    request.object.set('invitationUrl', link);
                     response.success();
                 })
                 .catch(err => {
