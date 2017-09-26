@@ -17,7 +17,7 @@ const generateUserInviteUrl = (userId) => {
             channel: 'Invite Links',
             campaign: 'Invite for Matches',
             feature: 'invites',
-            alias: `i${userId}v`,
+            alias: `i${userId}`,
             tags: ['invite', 'inviteForMatches'],
             data: {
                 inviter_userID: userId,
