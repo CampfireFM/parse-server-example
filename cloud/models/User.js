@@ -340,3 +340,34 @@ function getUsersByTwitterIds(twitterIds, callback){
         callback(err);
     });
 }
+
+Parse.Cloud.define('updateUser', (request, response) => {
+    const {firstName, lastName, tagline, bio} = request.params;
+    const query = new Parse.Query(Parse.User);
+    query.get(request.object.id, {useMasterKey: true}).then(user => {
+        if (!firstName && !lastName && !tagline && !bio)
+            return response.success({});
+        if (firstName)
+            user.set('firstName', firstName);
+        if (lastName)
+            user.set('lastName', lastName);
+        if (tagline)
+            user.set('tagline', tagline);
+        if (bio)
+            user.set('bio', bio);
+        user.save(null, {useMasterKey: true}).then((updatedUser) => {
+            if (request.object.get('isTestUser') !== true) {
+                // Save user to algolia
+                let index = algoliaClient.initIndex('users');
+                // Convert Parse.Object to JSON
+                let objectToSave = parseToAlgoliaObjects(updatedUser)[0];
+                // Add or update object
+                index.saveObject(objectToSave, function (err, content) {
+                    if (err) {
+                        throw err;
+                    }
+                });
+            }
+        })
+    })
+})
