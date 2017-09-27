@@ -110,14 +110,3 @@ Parse.Cloud.job("Reindex Answers", function(request, status){
         });
     });
 });
-
-var Answer = Parse.Object.extend('Answer');
-var query = new Parse.Query(Answer);
-var Question = Parse.Object.extend('Question');
-var questionQuery = new Parse.Query(Question);
-questionQuery.notEqualTo('isTest', true);
-query.matchesQuery('questionRef', questionQuery);
-
-query.count({useMasterKey: true}).then(count => {
-    console.log(count)
-})
