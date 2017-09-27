@@ -62,6 +62,8 @@ Parse.Cloud.define('getCategories', function(req, res){
 
         query.find({useMasterKey: true}).then(wrapper(function*(objects) {
           if (objects.length) {
+            const date = new Date();
+            date.setDate(date.getDate() - 2);
             for (var i = 0; i < objects.length; i++) {
               let answerCount = 0;
               try {
@@ -74,11 +76,13 @@ Parse.Cloud.define('getCategories', function(req, res){
                   const featuredUserIds = object.get('featuredUsers') || [];
                   const featuredUsers = featuredUserIds.map(id => pointerTo(id, '_User'));
                   parentQuery.containedIn('userRef', featuredUsers);
+                  parentQuery.greaterThanOrEqualTo('createdAt', date);
                 } else {
                   for (let j = 0; j < tags.length; j++) {
                     const tagRef = pointerTo(tags[j], 'Tag');
                     const answerQuery = new Parse.Query(Answer);
                     answerQuery.containsAll('tags', [tagRef]);
+                    answerQuery.greaterThanOrEqualTo('createdAt', date);
                     parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
                   }
                 }
@@ -126,7 +130,7 @@ Parse.Cloud.define('getCategories', function(req, res){
               });
               result = objects;
             }
-            if (!isAdmin) redisClient.set(hashKey, JSON.stringify(result));
+            if (!isAdmin) redisClient.set(hashKey, JSON.stringify(result), 'EX', 3600 * 60 * 24); // Expire in 24 hours
             res.success(result);
           }
         }),function(error) {
