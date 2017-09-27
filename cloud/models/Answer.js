@@ -173,7 +173,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
             listenCount: request.object.get('listenCount'),
             tags: request.object.get('tags'),
             lists: request.object.get('lists'),
-            cloutPoint: request.object.get('cloutPoint'),
+            cloutPoints: request.object.get('cloutPoints'),
             isFreeToListen: request.object.get('isFreeToListen'),
             flagCount: request.object.get('flagCount')
         };
