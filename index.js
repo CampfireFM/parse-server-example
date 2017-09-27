@@ -19,7 +19,7 @@ var uniqid = require('uniqid');
 var ipn = require('paypal-ipn');
 var bodyParser = require('body-parser');
 var RedisCacheAdapter = require('parse-server').RedisCacheAdapter;
-var redisOptions = {url: config.redisUrl}
+var redisOptions = {url: config.redisSchemaUrl}
 var redisCache = new RedisCacheAdapter(redisOptions);
 panel = new MixpanelExport({
   api_key: config.mixpanel.api_key,
