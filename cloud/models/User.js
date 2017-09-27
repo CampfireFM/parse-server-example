@@ -158,6 +158,29 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
             //}
         }
     } else {
+        // Get previous user object
+        const query = new Parse.Query(Parse.User);
+        query.get(request.object.id, {useMasterKey: true}).then(user => {
+            // Check if first name, last name,
+            if (user.get('bio') !== request.object.get('bio')
+                || user.get('tagline') !== request.object.get('tagline')
+                || user.get('firstName') !== request.object.get('firstName')
+                || user.get('lastName') !== request.object.get('lastName')) {
+
+                if (request.object.get('isTestUser') !== true) {
+                    // Save user to algolia
+                    let index = algoliaClient.initIndex(config.algolia.userIndex);
+                    // Convert Parse.Object to JSON
+                    let objectToSave = parseToAlgoliaObjects(request.object)[0];
+                    // Add or update object
+                    index.saveObject(objectToSave, function (err, content) {
+                        if (err) {
+                            throw err;
+                        }
+                    });
+                }
+            }
+
         if (!request.object.get('invitationUrl')) {
             generateUserInviteUrl(request.object.id)
                 .then(link => {
@@ -170,6 +193,7 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
         } else {
             response.success();
         }
+        })
     }
 });
 Parse.Cloud.afterSave(Parse.User, function(request, response) {
@@ -218,18 +242,18 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
         });
 
         generateShareImage(request.object.id);
-        if (request.object.get('isTestUser') !== true) {
-            // Save user to algolia
-            let index = algoliaClient.initIndex('users');
-            // Convert Parse.Object to JSON
-            let objectToSave = parseToAlgoliaObjects(request.object)[0];
-            // Add or update object
-            index.saveObject(objectToSave, function (err, content) {
-                if (err) {
-                    throw err;
-                }
-            });
-        }
+        //if (request.object.get('isTestUser') !== true) {
+        //    // Save user to algolia
+        //    let index = algoliaClient.initIndex('users');
+        //    // Convert Parse.Object to JSON
+        //    let objectToSave = parseToAlgoliaObjects(request.object)[0];
+        //    // Add or update object
+        //    index.saveObject(objectToSave, function (err, content) {
+        //        if (err) {
+        //            throw err;
+        //        }
+        //    });
+        //}
 
     }
     response.success('ok');

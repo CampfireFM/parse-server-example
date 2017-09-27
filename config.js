@@ -39,7 +39,8 @@ configs = {
             api_key: '6063c6a1e68779c80c7965f85074148b',
             answerIndex: process.env.ANSWER_INDEX || 'dev_answers',
             questionIndex: process.env.QUESTION_INDEX || 'questions',
-            questionByUserNameIndex: process.env.QUESTION_USERNAME_INDEX || 'questions_by_username'
+            questionByUserNameIndex: process.env.QUESTION_USERNAME_INDEX || 'questions_by_username',
+            userIndex: process.env.USER_INDEX || 'dev_users'
         },
         paypal: {
             mode: process.env.PAYPAL_MODE,
@@ -95,7 +96,8 @@ configs = {
             api_key: '6063c6a1e68779c80c7965f85074148b',
             answerIndex: process.env.ANSWER_INDEX || 'prod_answers',
             questionIndex: process.env.QUESTION_INDEX || 'questions',
-            questionByUserNameIndex: process.env.QUESTION_USERNAME_INDEX || 'questions_by_username'
+            questionByUserNameIndex: process.env.QUESTION_USERNAME_INDEX || 'questions_by_username',
+            userIndex: process.env.USER_INDEX || 'users'
         },
         paypal: {
             mode: process.env.PAYPAL_MODE,
