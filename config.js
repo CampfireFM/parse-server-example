@@ -40,7 +40,8 @@ configs = {
             answerIndex: process.env.ANSWER_INDEX || 'dev_answers',
             questionIndex: process.env.QUESTION_INDEX || 'questions',
             questionByUserNameIndex: process.env.QUESTION_USERNAME_INDEX || 'questions_by_username',
-            userIndex: process.env.USER_INDEX || 'dev_users'
+            userIndex: process.env.USER_INDEX || 'dev_users',
+            adminUserIndex: process.env.ADMIN_USER_INDEX || 'dev_users_by_username'
         },
         paypal: {
             mode: process.env.PAYPAL_MODE,
@@ -97,7 +98,8 @@ configs = {
             answerIndex: process.env.ANSWER_INDEX || 'prod_answers',
             questionIndex: process.env.QUESTION_INDEX || 'questions',
             questionByUserNameIndex: process.env.QUESTION_USERNAME_INDEX || 'questions_by_username',
-            userIndex: process.env.USER_INDEX || 'users'
+            userIndex: process.env.USER_INDEX || 'users',
+            adminUserIndex: process.env.ADMIN_USER_INDEX || 'prod_users_by_username'
         },
         paypal: {
             mode: process.env.PAYPAL_MODE,

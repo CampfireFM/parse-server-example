@@ -169,11 +169,10 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
 
                 if (request.object.get('isTestUser') !== true) {
                     // Save user to algolia
-                    let index = algoliaClient.initIndex(config.algolia.userIndex);
-                    // Convert Parse.Object to JSON
-                    let objectToSave = parseToAlgoliaObjects(request.object)[0];
+                    let appUserIndex = algoliaClient.initIndex(config.algolia.userIndex);
                     // Add or update object
-                    index.saveObject(objectToSave, function (err, content) {
+                    let objectToSave = parseToAlgoliaObjects(request.object)[0];
+                    appUserIndex.saveObject(objectToSave, function (err, content) {
                         if (err) {
                             throw err;
                         }
@@ -242,6 +241,14 @@ Parse.Cloud.afterSave(Parse.User, function(request, response) {
         });
 
         generateShareImage(request.object.id);
+        let objectToSave = parseToAlgoliaObjects(request.object)[0];
+        let adminUserIndex = algoliaClient.initIndex(config.algolia.adminUserIndex);
+        // Add or update object
+        adminUserIndex.saveObject(objectToSave, function (err, content) {
+            if (err) {
+                throw err;
+            }
+        });
         //if (request.object.get('isTestUser') !== true) {
         //    // Save user to algolia
         //    let index = algoliaClient.initIndex('users');

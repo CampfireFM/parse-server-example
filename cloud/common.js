@@ -354,7 +354,7 @@ function generateAnswerShareImage(answerId) {
         });
 }
 
-function getAllUsers() {
+function getAllUsers(noFilter) {
     return new Promise((resolve, reject) => {
         var result = [];
         var chunk_size = 1000;
@@ -373,9 +373,11 @@ function getAllUsers() {
             }
             //query.select(['profilePhoto', 'charityRef']);
             query.include(['charityRef']);
-            query.notEqualTo('isTestUser', true);
-            query.notEqualTo('lastName', 'Test');
-            query.notEqualTo('firstName', 'Test');
+            if (!noFilter) {
+                query.notEqualTo('isTestUser', true);
+                query.notEqualTo('lastName', 'Test');
+                query.notEqualTo('firstName', 'Test');
+            }
             query.limit(chunk_size);
             query.ascending("objectId");
             query.find({useMasterKey: true}).then(function (res) {
