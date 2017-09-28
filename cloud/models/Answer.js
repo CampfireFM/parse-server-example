@@ -15,12 +15,12 @@ Parse.Cloud.beforeSave("Answer", function(request, response) {
         const listenCount = request.object.get('listenCount') || 0;
         const likeCount = request.object.get('likeCount') || 0;
         const unlockCount = request.object.get('unlockCount') || 0;
-        const deductionClout = request.object.get('deductionClout') || 0;
-        const dateClout = request.object.get('dateClout') || 0;
-        const earnedClout = listenCount * pointsForListen + likeCount * pointsForLike + unlockCount * pointsForUnlock;
-        const adminClout = request.object.get('adminClout') || 0;
-        const cloutPoints = dateClout + earnedClout + adminClout - deductionClout;
-        request.object.set('earnedClout', earnedClout);
+        const cloutDeductions = request.object.get('cloutDeductions') || 0;
+        const cloutFromDate = request.object.get('cloutFromDate') || 0;
+        const cloutEarned = listenCount * pointsForListen + likeCount * pointsForLike + unlockCount * pointsForUnlock;
+        const cloutFromAdmin = request.object.get('cloutFromAdmin') || 0;
+        const cloutPoints = cloutFromDate + cloutEarned + cloutFromAdmin - cloutDeductions;
+        request.object.set('cloutEarned', cloutEarned);
         request.object.set('cloutPoints', cloutPoints);
         if (request.object.get('tags'))
           request.object.set('tags', request.object.get('tags').slice(0, 3));
@@ -28,14 +28,15 @@ Parse.Cloud.beforeSave("Answer", function(request, response) {
     }
     else {
         request.object.set('liveDate', new Date());
-        request.object.set('dateClout', 100);
-        request.object.set('adminClout', 0);
-        request.object.set('deductionClout', 0);
+        request.object.set('cloutFromDate', 100);
+        request.object.set('cloutFromAdmin', 0);
+        request.object.set('cloutDeductions', 0);
         request.object.set('lastDeductionDate', new Date());
         request.object.set('listenCount', 0);
         request.object.set('likeCount', 0);
         request.object.set('unlockCount', 0);
         request.object.set('cloutPoints', 100);
+        request.object.set('cloutEarned', 0);
         getQuestionAndItsPointers(request.object.get('questionRef').id, (err, question) => {
             if (question) {
                 const list = question.get('list');
