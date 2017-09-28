@@ -15,10 +15,17 @@ var qotdJob = new CronJob({
     start: false,
     timeZone: 'America/New_York'
 });
-
+var deductionJob = new CronJob({
+    cronTime: '00 00 0,12 * * *',
+    onTick: deductCloutPoints,
+    start: false,
+    timeZone: 'America/New_York'
+});
+deductionJob.start();
 if (process.env.RUN_CRON === 'true') {
     //job.start();
     //qotdJob.start();
+
 }
 
 const admins = ['krittylor@gmail.com', 'ericwebb85@yahoo.com', 'luke@lukevink.com', 'christos@campfire.fm', 'nick@campfire.fm'];
@@ -295,7 +302,30 @@ function sendQOTDLivePushNotification() {
     })
 }
 
+function deductCloutPoints() {
+    const Answer = Parse.Object.extend('Answer');
+    const answerQuery = new Parse.Query(Answer);
+    answerQuery.greaterThanOrEqualTo('cloutPoints', 55);
+    const lastDeductionDate = new Date();
+    lastDeductionDate.setDate(lastDeductionDate.getDate() - 1);
+    lastDeductionDate.setMinutes(0);
+    lastDeductionDate.setSeconds(0);
+    lastDeductionDate.setMilliseconds(0);
+    answerQuery.lessThan('lastDeductionDate', lastDeductionDate);
+    answerQuery.find({useMasterKey: true})
+      .then(answers => {
+          answers.forEach(answer => {
+              answer.increment('cloutDeductions', 5);
+              answer.set('lastDeductionDate', new Date());
+              answer.save(null, {useMasterKey: true});
+          })
+      }, err => {
+          console.log(err);
+      })
+}
 Parse.Cloud.job("sendSummary", function(request, status){
     runSummaryUpdate();
     status.success();
 });
+
+deductCloutPoints();
