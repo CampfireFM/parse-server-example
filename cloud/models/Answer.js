@@ -19,7 +19,7 @@ Parse.Cloud.beforeSave("Answer", function(request, response) {
         const dateClout = request.object.get('dateClout') || 0;
         const earnedClout = listenCount * pointsForListen + likeCount + pointsForLike + unlockCount * pointsForUnlock;
         const adminClout = request.object.get('adminClout') || 0;
-        const cloutPoints = earnedClout + adminClout - deductionClout;
+        const cloutPoints = dateClout + earnedClout + adminClout - deductionClout;
         request.object.set('earnedClout', earnedClout);
         request.object.set('cloutPoints', cloutPoints);
         if (request.object.get('tags'))
