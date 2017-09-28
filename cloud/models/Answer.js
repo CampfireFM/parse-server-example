@@ -17,7 +17,7 @@ Parse.Cloud.beforeSave("Answer", function(request, response) {
         const unlockCount = request.object.get('unlockCount') || 0;
         const deductionClout = request.object.get('deductionClout') || 0;
         const dateClout = request.object.get('dateClout') || 0;
-        const earnedClout = listenCount * pointsForListen + likeCount + pointsForLike + unlockCount * pointsForUnlock;
+        const earnedClout = listenCount * pointsForListen + likeCount * pointsForLike + unlockCount * pointsForUnlock;
         const adminClout = request.object.get('adminClout') || 0;
         const cloutPoints = dateClout + earnedClout + adminClout - deductionClout;
         request.object.set('earnedClout', earnedClout);
@@ -175,7 +175,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 });
             }
         });
-        //generateAnswerShareImage(request.object.id);
+        generateAnswerShareImage(request.object.id);
         //ENDS HERE - TO BE UNCOMMENTED
     } else {
         var indexAnswer = client.initIndex(config.algolia.answerIndex);
