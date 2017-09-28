@@ -175,7 +175,6 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 });
             }
         });
-        generateAnswerShareImage(request.object.id);
         //ENDS HERE - TO BE UNCOMMENTED
     } else {
         var indexAnswer = client.initIndex(config.algolia.answerIndex);
@@ -193,6 +192,9 @@ Parse.Cloud.afterSave("Answer", function(request) {
         indexAnswer.partialUpdateObject(partialUpdate, function(err, content) {
             console.log(content);
         });
+    }
+    if (!request.object.get('image')) {
+        generateAnswerShareImage(request.object.id);
     }
 });
 //end of afterSave function
