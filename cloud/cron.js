@@ -302,26 +302,97 @@ function sendQOTDLivePushNotification() {
 }
 
 function deductCloutPoints() {
-    const Answer = Parse.Object.extend('Answer');
-    const answerQuery = new Parse.Query(Answer);
-    answerQuery.greaterThanOrEqualTo('cloutPoints', 55);
     const lastDeductionDate = new Date();
-    lastDeductionDate.setDate(lastDeductionDate.getDate() - 1);
+    //lastDeductionDate.setDate(lastDeductionDate.getDate() - 1);
+    lastDeductionDate.setHours(lastDeductionDate.getHours() - 23);
     lastDeductionDate.setMinutes(0);
     lastDeductionDate.setSeconds(0);
     lastDeductionDate.setMilliseconds(0);
-    answerQuery.lessThan('lastDeductionDate', lastDeductionDate);
-    answerQuery.find({useMasterKey: true})
-      .then(answers => {
-          answers.forEach(answer => {
-              answer.increment('cloutDeductions', 5);
-              answer.set('lastDeductionDate', new Date());
-              answer.save(null, {useMasterKey: true});
-          })
-      }, err => {
-          console.log(err);
-      })
+    const Answer = Parse.Object.extend('Answer');
+    function processAllDeductionAnswers(callback, fnDeductCloutPoints){
+
+        var totalCount;
+        var chunk_size = 50;
+
+        var processCallback = function(res) {
+            fnDeductCloutPoints(res, totalCount)
+                .then(() => {
+                    if (res.length === chunk_size) {
+                        process(res[res.length-1].id);
+                    } else {
+                        callback(null);
+                    }
+                })
+                .catch(err => {
+                    // Ignore error, continue
+                    if (res.length === chunk_size) {
+                        process(res[res.length-1].id);
+                    } else {
+                        callback(null);
+                    }
+                })
+        };
+        var process = function(skip) {
+            const answerQuery = new Parse.Query(Answer);
+            answerQuery.greaterThanOrEqualTo('cloutPoints', 55);
+            answerQuery.lessThan('lastDeductionDate', lastDeductionDate);
+            if (skip) {
+                answerQuery.greaterThan("objectId", skip);
+            }
+            answerQuery.limit(chunk_size);
+            answerQuery.ascending("objectId");
+            answerQuery.find({useMasterKey: true}).then(function (res) {
+                processCallback(res);
+            }, function (error) {
+                callback(error);
+            });
+        };
+        const answerQuery = new Parse.Query(Answer);
+        answerQuery.greaterThanOrEqualTo('cloutPoints', 55);
+        answerQuery.lessThan('lastDeductionDate', lastDeductionDate);
+        answerQuery.count({useMasterKey : true}).then(function(count){
+            totalCount = count;
+            process(false);
+        }, function(err){
+            console.log(err);
+            throw 'An error occured while counting questions ' + err.code + ' : ' + err.message;
+        });
+    }
+    processAllDeductionAnswers(err => {
+        if (err) {
+            console.log('An error occured deducting answers');
+            return status.error(err);
+        }
+        console.log('Deducting answers completed');
+    }, (answers, totalCount) => {
+        return new Promise(wrapper(function*(resolve, reject){
+            for (let i = 0; i < answers.length; i++) {
+                const answer = answers[i];
+                try {
+                    yield new Promise((resolve, reject) => {
+                        answer.increment('cloutDeductions', 5);
+                        answer.set('lastDeductionDate', new Date());
+                        answer.save(null, {useMasterKey: true}).then(res => {
+                            resolve();
+                        }, err => {
+                            reject(err);
+                        })
+                    });
+                } catch (err) {
+                    console.log(err);
+                }
+
+            }
+            resolve();
+        }));
+    });
 }
+
+Parse.Cloud.define('deductCloutPoints', (req, res) => {
+    deductCloutPoints();
+    res.success({});
+});
+
 Parse.Cloud.job("sendSummary", function(request, status){
     runSummaryUpdate();
     status.success();

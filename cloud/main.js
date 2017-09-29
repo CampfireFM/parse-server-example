@@ -7,6 +7,7 @@ const wrapper = require('co-express');
 const Promise = require('promise');
 var algoliasearch = require('./algolia/algoliaSearch.parse.js');
 var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
+const redisClient = require('./redis');
 const { sendTransactionFailureEmail } = require('../utils/mail');
 //include the JS files which represent each classes (models), and contains their operations
 require("./models/Answer.js");
@@ -115,11 +116,42 @@ Parse.Cloud.afterSave('Defaults', function(request){
         unlockMatchValue = 0.002475;
 });
 
-//the below function is just to test if everything is working fine
-Parse.Cloud.define('hello', function(req, res) {
-    res.success("Hi");
-});
+// Setup top 20 answer clout points
+(function() {
+    redisClient.exists('top20CloutPoints', (err, reply) => {
+        if (reply === 1) {
+            console.log('top20CloutPoints already exists');
+        } else {
+            const Answer = Parse.Object.extend('Answer');
+            const query = new Parse.Query(Answer);
+            query.notEqualTo('isTest', true);
+            query.notEqualTo('isDummyData', true);
+            query.lessThanOrEqualTo('liveDate', new Date());
+            query.descending('cloutPoints');
+            query.limit(20);
+            query.select(['objectId', 'cloutPoints'])
+            query.find({useMasterKey: true})
+                .then(answers => {
+                    const multi = redisClient.multi();
+                    for (let i = answers.length - 1; i >= 0; i--) {
+                        const answer = answers[i];
+                        multi.lpush('top20CloutPoints', answer.get('cloutPoints'));
+                        multi.lpush('top20AnswerIds', answer.id);
+                    }
+                    multi.ltrim('top20CloutPoints', 0, answers.length);
+                    multi.ltrim('top20AnswerIds', 0, answers.length);
+                    multi.exec((err, res) => {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            console.log(res);
+                        }
+                    });
+                })
+        }
+    });
 
+})();
 Parse.Cloud.define('addAnswersToList', function(req, res) {
     var Answer = Parse.Object.extend('Answer');
     var query = new Parse.Query(Answer);

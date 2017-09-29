@@ -7,6 +7,7 @@ var config = require('../../config');
 const warningReceivers = config.warningReceivers;
 var algoliasearch = require('../algolia/algoliaSearch.parse.js');
 var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
+const redisClient = require('../redis');
 function pointerTo(objectId, klass) {
     return { __type:"Pointer", className:klass, objectId:objectId };
 }
@@ -197,6 +198,71 @@ Parse.Cloud.afterSave("Answer", function(request) {
     if (!request.object.get('image')) {
         generateAnswerShareImage(request.object.id);
     }
+
+    // Check top 20 clout points and update if available
+    if (request.object.get('isTest') || request.object.get('isDummyData') || !(request.object.get('liveDate') < new Date())) {
+        
+        return;
+    }
+    const cloutPoints = request.object.get('cloutPoints');
+    redisClient.lrange('top20CloutPoints', 0, -1, (err, top20CloutPoints) => {
+        if (err) {
+            console.log(err);
+        } else {
+            if (cloutPoints > top20CloutPoints[top20CloutPoints.length - 1]) {
+                console.log('Updating top 20 clout points');
+                // Add this answer to top 20
+                redisClient.lrange('top20AnswerIds', 0, -1, (err, top20AnswerIds) => {
+                    if (err) {
+                        // Do nothing
+                        console.log(err);
+                    } else {
+                        let isExisting = top20AnswerIds.indexOf(request.object.id) > -1;
+                        if (isExisting) {
+                            console.log('Already in top 20 answers');
+                            top20CloutPoints[top20AnswerIds.indexOf(request.object.id)] = cloutPoints;
+                            //return;
+                        }
+                        let topAnswers = [];
+                        for (let i = 0; i < top20AnswerIds.length; i++) {
+                            topAnswers.push({
+                                id: top20AnswerIds[i],
+                                cloutPoints: top20CloutPoints[i]
+                            })
+                        }
+                        if (!isExisting) {
+                            topAnswers.push({
+                                id: request.object.id,
+                                cloutPoints
+                            });
+                        }
+                        topAnswers.sort((a, b) => {
+                            if (a.cloutPoints > b.cloutPoints)
+                                return 1;
+                            if (a.cloutPoints < b.cloutPoints)
+                                return -1;
+                            return 0;
+                        });
+                        topAnswers = topAnswers.slice(-20);
+                        const multi = redisClient.multi();
+                        topAnswers.forEach(topAnswer => {
+                            multi.lpush('top20CloutPoints', topAnswer.cloutPoints);
+                            multi.lpush('top20AnswerIds', topAnswer.id);
+                        });
+                        multi.ltrim('top20CloutPoints', 0, topAnswers.length - 1);
+                        multi.ltrim('top20AnswerIds', 0, topAnswers.length - 1);
+                        multi.exec((err, res) => {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                console.log(res);
+                            }
+                        })
+                    }
+                })
+            }
+        }
+    });
 });
 //end of afterSave function
 

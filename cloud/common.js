@@ -1,5 +1,6 @@
 const Twilio = require('twilio');
 const config = require('../config');
+const redisClient = require('./redis');
 const Promise = require('promise');
 const request = require('superagent');
 const Mixpanel = require('mixpanel');
@@ -484,4 +485,36 @@ function trackEvent(user, type, params) {
     }
 }
 
+const resetTop20CloutPoints = () => {
+    redisClient.del('top20CloutPoints');
+    redisClient.del('top20AnswerIds');
+    const Answer = Parse.Object.extend('Answer');
+    const query = new Parse.Query(Answer);
+    query.notEqualTo('isTest', true);
+    query.notEqualTo('isDummyData', true);
+    query.lessThanOrEqualTo('liveDate', new Date());
+    query.descending('cloutPoints');
+    query.limit(20);
+    query.select(['objectId', 'cloutPoints'])
+    query.find({useMasterKey: true})
+        .then(answers => {
+            const multi = redisClient.multi();
+            for (let i = answers.length - 1; i >= 0; i--) {
+                const answer = answers[i];
+                multi.lpush('top20CloutPoints', answer.get('cloutPoints'));
+                multi.lpush('top20AnswerIds', answer.id);
+            }
+            multi.ltrim('top20CloutPoints', 0, answers.length - 1);
+            multi.ltrim('top20AnswerIds', 0, answers.length - 1);
+            multi.exec((err, res) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log(res);
+                }
+            });
+        }, err => {
+            console.log(err);
+        })
+}
 module.exports = {trackEvent, getFollowers, getFollows, checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers, generateAnswerShareImage, getAllAnswers};
