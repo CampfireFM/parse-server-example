@@ -15,13 +15,7 @@ var qotdJob = new CronJob({
     start: false,
     timeZone: 'America/New_York'
 });
-var deductionJob = new CronJob({
-    cronTime: '00 00 0,12 * * *',
-    onTick: deductCloutPoints,
-    start: false,
-    timeZone: 'America/New_York'
-});
-deductionJob.start();
+
 if (process.env.RUN_CRON === 'true') {
     //job.start();
     //qotdJob.start();
