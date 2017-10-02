@@ -141,8 +141,7 @@ Parse.Cloud.job("Reindex Question", function(request, status){
 Parse.Cloud.define('searchQuestions', function(request, response){
     const skip = request.params.skip ? request.params.skip : 0;
     const limit = request.params.limit ? request.params.limit : 0;
-    const type = request.params.type ? 'questions' : 'usernames';
-    const indexName = type == 'questions' ? 'questions' : 'questions_by_username';
+    const indexName = config.algolia.answerIndex;
     const index = client.initIndex(indexName);
 
     const text = request.params.text ? request.params.text : '';
