@@ -206,69 +206,72 @@ Parse.Cloud.afterSave("Answer", function(request) {
         return;
     }
     const cloutPoints = request.object.get('cloutPoints');
-    redisClient.lrange('top20CloutPoints', 0, -1, wrapper(function*(err, top20CloutPoints){
+    const multi = redisClient.multi();
+    multi.lrange('top20CloutPoints', 0, -1);
+    multi.lrange('top20AnswerIds', 0, -1);
+    multi.exec(function(err, replies) {
         if (err) {
             console.log(err);
         } else {
+            console.log(replies);
+            let top20CloutPoints = replies[0];
+            let top20AnswerIds = replies[1];
             if (top20CloutPoints.length === 0) {
-                top20CloutPoints = (yield resetTop20CloutPoints()).map(answer => answer.cloutPoints);
+                return resetTop20CloutPoints().then();
             }
-            if (cloutPoints > top20CloutPoints[top20CloutPoints.length - 1]) {
-                console.log('Updating top 20 clout points');
-                // Add this answer to top 20
-                redisClient.lrange('top20AnswerIds', 0, -1, (err, top20AnswerIds) => {
-                    if (err) {
-                        // Do nothing
-                        console.log(err);
-                    } else {
-                        let isExisting = top20AnswerIds.indexOf(request.object.id) > -1;
-                        if (isExisting) {
-                            console.log('Already in top 20 answers');
-                            top20CloutPoints[top20AnswerIds.indexOf(request.object.id)] = cloutPoints;
-                            //return;
-                        }
-                        let topAnswers = [];
-                        for (let i = 0; i < top20AnswerIds.length; i++) {
-                            topAnswers.push({
-                                id: top20AnswerIds[i],
-                                cloutPoints: parseInt(top20CloutPoints[i])
-                            })
-                        }
-                        if (!isExisting) {
-                            topAnswers.push({
-                                id: request.object.id,
-                                cloutPoints
-                            });
-                        }
-                        topAnswers.sort((a, b) => {
-                            if (a.cloutPoints > b.cloutPoints)
-                                return 1;
-                            if (a.cloutPoints < b.cloutPoints)
-                                return -1;
-                            return 0;
-                        });
-                        topAnswers = topAnswers.slice(-20);
-                        const multi = redisClient.multi();
-                        multi.del('top20CloutPoints');
-                        multi.del('top20AnswerIds');
-                        topAnswers.forEach(topAnswer => {
-                            multi.lpush('top20CloutPoints', topAnswer.cloutPoints);
-                            multi.lpush('top20AnswerIds', topAnswer.id);
-                        });
-                        multi.ltrim('top20CloutPoints', 0, topAnswers.length - 1);
-                        multi.ltrim('top20AnswerIds', 0, topAnswers.length - 1);
-                        multi.exec((err, res) => {
-                            if (err) {
-                                console.log(err);
-                            } else {
-                                console.log(res);
-                            }
-                        })
-                    }
+            let isExisting = top20AnswerIds.indexOf(request.object.id) > -1;
+            if (isExisting && cloutPoints < top20CloutPoints[top20CloutPoints.length - 1]) {
+                return resetTop20CloutPoints().then();
+            }
+            if (!isExisting && cloutPoints < top20CloutPoints[top20CloutPoints.length - 1]) {
+                return;
+            }
+            // Add this answer to top 20
+            console.log('Updating top 20 clout points');
+            if (isExisting) {
+                console.log('Already in top 20 answers');
+                top20CloutPoints[top20AnswerIds.indexOf(request.object.id)] = cloutPoints;
+                //return;
+            }
+            let topAnswers = [];
+            for (let i = 0; i < top20AnswerIds.length; i++) {
+                topAnswers.push({
+                    id: top20AnswerIds[i],
+                    cloutPoints: parseInt(top20CloutPoints[i])
                 })
             }
+            if (!isExisting) {
+                topAnswers.push({
+                    id: request.object.id,
+                    cloutPoints
+                });
+            }
+            topAnswers.sort((a, b) => {
+                if (a.cloutPoints > b.cloutPoints)
+                    return 1;
+                if (a.cloutPoints < b.cloutPoints)
+                    return -1;
+                return 0;
+            });
+            topAnswers = topAnswers.slice(-20);
+            const multiUpdate = redisClient.multi();
+            multiUpdate.del('top20CloutPoints');
+            multiUpdate.del('top20AnswerIds');
+            topAnswers.forEach(topAnswer => {
+                multiUpdate.lpush('top20CloutPoints', topAnswer.cloutPoints);
+                multiUpdate.lpush('top20AnswerIds', topAnswer.id);
+            });
+            multiUpdate.ltrim('top20CloutPoints', 0, topAnswers.length - 1);
+            multiUpdate.ltrim('top20AnswerIds', 0, topAnswers.length - 1);
+            multiUpdate.exec((err, res) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log(res);
+                }
+            })
         }
-    }));
+    })
 });
 //end of afterSave function
 
