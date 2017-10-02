@@ -251,8 +251,8 @@ Parse.Cloud.afterSave("Answer", function(request) {
                             multi.lpush('top20CloutPoints', topAnswer.cloutPoints);
                             multi.lpush('top20AnswerIds', topAnswer.id);
                         });
-                        //multi.ltrim('top20CloutPoints', 0, topAnswers.length - 1);
-                        //multi.ltrim('top20AnswerIds', 0, topAnswers.length - 1);
+                        multi.ltrim('top20CloutPoints', 0, topAnswers.length - 1);
+                        multi.ltrim('top20AnswerIds', 0, topAnswers.length - 1);
                         multi.exec((err, res) => {
                             if (err) {
                                 console.log(err);
