@@ -3,6 +3,7 @@ const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 const {getFollowers} = require('../common');
 const Mixpanel = require('mixpanel');
+const wrapper = require('co-express');
 var config = require('../../config');
 const warningReceivers = config.warningReceivers;
 var algoliasearch = require('../algolia/algoliaSearch.parse.js');
@@ -205,10 +206,13 @@ Parse.Cloud.afterSave("Answer", function(request) {
         return;
     }
     const cloutPoints = request.object.get('cloutPoints');
-    redisClient.lrange('top20CloutPoints', 0, -1, (err, top20CloutPoints) => {
+    redisClient.lrange('top20CloutPoints', 0, -1, wrapper(function*(err, top20CloutPoints){
         if (err) {
             console.log(err);
         } else {
+            if (top20CloutPoints.length === 0) {
+                top20CloutPoints = (yield resetTop20CloutPoints()).map(answer => answer.cloutPoints);
+            }
             if (cloutPoints > top20CloutPoints[top20CloutPoints.length - 1]) {
                 console.log('Updating top 20 clout points');
                 // Add this answer to top 20
@@ -264,7 +268,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                 })
             }
         }
-    });
+    }));
 });
 //end of afterSave function
 
