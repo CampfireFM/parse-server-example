@@ -315,8 +315,9 @@ Parse.Cloud.define('getFeaturedAnswers', function(req, res) {
     query.include(['questionRef', 'questionRef.toUser',
         'questionRef.fromUser', 'questionRef.charity', 'questionRef.list', 'userRef']);
     query.notEqualTo('isTest', true);
-    //query.containsAll('lists', [pointerTo('CTsXJi51Qc', 'List')]);
-    query.descending('cloutPoints');
+    query.containsAll('lists', [pointerTo('CTsXJi51Qc', 'List')]);
+    //query.descending('cloutPoints');
+    query.descending('liveDate');
     query.lessThan('liveDate', new Date());
     query.limit(limit);
     query.skip(skip);
