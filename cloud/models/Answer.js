@@ -542,4 +542,4 @@ Parse.Cloud.job("Index Admin Users", function(request, status) {
         }, err => {
             status.error(err);
         })
-}
+});
