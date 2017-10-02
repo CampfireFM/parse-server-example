@@ -1,4 +1,4 @@
-const {trackEvent, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateAnswerShareImage } = require('../common');
+const {resetTop20CloutPoints, trackEvent, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateAnswerShareImage } = require('../common');
 const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 const {getFollowers} = require('../common');
@@ -227,7 +227,7 @@ Parse.Cloud.afterSave("Answer", function(request) {
                         for (let i = 0; i < top20AnswerIds.length; i++) {
                             topAnswers.push({
                                 id: top20AnswerIds[i],
-                                cloutPoints: top20CloutPoints[i]
+                                cloutPoints: parseInt(top20CloutPoints[i])
                             })
                         }
                         if (!isExisting) {
@@ -245,12 +245,14 @@ Parse.Cloud.afterSave("Answer", function(request) {
                         });
                         topAnswers = topAnswers.slice(-20);
                         const multi = redisClient.multi();
+                        multi.del('top20CloutPoints');
+                        multi.del('top20AnswerIds');
                         topAnswers.forEach(topAnswer => {
                             multi.lpush('top20CloutPoints', topAnswer.cloutPoints);
                             multi.lpush('top20AnswerIds', topAnswer.id);
                         });
-                        multi.ltrim('top20CloutPoints', 0, topAnswers.length - 1);
-                        multi.ltrim('top20AnswerIds', 0, topAnswers.length - 1);
+                        //multi.ltrim('top20CloutPoints', 0, topAnswers.length - 1);
+                        //multi.ltrim('top20AnswerIds', 0, topAnswers.length - 1);
                         multi.exec((err, res) => {
                             if (err) {
                                 console.log(err);
@@ -428,3 +430,103 @@ function createPayout(params, callback){
     });
     //end of save operation code block
 }
+
+Parse.Cloud.define('resetTopCloutPoints', (request, response) => {
+    resetTop20CloutPoints();
+    response.success({});
+});
+
+Parse.Cloud.define('getTopCloutPoints', (request, response) => {
+    redisClient.lrange('top20CloutPoints', 0, -1, (err, top20CloutPoints) => {
+        if (err || !top20CloutPoints || top20CloutPoints.length === 0) {
+            resetTop20CloutPoints()
+                .then(top20Answers => {
+                    response.success(top20Answers);
+                })
+                .catch(err => {
+                    response.error(err);
+                })
+        } else {
+            redisClient.lrange('top20AnswerIds', 0, -1, (err, top20AnswerIds) => {
+                let topAnswers = [];
+                for (let i = 0; i < top20AnswerIds.length; i++) {
+                    topAnswers.push({
+                        id: top20AnswerIds[i],
+                        cloutPoints: parseInt(top20CloutPoints[i])
+                    })
+                }
+                response.success(topAnswers);
+            })
+        }
+    })
+})
+
+Parse.Cloud.define('boostAnswer', (request, response) => {
+    const ranking = request.params.ranking;
+    const answerId = request.params.answerId;
+    const Answer = Parse.Object.extend('Answer');
+    const answerQuery = new Parse.Query(Answer);
+    answerQuery.get(answerId, {useMasterKey: true}).then(answer => {
+        redisClient.lrange('top20CloutPoints', 0, -1, (err, top20CloutPoints) => {
+            if (err || !top20CloutPoints || top20CloutPoints.length === 0) {
+                resetTop20CloutPoints()
+                    .then(top20Answers => {
+                        let targetIndex = 0;
+                        switch(ranking) {
+                            case 'TOP':
+                                targetIndex = 0;
+                                break;
+                            case 'TOP5':
+                                targetIndex = 4;
+                                break;
+                            case 'TOP10':
+                                targetIndex = 9;
+                                break;
+                            case 'TOP20':
+                                targetIndex = 19;
+                                break;
+                            default:
+                                targetIndex = 19;
+                                break;
+                        }
+                        let targetPoint = top20Answers[targetIndex].cloutPoints;
+                        answer.increment('cloutFromAdmin', targetPoint - (answer.get('cloutPoints') || 0));
+                        answer.save(null, {useMasterKey: true}).then(res => {
+                            response.success(res);
+                        }, err => response.error(err));
+                        //response.success(top20Answers);
+                    })
+                    .catch(err => {
+                        response.error(err);
+                    })
+            } else {
+                let targetIndex = 0;
+                switch(ranking) {
+                    case 'TOP':
+                        targetIndex = 0;
+                        break;
+                    case 'TOP5':
+                        targetIndex = 4;
+                        break;
+                    case 'TOP10':
+                        targetIndex = 9;
+                        break;
+                    case 'TOP20':
+                        targetIndex = 19;
+                        break;
+                    default:
+                        targetIndex = 19;
+                        break;
+                }
+                let targetPoint = top20CloutPoints[targetIndex];
+                answer.increment('cloutFromAdmin', targetPoint - (answer.get('cloutPoints') || 0));
+                answer.save(null, {useMasterKey: true}).then(res => {
+                    response.success(res);
+                }, err => response.error(err));
+            }
+        })
+    }, err => {
+        response.error(err);
+    })
+
+})

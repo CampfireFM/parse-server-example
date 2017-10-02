@@ -486,35 +486,47 @@ function trackEvent(user, type, params) {
 }
 
 const resetTop20CloutPoints = () => {
-    redisClient.del('top20CloutPoints');
-    redisClient.del('top20AnswerIds');
-    const Answer = Parse.Object.extend('Answer');
-    const query = new Parse.Query(Answer);
-    query.notEqualTo('isTest', true);
-    query.notEqualTo('isDummyData', true);
-    query.lessThanOrEqualTo('liveDate', new Date());
-    query.descending('cloutPoints');
-    query.limit(20);
-    query.select(['objectId', 'cloutPoints'])
-    query.find({useMasterKey: true})
-        .then(answers => {
-            const multi = redisClient.multi();
-            for (let i = answers.length - 1; i >= 0; i--) {
-                const answer = answers[i];
-                multi.lpush('top20CloutPoints', answer.get('cloutPoints'));
-                multi.lpush('top20AnswerIds', answer.id);
-            }
-            multi.ltrim('top20CloutPoints', 0, answers.length - 1);
-            multi.ltrim('top20AnswerIds', 0, answers.length - 1);
-            multi.exec((err, res) => {
-                if (err) {
-                    console.log(err);
-                } else {
-                    console.log(res);
+    return new Promise((resolve, reject) => {
+        redisClient.del('top20CloutPoints');
+        redisClient.del('top20AnswerIds');
+        const Answer = Parse.Object.extend('Answer');
+        const query = new Parse.Query(Answer);
+        query.notEqualTo('isTest', true);
+        query.notEqualTo('isDummyData', true);
+        query.lessThanOrEqualTo('liveDate', new Date());
+        query.descending('cloutPoints');
+        query.limit(20);
+        query.select(['objectId', 'cloutPoints'])
+        query.find({useMasterKey: true})
+            .then(answers => {
+                const multi = redisClient.multi();
+                for (let i = answers.length - 1; i >= 0; i--) {
+                    const answer = answers[i];
+                    multi.lpush('top20CloutPoints', answer.get('cloutPoints'));
+                    multi.lpush('top20AnswerIds', answer.id);
                 }
-            });
-        }, err => {
-            console.log(err);
-        })
+                multi.ltrim('top20CloutPoints', 0, answers.length - 1);
+                multi.ltrim('top20AnswerIds', 0, answers.length - 1);
+                multi.exec((err, res) => {
+                    if (err) {
+                        console.log(err);
+                        resolve(answers.map(answer => ({
+                            cloutPoints: answer.get('cloutPoints'),
+                            id: answer.id
+                        })));
+                    } else {
+                        console.log(res);
+                        resolve(answers.map(answer => ({
+                            cloutPoints: answer.get('cloutPoints'),
+                            id: answer.id
+                        })));
+                    }
+                });
+            }, err => {
+                console.log(err);
+                reject(err);
+            })
+    })
+
 }
-module.exports = {trackEvent, getFollowers, getFollows, checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers, generateAnswerShareImage, getAllAnswers};
+module.exports = {resetTop20CloutPoints, trackEvent, getFollowers, getFollows, checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers, generateAnswerShareImage, getAllAnswers};
