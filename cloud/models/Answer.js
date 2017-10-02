@@ -535,7 +535,7 @@ Parse.Cloud.define('boostAnswer', (request, response) => {
 
 })
 
-Parse.Cloud.job("Index Admin Users", function(request, status) {
+Parse.Cloud.job("Reset Top 20 Answers", function(request, status) {
     resetTop20CloutPoints()
         .then(res => {
             status.success();
