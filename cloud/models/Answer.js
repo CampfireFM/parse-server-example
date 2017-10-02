@@ -494,7 +494,7 @@ Parse.Cloud.define('boostAnswer', (request, response) => {
                                 break;
                         }
                         let targetPoint = top20Answers[targetIndex].cloutPoints;
-                        answer.increment('cloutFromAdmin', targetPoint - (answer.get('cloutPoints') || 0));
+                        answer.increment('cloutFromAdmin', targetPoint - (answer.get('cloutPoints') || 0) + 1);
                         answer.save(null, {useMasterKey: true}).then(res => {
                             response.success(res);
                         }, err => response.error(err));
@@ -523,7 +523,7 @@ Parse.Cloud.define('boostAnswer', (request, response) => {
                         break;
                 }
                 let targetPoint = top20CloutPoints[targetIndex];
-                answer.increment('cloutFromAdmin', targetPoint - (answer.get('cloutPoints') || 0));
+                answer.increment('cloutFromAdmin', targetPoint - (answer.get('cloutPoints') || 0) + 1);
                 answer.save(null, {useMasterKey: true}).then(res => {
                     response.success(res);
                 }, err => response.error(err));
