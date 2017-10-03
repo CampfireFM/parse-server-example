@@ -1817,6 +1817,25 @@ Parse.Cloud.define('setCategoryIsLive', function(req, res) {
     });
 });
 
+Parse.Cloud.define('setCategoryAnswersFromUsers', function(req, res) {
+    const categoryId = req.params.categoryId;
+    const answersFromUsers = req.params.answersFromUsers;
+    const Category = Parse.Object.extend('Category');
+    const query = new Parse.Query(Category);
+    query.get(categoryId, {useMasterKey: true}).then(function(category) {
+        category.set('answersFromUsers', answersFromUsers);
+        category.save(null, {useMasterKey: true}).then(function() {
+            res.success('ok');
+        }, function(err) {
+            console.log(err);
+            res.error(err);
+        })
+    }, function(err) {
+        console.log(err);
+        res.error(err);
+    });
+});
+
 Parse.Cloud.define('setPersonKOLUser', function(req, res) {
     const userId = req.params.userId;
     const isAKOLUser = req.params.setKOLUser;
