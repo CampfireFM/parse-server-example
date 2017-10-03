@@ -155,9 +155,9 @@ Parse.Cloud.define('searchQuestions', function(request, response){
             console.log(err);
             response.error(err);
         }
-        // var Question = Parse.Object('Question');
         var res = results.hits.map(function(answer){
             answer.questionRef.className = 'Question';
+            answer.questionRef._highlightResult = answer._highlightResult.questionRef;
             return Parse.Object.fromJSON(answer.questionRef);
         });
         console.log(res);
