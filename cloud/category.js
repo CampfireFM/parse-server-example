@@ -104,6 +104,7 @@ Parse.Cloud.define('getCategories', function(req, res){
                 image: object.get('image') ? (object.get('image')).toJSON().url : '',
                 icon: object.get('icon') ? (object.get('icon')).toJSON().url : '',
                 isLive: object.get('isLive'),
+                answersFromUsers: object.get('answersFromUsers'),
                 views: object.get('views'),
                 answerCount: answerCount
               });
