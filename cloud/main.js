@@ -1974,3 +1974,53 @@ Parse.Cloud.define('getFeaturedUsersApp', function(request, response) {
         });
     });
 });
+
+Parse.Cloud.define('getFeedDisplayLists', function(request, response) {
+
+    var List = Parse.Object.extend('List');
+    var Question = Parse.Object.extend('Question');
+
+    var listQuery = new Parse.Query(List);
+
+    var currentDate = new Date();
+    listQuery.greaterThanOrEqualTo('endDate', currentDate);
+    listQuery.lessThanOrEqualTo('liveDate', currentDate);
+    listQuery.notContainedIn('name', ['Featured Web', 'Featured']);
+    listQuery.include(['questionRef', 'questionRef.toUser','questionRef.fromUser', 'questionRef.charity', 'userRef']);
+
+    var completed = function(countMap){
+        if(countMap.length > 0)
+            countMap.sort(function(a, b){
+                if(a.list.get('createdAt') < b.list.get('createdAt'))
+                    return 1;
+                if(a.list.get('createdAt') > b.list.get('createdAt'))
+                    return -1;
+                return 0;
+            });
+        response.success(countMap);
+    };
+
+    listQuery.find({useMasterKey: true}).then(function(lists){
+        if(lists.length === 0)
+            return completed([]);
+        const listCount = lists.length;
+        const countMap = [];
+        var processed = 0;
+        lists.forEach(function(list){
+            //Check answer's live date and list
+            var Answer = Parse.Object.extend('Answer');
+            var query = new Parse.Query(Answer);
+            query.containsAll('lists', [pointerTo(list.id, 'List')]);
+            query.count().then(function(count){
+                countMap.push({
+                    list: list,
+                    count: count
+                });
+                processed++;
+                if(listCount === processed){
+                    completed(countMap);
+                }
+            });
+        })
+    })
+});
