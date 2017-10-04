@@ -505,7 +505,7 @@ function start() {
 
           // Set userRef
           var userQuery = new Parse.Query(Parse.User);
-          userQuery.equalTo('paypalEmail', ipn.receiver_email_1);
+          userQuery.equalTo('paypalEmail', ipnContent.receiver_email_1);
           userQuery.first({useMasterKey: true}).then(function (user) {
             if (user) {
               ipn.set('userRef', user);
