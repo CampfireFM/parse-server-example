@@ -2023,5 +2023,7 @@ Parse.Cloud.define('getFeedDisplayLists', function(request, response) {
         //        }
         //    });
         //})
+    }, err => {
+        response.error(err);
     })
 });
