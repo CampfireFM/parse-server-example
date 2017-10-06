@@ -165,7 +165,11 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
             if (user.get('bio') !== request.object.get('bio')
                 || user.get('tagline') !== request.object.get('tagline')
                 || user.get('firstName') !== request.object.get('firstName')
-                || user.get('lastName') !== request.object.get('lastName')) {
+                || user.get('lastName') !== request.object.get('lastName')
+                || user.get('fullName') !== request.object.get('fullName')
+                || user.get('profilePhoto').name() !== request.object.get('profilePhoto').name()
+                || user.get('coverPhoto').name() !== request.object.get('coverPhoto').name()
+            ) {
 
                 if (request.object.get('isTestUser') !== true) {
                     // Save user to algolia
