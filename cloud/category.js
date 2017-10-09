@@ -182,12 +182,15 @@ Parse.Cloud.define('getCategory', function(req, res) {
     //      parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
     //    }
     //  }
+    const campfireUser = new Parse.Object('_User');
+    campfireUser.id = 'ywQOHcPHOU';
     let parentQuery;
     if (!answersFromUsers) {
       for (let i = 0; tags && i < tags.length; i++) {
         const answerQuery = new Parse.Query(Answer);
         const tagRef = pointerTo(tags[i], 'Tag');
         answerQuery.containsAll('tags', [tagRef]);
+        answerQuery.notEqualTo('questionAsker', campfireUser);
         parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
       }
     } else {
@@ -195,6 +198,7 @@ Parse.Cloud.define('getCategory', function(req, res) {
       const featuredUserIds = category.get('featuredUsers') || [];
       const featuredUsers = featuredUserIds.map(id => pointerTo(id, '_User'));
       parentQuery.containedIn('userRef', featuredUsers);
+      parentQuery.notEqualTo('questionAsker', campfireUser);
     }
     parentQuery.notEqualTo('isTest', true);
     parentQuery.lessThanOrEqualTo('liveDate', new Date());
