@@ -1742,6 +1742,30 @@ Parse.Cloud.define('setTagsToPerson', function(req, res) {
     });
 });
 
+Parse.Cloud.define('updateCanSubscribe', function(req, res) {
+    const userId = req.params.userId;
+    const promoImage = req.params.promoImage;
+    const canSubscribe = req.params.canSubscribe;
+    const query = new Parse.Query(Parse.User);
+    query.get(userId, {useMasterKey: true}).then(function(user) {
+        if(user.canSubscribe){
+            user.set('canSubscribe', false);
+        } else {
+            user.set('promoImage', promoImage);
+            user.set('canSubscribe', true);
+        }
+        user.save(null, {useMasterKey: true}).then(function() {
+            res.success('ok');
+        }, function(err) {
+            console.log(err);
+            res.error(err);
+        })
+    }, function(err) {
+        console.log(err);
+        res.error(err);
+    });
+});
+
 Parse.Cloud.define('setTagsToCampfire', function(req, res) {
     const answerId = req.params.answerId;
     const tagIds = req.params.tags;
