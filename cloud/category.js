@@ -60,6 +60,9 @@ Parse.Cloud.define('getCategories', function(req, res){
           query.skip(skip);
         }
 
+        const campfireUser = new Parse.Object('_User');
+        campfireUser.id = 'ywQOHcPHOU';
+
         query.find({useMasterKey: true}).then(wrapper(function*(objects) {
           if (objects.length) {
             const date = new Date();
@@ -77,12 +80,14 @@ Parse.Cloud.define('getCategories', function(req, res){
                   const featuredUsers = featuredUserIds.map(id => pointerTo(id, '_User'));
                   parentQuery.containedIn('userRef', featuredUsers);
                   parentQuery.greaterThanOrEqualTo('createdAt', date);
+                  parentQuery.notEqualTo('questionAsker', campfireUser);
                 } else {
                   for (let j = 0; j < tags.length; j++) {
                     const tagRef = pointerTo(tags[j], 'Tag');
                     const answerQuery = new Parse.Query(Answer);
                     answerQuery.containsAll('tags', [tagRef]);
                     answerQuery.greaterThanOrEqualTo('createdAt', date);
+                    answerQuery.notEqualTo('questionAsker', campfireUser);
                     parentQuery = parentQuery ? Parse.Query.or(parentQuery, answerQuery) : answerQuery;
                   }
                 }
