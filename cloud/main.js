@@ -2027,3 +2027,54 @@ Parse.Cloud.define('getFeedDisplayLists', function(request, response) {
         response.error(err);
     })
 });
+
+Parse.Cloud.define('GenerateAutoQuestionsForInActiveUsers', (req, res) => {
+    const Activity = Parse.Object.extend('Activity');
+    const Question = Parse.Object.extend('Question');
+    const Defaults = Parse.Object.extend('Defaults');
+    const AutoQuestion = Parse.Object.extend('AutoQuestions');
+    const autoQuestionQuery = new Parse.Query(AutoQuestion);
+    autoQuestionQuery.equalTo('isLive', true);
+    const defaultQuery = new Parse.Query(Defaults);
+
+    let featuredPeople = [];
+    let autoQuestionTagRef;
+    const date = new Date();
+    date.setDate(date.getDate() - 7);
+
+    defaultQuery.find({useMasterKey: true}).then(defaultSettings => {
+        featuredPeople = defaultSettings[0].get('teamMembers');
+        autoQuestionTagRef = defaultSettings[0].get('autoQuestionTagRef');
+        return featuredPeople;
+    }).then(() => {
+        console.log('Featured people', featuredPeople);
+        return autoQuestionQuery.find({useMasterKey: true});
+    }).then(autoQuestions => {
+        const userQuery = new Parse.Query(Parse.User);
+        userQuery.each(user => {
+            const activityQuery = new Parse.Query(Activity);
+
+            activityQuery.equalTo('fromUser', user.id);
+            activityQuery.greaterThanOrEqualTo('createdAt', date);
+            return activityQuery.count({useMasterKey: true}).then(count => {
+                if (count === 0) {
+                    const question = new Question();
+                    const fromUser = new Parse.Object('_User');
+                    fromUser.id = featuredPeople[Math.floor(Math.min(Math.random(), 1) * featuredPeople.length)];
+                    question.set('fromUser', fromUser);
+                    question.set('toUser', user);
+                    question.set('text', autoQuestions[Math.floor(Math.min(Math.random(), 1) * autoQuestions.length)].get('text'));
+                    question.set('price', 0);
+                    question.set('charityPercentage', 0);
+                    question.set('isExpired', false);
+                    question.set('isTest', false);
+                    question.set('isAutoQ', true);
+                    question.set('isAnswered', false);
+                    question.set('initialTag', autoQuestionTagRef);
+                    return question.save(null, {useMasterKey: true});
+                }
+            });
+        }, {useMasterKey: true});
+    });
+    res.success({});
+});

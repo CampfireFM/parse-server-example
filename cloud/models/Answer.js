@@ -42,9 +42,14 @@ Parse.Cloud.beforeSave("Answer", function(request, response) {
         getQuestionAndItsPointers(request.object.get('questionRef').id, (err, question) => {
             if (question) {
                 const list = question.get('list');
+                const tag = question.get('initialTag');
                 if (list) {
                     const answerLists = [pointerTo(list.id, 'List')];
                     request.object.set('lists', answerLists);
+                }
+                if (tag) {
+                    const tagList = [pointerTo(tag.id, 'Tag')];
+                    request.object.set('tags', tagList);
                 }
                 request.object.set('questionAsker', question.get('fromUser'));
                 request.object.get('charityRef', question.get('charity'));
