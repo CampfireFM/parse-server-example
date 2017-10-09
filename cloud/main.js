@@ -2090,7 +2090,7 @@ Parse.Cloud.define('GenerateAutoQuestionsForInActiveUsers', (req, res) => {
                     question.set('charityPercentage', 0);
                     question.set('isExpired', false);
                     question.set('isTest', false);
-                    question.set('isAutoQ', true);
+                    question.set('isAutoQuestion', true);
                     question.set('isAnswered', false);
                     question.set('initialTag', autoQuestionTagRef);
                     return question.save(null, {useMasterKey: true});
