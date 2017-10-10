@@ -1764,6 +1764,24 @@ Parse.Cloud.define('updateCanSubscribe', function(req, res) {
     });
 });
 
+Parse.Cloud.define('updateUserVerified', function(req, res) {
+    const userId = req.params.userId;
+    const isVerified = req.params.isVerified;
+    const query = new Parse.Query(Parse.User);
+    query.get(userId, {useMasterKey: true}).then(function(user) {
+        user.set('isVerified', isVerified);
+        user.save(null, {useMasterKey: true}).then(function() {
+            res.success('ok');
+        }, function(err) {
+            console.log(err);
+            res.error(err);
+        })
+    }, function(err) {
+        console.log(err);
+        res.error(err);
+    });
+});
+
 Parse.Cloud.define('setTagsToCampfire', function(req, res) {
     const answerId = req.params.answerId;
     const tagIds = req.params.tags;
