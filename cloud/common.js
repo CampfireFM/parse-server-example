@@ -78,6 +78,7 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData, additionalId)
             questionQuery.equalTo('isAnswered', false);
             questionQuery.notEqualTo('isIgnored', true);
             questionQuery.equalTo('isExpired', false);
+            questionQuery.equalTo('toUser', user);
             questionQuery.count({useMasterKey: true}).then(count => {
                 // setup a push to the question Asker
                 var pushQuery = new Parse.Query(Parse.Installation);
