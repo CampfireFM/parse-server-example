@@ -62,103 +62,112 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData, additionalId)
     }
 
     toUsers.forEach(function(user){
-        if (currentUser && (user.id == currentUser.id))
-            return;
-        if (subscriptionTypes.indexOf(type) !== -1) {
-            if (!checkPushSubscription(user, type) && !checkSMSSubscription(user, type))
-                return console.log(logTexts[type]);
-        } else if(campfireAutoPushTypes.indexOf(type) === -1){
-            return console.log('Unknown push type, no push notification sent');
-        }
-        // setup a push to the question Asker
-        var pushQuery = new Parse.Query(Parse.Installation);
-        pushQuery.equalTo('deviceType', 'ios');
-        pushQuery.equalTo('user', user);
-
-        //Compose alert text to be sent
-        var alert = "";
-        var badge = 0;
-        var tag;
-        var objectId;
-        const fullName = currentUser ? currentUser.get('fullName') : '';
-        switch(type) {
-            case 'questions' :
-                alert = fullName + ' asked you a new question.';
-                badge = additionalData;
-                objectId = additionalId;
-                tag = 'question';
-                break;
-            case 'expiringQuestions' :
-                if (additionalData > 1)
-                    alert = `You have ${additionalData} questions expiring in the next 24 hours, hurry up!`;
-                else
-                    alert = `You have a question expiring in the next 24 hours, hurry up!`;
-                break;
-            case 'answers' :
-                alert = fullName + ' answered your question on Campfire!';
-                badge = user.get('unansweredQuestionCount') || 0;
-                tag = 'answer';
-                objectId = additionalId;
-                break;
-            case 'answerToFollowers':
-                alert = fullName + ' answered ' + additionalData + '\'s question on Campfire!';
-                //badge = user.get('unansweredQuestionCount') || 0;
-                tag = 'answer';
-                objectId = additionalId;
-                break;
-            case 'unlocks' :
-                alert = fullName + ' unlocked your question & answer.';
-                break;
-            case 'follows' :
-                alert = fullName + ' just followed you.';
-                break;
-            case 'likes' :
-                alert = fullName + ' just liked your question & answer.';
-                break;
-            case 'earnings' :
-                alert = 'You earned money!';
-                break;
-            case 'friendMatch' :
-                alert = 'Your friend ' + fullName + ' is syncing you.';
-                break;
-            case 'joinCampfire' :
-                alert = 'Your friend ' + fullName + ' joined campfire! Go ask them a question.';
-                break;
-        }
-
         //Send push notification to ios devices
         if(checkPushSubscription(user, type) || (campfireAutoPushTypes.indexOf(type) > -1)) {
-            
-            var data = {
-                alert: alert
+            if (currentUser && (user.id == currentUser.id))
+                return;
+            if (subscriptionTypes.indexOf(type) !== -1) {
+                if (!checkPushSubscription(user, type) && !checkSMSSubscription(user, type))
+                    return console.log(logTexts[type]);
+            } else if(campfireAutoPushTypes.indexOf(type) === -1){
+                return console.log('Unknown push type, no push notification sent');
             }
+            // Get badge count 
+            const Question = Parse.Object.extend('Question');
+            const questionQuery = new Parse.Query(Question);
+            questionQuery.equalTo('isAnswered', false);
+            questionQuery.notEqualTo('isIgnored', true);
+            questionQuery.equalTo('isExpired', false);
+            questionQuery.count({useMasterKey: true}).then(count => {
+                // setup a push to the question Asker
+                var pushQuery = new Parse.Query(Parse.Installation);
+                pushQuery.equalTo('deviceType', 'ios');
+                pushQuery.equalTo('user', user);
 
-            if (badge > 0)
-                data.badge = badge
-
-            if (tag)
-                data.tag = tag;
-
-            if (objectId)
-                data.objectId = objectId;
-            
-            Parse.Push.send({
-                where: pushQuery,
-                data: data
-                // data: {
-                //     alert: alert,
-                //     tag: tag, 
-                //     badge: badge
-                // }
-            }, {
-                useMasterKey: true,
-                success: function () {
-                    // Push was successful
-                },
-                error: function (error) {
-                    throw "PUSH: Got an error " + error.code + " : " + error.message;
+                //Compose alert text to be sent
+                var alert = "";
+                var badge = 0;
+                var tag;
+                var objectId;
+                const fullName = currentUser ? currentUser.get('fullName') : '';
+                switch(type) {
+                    case 'questions' :
+                        alert = fullName + ' asked you a new question.';
+                        badge = count;
+                        objectId = additionalId;
+                        tag = 'question';
+                        break;
+                    case 'expiringQuestions' :
+                        if (additionalData > 1)
+                            alert = `You have ${additionalData} questions expiring in the next 24 hours, hurry up!`;
+                        else
+                            alert = `You have a question expiring in the next 24 hours, hurry up!`;
+                        break;
+                    case 'answers' :
+                        alert = fullName + ' answered your question on Campfire!';
+                        badge = count;
+                        tag = 'answer';
+                        objectId = additionalId;
+                        break;
+                    case 'answerToFollowers':
+                        alert = fullName + ' answered ' + additionalData + '\'s question on Campfire!';
+                        //badge = user.get('unansweredQuestionCount') || 0;
+                        tag = 'answer';
+                        objectId = additionalId;
+                        break;
+                    case 'unlocks' :
+                        alert = fullName + ' unlocked your question & answer.';
+                        break;
+                    case 'follows' :
+                        alert = fullName + ' just followed you.';
+                        break;
+                    case 'likes' :
+                        alert = fullName + ' just liked your question & answer.';
+                        break;
+                    case 'earnings' :
+                        alert = 'You earned money!';
+                        break;
+                    case 'friendMatch' :
+                        alert = 'Your friend ' + fullName + ' is syncing you.';
+                        break;
+                    case 'joinCampfire' :
+                        alert = 'Your friend ' + fullName + ' joined campfire! Go ask them a question.';
+                        break;
                 }
-            });
+
+                var data = {
+                    alert: alert
+                }
+
+                if (badge > 0)
+                    data.badge = badge
+
+                if (tag)
+                    data.tag = tag;
+
+                if (objectId)
+                    data.objectId = objectId;
+
+                Parse.Push.send({
+                    where: pushQuery,
+                    data: data
+                    // data: {
+                    //     alert: alert,
+                    //     tag: tag,
+                    //     badge: badge
+                    // }
+                }, {
+                    useMasterKey: true,
+                    success: function () {
+                        // Push was successful
+                    },
+                    error: function (error) {
+                        throw "PUSH: Got an error " + error.code + " : " + error.message;
+                    }
+                });
+            }, err => {
+                console.log(err);
+            })
         }
         if(checkSMSSubscription(user, type)) {
             // Twilio Credentials
