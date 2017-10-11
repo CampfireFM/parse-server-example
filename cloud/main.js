@@ -1,4 +1,4 @@
-const { sendPushOrSMS, generateShareImage, getAllUsers, getFollows } = require('./common');
+const { sendPushOrSMS, generateShareImage, getAllUsers, getFollows, resetFeaturedAnswers } = require('./common');
 const config = require('../config.js');
 const stripe = require('stripe')(config.stripe_live_key);
 // var paypal = require('paypal-rest-sdk');
@@ -303,7 +303,7 @@ function pointerTo(objectId, klass) {
 
     return { __type:"Pointer", className:klass, objectId:objectId };
 }
-Parse.Cloud.define('getFeaturedAnswers', function(req, res) {
+Parse.Cloud.define('getFeaturedAnswers', (req, res) => {
     var campfires = [];
     var limit = req.params.limit || 6;
     var skip = req.params.skip || 0;
@@ -312,24 +312,86 @@ Parse.Cloud.define('getFeaturedAnswers', function(req, res) {
     var query = new Parse.Query(Answer);
     //query.equalTo('isDummyData', false);
 
-    query.include(['questionRef', 'questionRef.toUser',
-        'questionRef.fromUser', 'questionRef.charity', 'questionRef.list', 'userRef']);
-    query.notEqualTo('isTest', true);
-    query.containsAll('lists', [pointerTo('CTsXJi51Qc', 'List')]);
-    //query.descending('cloutPoints');
-    query.descending('liveDate');
-    query.lessThan('liveDate', new Date());
-    query.limit(limit);
-    query.skip(skip);
-
-    query.find({
-        success: function (objects) {
-            res.success(objects);
-        },
-        error: function (error) {
-            res.error(error);
+    redisClient.exists('featuredAnswers', wrapper(function*(err, reply) {
+        if (reply === 0) {
+            yield resetFeaturedAnswers();
         }
-    })
+        redisClient.lrange('featuredAnswers', skip, skip + limit - 1, (err, ids) => {
+            if (err) {
+                res.error(err);
+            }
+            //answers = answers.map(answer => {
+            //    answer = JSON.parse(answer);
+            //    let userRef, fromUser, charity;
+            //    let questionRef = answer.questionRef;
+            //    if (questionRef) {
+            //        userRef = questionRef.toUser;
+            //        if (questionRef.toUser)
+            //            questionRef.toUser.className = '_User';
+            //        if (questionRef.fromUser)
+            //            questionRef.fromUser.className = '_User';
+            //        if (questionRef.charity)
+            //            questionRef.charity.className = 'Charity';
+            //        //fromUser = questionRef.fromUser;
+            //        //charity = questionRef.charity;
+            //    }
+            //    answer.className = 'Answer';
+            //    answer = Parse.Object.fromJSON(answer);
+            //    //if (questionRef) {
+            //    //    questionRef.className = 'Question';
+            //    //    //questionRef = Parse.Object.fromJSON(questionRef);
+            //    //    if (userRef) {
+            //    //        userRef.className = '_User';
+            //    //        //userRef = Parse.Object.fromJSON(userRef);
+            //    //        //answer.set('userRef', userRef);
+            //    //        //questionRef.set('toUser', userRef);
+            //    //    }
+            //    //    if (fromUser) {
+            //    //        fromUser.className = '_User';
+            //    //        fromUser = Parse.Object.fromJSON(fromUser);
+            //    //        questionRef.set('fromUser', fromUser);
+            //    //        answer.set('questionAsker', fromUser);
+            //    //    }
+            //    //
+            //    //    if (charity) {
+            //    //        charity.className = 'Charity';
+            //    //        charity = Parse.Object.fromJSON(charity);
+            //    //        questionRef.set('charity', charity);
+            //    //        answer.set('charityRef', charity);
+            //    //    }
+            //    //    answer.set('questionRef', questionRef);
+            //    //}
+            //    return answer;
+            //});
+            //res.success(answers);
+            query.include(['questionRef', 'questionRef.toUser',
+                'questionRef.fromUser', 'questionRef.charity', 'questionRef.list', 'userRef']);
+            query.containedIn('objectId', ids);
+            //query.notEqualTo('isTest', true);
+            //query.containsAll('lists', [pointerTo('CTsXJi51Qc', 'List')]);
+            //query.descending('cloutPoints');
+            //query.descending('liveDate');
+            //query.lessThan('liveDate', new Date());
+            //query.limit(limit);
+            //query.skip(skip);
+
+            query.find({
+                success: function (objects) {
+                    objects.sort((a, b) => {
+                        if (ids.indexOf(a.id) < ids.indexOf(b.id))
+                            return -1;
+                        if (ids.indexOf(a.id) > ids.indexOf(b.id))
+                            return 1;
+                        return 0;
+                    });
+                    res.success(objects);
+                },
+                error: function (error) {
+                    res.error(error);
+                }
+            })
+        })
+    }));
 });
 
 Parse.Cloud.define('getFeaturedFollowsAnswers', function(request, response) {
@@ -2104,6 +2166,9 @@ function generateAutoQuestionsForInActiveUsers() {
         return autoQuestionQuery.find({useMasterKey: true});
     }).then(autoQuestions => {
         const userQuery = new Parse.Query(Parse.User);
+        userQuery.notEqualTo('isTestUser', true);
+        userQuery.notEqualTo('isShadowUser', true);
+        
         userQuery.each(user => {
             const activityQuery = new Parse.Query(Activity);
             console.log(user.id);
@@ -2130,3 +2195,8 @@ function generateAutoQuestionsForInActiveUsers() {
         }, {useMasterKey: true});
     });
 }
+
+Parse.Cloud.define('resetFeaturedAnswers', (req, res) => {
+    resetFeaturedAnswers().then();
+    res.success({});
+})
