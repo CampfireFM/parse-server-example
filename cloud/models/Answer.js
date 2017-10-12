@@ -1,4 +1,4 @@
-const {resetTop20CloutPoints, trackEvent, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateAnswerShareImage } = require('../common');
+const {resetFeaturedAnswers, resetTop20CloutPoints, trackEvent, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateAnswerShareImage } = require('../common');
 const mail = require('../../utils/mail');
 var paymenthandler = require('../../utils/paymenthandler.js');
 const {getFollowers} = require('../common');
@@ -505,6 +505,7 @@ Parse.Cloud.define('boostAnswer', (request, response) => {
                         answer.increment('cloutFromAdmin', targetPoint - (answer.get('cloutPoints') || 0) + 1);
                         answer.save(null, {useMasterKey: true}).then(res => {
                             response.success(res);
+                            resetFeaturedAnswers().then();
                         }, err => response.error(err));
                         //response.success(top20Answers);
                     })
