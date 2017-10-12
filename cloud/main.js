@@ -200,6 +200,8 @@ Parse.Cloud.define('getUsers', function(request, response) {
         if (skip) {
             query.greaterThan("objectId", skip);
         }
+        query.notEqualTo('isTestUser', true);
+        query.notEqualTo('isShadowUser', true);
         query.select(['objectId', 'fullName', 'email']);
         query.limit(chunk_size);
         query.ascending("objectId");
