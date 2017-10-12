@@ -130,72 +130,6 @@ Parse.Cloud.define('getQuestions', function(req, res) {
     }
 });
 
-Parse.Cloud.define('getIntroQuestions', function(req, res){    
-    var introQuestions = [];
-    var sortedBy = req.params.sortedBy || 'createdAt';
-    var sortDir = req.params.sortDir || 'desc';
-    var page = req.params.currentPage || 1;
-    var limit = req.params.perPage || 6;
-    var skip = (page - 1) * limit;
-
-    var AutoQuestions = Parse.Object.extend('IntroQuestions');
-    var query = new Parse.Query(IntroQuestions);
-
-    // sorting
-    sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
-
-    // totalpages count
-    var count = 0;
-
-    var findIntroQuestions = function () {
-        query.find({
-            success: function(objects) {
-                if (objects.length > 0) {
-                    return Parse.Promise.as().then(function () {
-                        var promise = Parse.Promise.as();
-
-                        objects.forEach(function (object) {
-                            promise = promise.then(function () {
-                                introQuestions.push({
-                                    id: object.id,
-                                    question: object.get('text'),
-                                    isLive: object.get('isLive'),
-                                    createdAt: object.get('createdAt'),
-                                    updatedAt: object.get('updatedAt')
-                                });
-                            });
-                        });
-                        return promise;
-                    }).then(function () {
-                        return res.success({introQuestions: introQuestions, totalItems: count});
-                    }, function (error) {
-                        res.error(error);
-                    });
-                }
-                else
-                {
-                  return res.success({introQuestions: [], totalItems: 0});
-                }
-            },
-            error: function(error) {
-              res.error(error);
-            }
-        })
-    }
-
-    if (!req.params.noPagination) {
-        query.count().then(function (result) {
-            count = result;
-            // pagination
-            query.limit(limit);
-            query.skip(skip);
-            findIntroQuestions();
-        });
-    } else {
-        findIntroQuestions();
-    }
-});
-
 Parse.Cloud.define('getAutoQuestions', function(req, res){    
     var autoQuestions = [];
     var sortedBy = req.params.sortedBy || 'createdAt';
@@ -259,5 +193,73 @@ Parse.Cloud.define('getAutoQuestions', function(req, res){
         });
     } else {
         findAutoQuestions();
+    }
+});
+
+
+
+Parse.Cloud.define('getIntroQuestions', function(req, res){    
+    var introQuestions = [];
+    var sortedBy = req.params.sortedBy || 'createdAt';
+    var sortDir = req.params.sortDir || 'desc';
+    var page = req.params.currentPage || 1;
+    var limit = req.params.perPage || 6;
+    var skip = (page - 1) * limit;
+
+    var IntroQuestions = Parse.Object.extend('IntroQuestions');
+    var query = new Parse.Query(IntroQuestions);
+
+    // sorting
+    sortDir == 'asc' ? query.ascending(sortedBy) : query.descending(sortedBy)
+
+    // totalpages count
+    var count = 0;
+
+    var findIntroQuestions = function () {
+        query.find({
+            success: function(objects) {
+                if (objects.length > 0) {
+                    return Parse.Promise.as().then(function () {
+                        var promise = Parse.Promise.as();
+
+                        objects.forEach(function (object) {
+                            promise = promise.then(function () {
+                                introQuestions.push({
+                                    id: object.id,
+                                    question: object.get('text'),
+                                    isLive: object.get('isLive'),
+                                    createdAt: object.get('createdAt'),
+                                    updatedAt: object.get('updatedAt')
+                                });
+                            });
+                        });
+                        return promise;
+                    }).then(function () {
+                        return res.success({introQuestions: introQuestions, totalItems: count});
+                    }, function (error) {
+                        res.error(error);
+                    });
+                }
+                else
+                {
+                  return res.success({introQuestions: [], totalItems: 0});
+                }
+            },
+            error: function(error) {
+              res.error(error);
+            }
+        })
+    }
+
+    if (!req.params.noPagination) {
+        query.count().then(function (result) {
+            count = result;
+            // pagination
+            query.limit(limit);
+            query.skip(skip);
+            findIntroQuestions();
+        });
+    } else {
+        findIntroQuestions();
     }
 });
