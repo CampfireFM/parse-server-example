@@ -535,6 +535,7 @@ Parse.Cloud.define('boostAnswer', (request, response) => {
                 answer.increment('cloutFromAdmin', targetPoint - (answer.get('cloutPoints') || 0) + 1);
                 answer.save(null, {useMasterKey: true}).then(res => {
                     response.success(res);
+                    resetFeaturedAnswers().then();
                 }, err => response.error(err));
             }
         })
