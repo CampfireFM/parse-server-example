@@ -1452,14 +1452,14 @@ Parse.Cloud.define('getWelcomeQuestion', function(request, response){
       return response.success({});
     if (!firstName)
       firstName = '';
-    const AutoQuestion = Parse.Object.extend('AutoQuestions');
-    const autoQuestionQuery = new Parse.Query(AutoQuestion);
-    autoQuestionQuery.equalTo('isLive', true);
-    autoQuestionQuery.find({useMasterKey: true}).then(autoQuestions => {
-        let rand = Math.floor(autoQuestions.length * Math.random());
-        if (rand === autoQuestions.length && rand !== 0)
-            rand = autoQuestions.length - 1;
-        const text = `Hey ${firstName}! ${autoQuestions[rand].get('text')}`;
+    const IntroQuestion = Parse.Object.extend('IntroQuestions');
+    const introQuestionQuery = new Parse.Query(IntroQuestion);
+    introQuestionQuery.equalTo('isLive', true);
+    introQuestionQuery.find({useMasterKey: true}).then(introQuestions => {
+        let rand = Math.floor(introQuestions.length * Math.random());
+        if (rand === introQuestions.length && rand !== 0)
+            rand = introQuestions.length - 1;
+        const text = `Hey ${firstName}! ${introQuestions[rand].get('text')}`;
         // Get Welcome List
         const List = Parse.Object.extend('List');
         const query = new Parse.Query(List);
