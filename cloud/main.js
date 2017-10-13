@@ -385,6 +385,8 @@ Parse.Cloud.define('getFeaturedAnswers', (req, res) => {
                             return 1;
                         return 0;
                     });
+                    console.log('FromUser: ', request.user.id);
+                    console.log('Limit: ', limit, 'Skip: ', skip);
                     console.log('Returning answer ids: ', objects.map(object => object.id));
                     console.log('Returning answer texts: ', objects.map(object => object.get('questionRef').get('text')));
                     res.success(objects);
