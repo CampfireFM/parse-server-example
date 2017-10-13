@@ -18,6 +18,7 @@ require("./models/Question.js");
 require("./models/User.js");
 require("./models/List.js");
 require("./models/Activity");
+require("./models/AutoQuestion");
 require("./algolia/algoliaQuestions.js");
 require("./algolia/algoliaUsers.js");
 require("./algolia/algoliaAnswers");
@@ -2170,17 +2171,14 @@ function generateAutoQuestionsForInActiveUsers() {
         featuredPeople = users;
         return autoQuestionQuery.find({useMasterKey: true});
     }).then(autoQuestions => {
+        const date = new Date();
+        date.setDate(date.getDate() - 7);
         const userQuery = new Parse.Query(Parse.User);
         userQuery.notEqualTo('isTestUser', true);
         userQuery.notEqualTo('isShadowUser', true);
+        userQuery.greaterThan('lastActive', date);
         
         userQuery.each(user => {
-            const activityQuery = new Parse.Query(Activity);
-            console.log(user.id);
-            activityQuery.equalTo('fromUser', user.id);
-            activityQuery.greaterThanOrEqualTo('createdAt', date);
-            return activityQuery.count({useMasterKey: true}).then(count => {
-                if (count === 0) {
                     const question = new Question();
                     const fromUser = featuredPeople[Math.floor(Math.min(Math.random(), 1) * featuredPeople.length)];
                     question.set('fromUser', fromUser);
@@ -2195,8 +2193,6 @@ function generateAutoQuestionsForInActiveUsers() {
                     question.set('initialTag', autoQuestionTagRef);
                     console.log(count);
                     return question.save(null, {useMasterKey: true});
-                }
-            })
         }, {useMasterKey: true});
     });
 }
