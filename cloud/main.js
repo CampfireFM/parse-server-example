@@ -1392,46 +1392,46 @@ Parse.Cloud.define('getSuggestedUsers', function(request, response){
 
 
 // Schedule Refund Strategy every 5 minutes
-(function scheduleRefund(){
-    setInterval(function(){
-        var Question = Parse.Object.extend('Question');
-        var query = new Parse.Query(Question);
-        var currentDate = new Date();
-        var start = new Date();
-        var end = new Date();
-        start.setDate(start.getDate() - 4);
-        end.setDate(end.getDate() - 3);
-        query.greaterThanOrEqualTo('createdAt', start);
-        query.lessThanOrEqualTo('createdAt', end);
-        query.equalTo('isAnswered', false);
-        query.notEqualTo('isRefunded', true);
-        query.include(['fromUser', 'toUser']);
-        query.find({useMasterKey: true}).then(function(questions){
-            if(questions.length){
-                questions.forEach(function(question){
-                    if (!question.get('fromUser') && question.get('isAnswered') === false) {
-                        question.destroy({useMasterKey: true});
-                        console.log('Destroying null question', question.id);
-                        return;
-                    }
-                    if (!question.get('toUser') && question.get('isAnswered') === false) {
-                        question.destroy({useMasterKey: true});
-                        console.log('Destroying null question', question.id);
-                        return;
-                    }
-                    console.log('Refunding money for question ', question.get('text'));
-                    question.set('isExpired', true);
-                    question.set('isRefunded', true);
-                    question.save(null, {useMasterKey: true});
-                    const fromUser = question.get('fromUser');
-                    fromUser.increment('matchCount', question.get('price') / matchValue);
-                    fromUser.increment('unansweredQuestionCount', -1);
-                    fromUser.save(null, {useMasterKey : true});
-                });
-            }
-        });
-    }, 60 * 5 * 1000);
-})();
+//(function scheduleRefund(){
+//    setInterval(function(){
+//        var Question = Parse.Object.extend('Question');
+//        var query = new Parse.Query(Question);
+//        var currentDate = new Date();
+//        var start = new Date();
+//        var end = new Date();
+//        start.setDate(start.getDate() - 4);
+//        end.setDate(end.getDate() - 3);
+//        query.greaterThanOrEqualTo('createdAt', start);
+//        query.lessThanOrEqualTo('createdAt', end);
+//        query.equalTo('isAnswered', false);
+//        query.notEqualTo('isRefunded', true);
+//        query.include(['fromUser', 'toUser']);
+//        query.find({useMasterKey: true}).then(function(questions){
+//            if(questions.length){
+//                questions.forEach(function(question){
+//                    if (!question.get('fromUser') && question.get('isAnswered') === false) {
+//                        question.destroy({useMasterKey: true});
+//                        console.log('Destroying null question', question.id);
+//                        return;
+//                    }
+//                    if (!question.get('toUser') && question.get('isAnswered') === false) {
+//                        question.destroy({useMasterKey: true});
+//                        console.log('Destroying null question', question.id);
+//                        return;
+//                    }
+//                    console.log('Refunding money for question ', question.get('text'));
+//                    question.set('isExpired', true);
+//                    question.set('isRefunded', true);
+//                    question.save(null, {useMasterKey: true});
+//                    const fromUser = question.get('fromUser');
+//                    fromUser.increment('matchCount', question.get('price') / matchValue);
+//                    fromUser.increment('unansweredQuestionCount', -1);
+//                    fromUser.save(null, {useMasterKey : true});
+//                });
+//            }
+//        });
+//    }, 60 * 5 * 1000);
+//})();
 
 Parse.Cloud.define('getHottestUsers', function(request, response){
     //Get suggested users ranked by the number of answers to question
@@ -2179,20 +2179,20 @@ function generateAutoQuestionsForInActiveUsers() {
         userQuery.greaterThan('lastActive', date);
         
         userQuery.each(user => {
-                    const question = new Question();
-                    const fromUser = featuredPeople[Math.floor(Math.min(Math.random(), 1) * featuredPeople.length)];
-                    question.set('fromUser', fromUser);
-                    question.set('toUser', user);
-                    question.set('text', autoQuestions[Math.floor(Math.min(Math.random(), 1) * autoQuestions.length)].get('text'));
-                    question.set('price', 0);
-                    question.set('charityPercentage', 0);
-                    question.set('isExpired', false);
-                    question.set('isTest', false);
-                    question.set('isAutoQuestion', true);
-                    question.set('isAnswered', false);
-                    question.set('initialTag', autoQuestionTagRef);
-                    console.log(count);
-                    return question.save(null, {useMasterKey: true});
+            const question = new Question();
+            const fromUser = featuredPeople[Math.floor(Math.min(Math.random(), 1) * featuredPeople.length)];
+            question.set('fromUser', fromUser);
+            question.set('toUser', user);
+            question.set('text', autoQuestions[Math.floor(Math.min(Math.random(), 1) * autoQuestions.length)].get('text'));
+            question.set('price', 0);
+            question.set('charityPercentage', 0);
+            question.set('isExpired', false);
+            question.set('isTest', false);
+            question.set('isAutoQuestion', true);
+            question.set('isAnswered', false);
+            question.set('initialTag', autoQuestionTagRef);
+            console.log(count);
+            return question.save(null, {useMasterKey: true});
         }, {useMasterKey: true});
     });
 }
