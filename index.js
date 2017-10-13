@@ -191,8 +191,40 @@ function start() {
 
 // There will be a test page available on the /test path of your server url
 // Remove this before launching your app
-  app.get('/test', function (req, res) {
+  app.get('/test', function (req, res) {    
     res.sendFile(path.join(__dirname, '/public/test.html'));
+  });
+
+  app.get('/get-askme-embed/:userId', function (req, res) {
+    var viewData = {};
+    viewData.fullUrl = req.protocol + '://' + req.get('host');
+    
+    var Campfire = Parse.Object.extend('Answer');
+    var query = new Parse.Query(Campfire);
+    query.equalTo('isDummyData', false);
+    query.notEqualTo('isTest', true);
+    var userPointer = new Parse.Object("_User");
+    userPointer.id = req.params.userId;
+    query.equalTo('userRef', userPointer);
+
+    query.include(['questionRef', 'questionRef.text', 'userRef', 'userRef.fullName', 'questionAsker', 'questionAsker.fullName']);
+
+    query.find({useMasterKey: true}).then(function (objects) {
+      viewData.answersCount = objects.length;
+      viewData.answererName = objects[0].get('userRef').get('fullName');
+      viewData.answererImg = objects[0].get('userRef').get('profilePhoto') ? (objects[0].get('userRef').get('profilePhoto')).toJSON().url : '';
+      viewData.askerName = objects[0].get('questionAsker').get('fullName');
+      viewData.QuestionsData = [];
+      for (var i = 0; i < 6; i++) {
+        var object = objects[i];        
+        viewData.QuestionsData.push({text: object.get('questionRef').get('text'), 
+                            askerName: object.get('questionAsker').get('fullName'),
+                            userImg: object.get('questionAsker').get('profilePhoto') ? (object.get('questionAsker').get('profilePhoto')).toJSON().url : ''});
+      }
+      return res.render('askme_embed',viewData);
+    }, function(error) {
+      console.log(error);
+    });   
   });
 
   app.get('/twitter/auth', function (req, res) {

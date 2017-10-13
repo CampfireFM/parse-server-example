@@ -1,0 +1,25 @@
+<link href="<%= fullUrl %>/public/assets/css/embed_style.css" rel="stylesheet">
+<div class="campfie-ask-position">
+  <div class="campfie-ask-button tooltips">
+    <div class="campfire-profile" background-image="<%= answererImg %>"></div>
+    <div class="campfire-icon"></div>
+    Ask me Anything
+    
+    <div class="campfire-questions">
+      <div id="campfire-questions-all">
+        <% for (var i = 0; i < QuestionsData.length; i++) { %>
+            <div class="campfire-question" id="q<%=i+1%>">
+                <div class="campfire-asker-profile" background-image="<%= QuestionsData[i].userImg %>"></div>
+                <div class="campfire-asker"><%= QuestionsData[i].askerName %> asked:</div>
+                <div class="campfire-question"><%= QuestionsData[i].text %>
+                </div>
+            </div>
+        <% } %>        
+      </div>
+    </div>
+  </div>
+  
+  <div class="campfie-ask-info">
+    <a><%= answererName %></a> answered <a><%= askerName %></a> and <%= answersCount - 1 %> others 
+  </div>
+</div>

@@ -1,0 +1,239 @@
+body {
+    width: 100%;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 300;
+    color: #666;
+    background: #fff;
+    margin: 0;
+}
+
+.campfie-ask-position{
+	position: absolute;
+	top:50%;
+	left:50%;
+	margin-top: -25px;
+	margin-left:-100px;
+}
+.campfie-ask-button{
+  height: 18px;
+  padding: 10px 18px 10px 60px;
+  border-radius: 100px;
+  background: #F15300;
+	background: -moz-linear-gradient(top, rgba(241,83,0,1) 0%, rgba(241,40,0,1) 100%); /* FF3.6-15 */
+	background: -webkit-linear-gradient(top, rgba(241,83,0,1) 0%, rgba(241,40,0,1) 100%); /* Chrome10-25,Safari5.1-6 */
+	background: linear-gradient(to bottom, rgba(241,83,0,1) 0%, rgba(241,40,0,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+	color: white;
+	font-weight: 600;
+	font-size: 16px;
+  display: inline-block;
+}
+
+.campfie-ask-info{
+  color: #ababab;
+  font-size: 12px;
+  margin-top: 5px;
+  
+}
+
+.campfie-ask-info a{
+  color: #F15300;
+}
+
+.campfie-ask-button:hover{
+  background: #F15300;
+	background: -moz-linear-gradient(top, rgba(241,40,0,1) 0%, rgba(241,83,0,1) 100%); /* FF3.6-15 */
+	background: -webkit-linear-gradient(top, rgba(241,40,0,1) 0%, rgba(241,83,0,1) 100%); /* Chrome10-25,Safari5.1-6 */
+	background: linear-gradient(to bottom, rgba(241,40,0,1) 0%, rgba(241,83,0,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */	
+	cursor:pointer;
+	cursor: hand;
+}
+
+.campfie-ask-button:hover > .campfire-icon{
+  
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.4);
+}
+
+.campfire-profile{
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  left:3px;
+  top: 3px;
+  
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: 200px;
+  
+  background-image: url('img/charlize_theron.jpg');
+}
+
+.campfire-icon{
+  width: 28px;
+  height: 28px;
+  position: absolute;
+  left:26px;
+  top: 5px;
+  
+  background-image: url('img/campfire-icon.png');
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: 200px;
+  
+  box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.05);
+  -webkit-transition: box-shadow .2s ease-out;
+  transition: box-shadow .2s ease-out;
+}
+
+
+
+.tooltips .campfire-questions {
+  position: absolute;
+  width:300px;
+  padding: 7px 15px 15px 15px;
+  color: #000000;
+  background: #FFFFFF;
+  text-align: left;
+  visibility: hidden;
+  
+  opacity: 0;
+  margin-bottom: -10px;
+  -webkit-transition: opacity .2s ease-out, margin-bottom .2s ease-out;
+  transition: opacity .2s ease-out, margin-bottom .2s ease-out;
+  
+  border-radius: 8px;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
+  
+}
+
+.tooltips .campfire-questions .campfire-asker{
+  font-weight: 300;
+	font-size: 15px;
+	color: #a4a4a4;
+	display: inline-block;
+	vertical-align: middle;
+}
+  
+.tooltips .campfire-questions .campfire-question{
+  font-weight: 100;
+	font-size: 15px;
+	color: #5b5b5b;
+	
+	width: 100%;
+	margin-top:8px;
+}
+
+.tooltips .campfire-questions:after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -132px;
+  width: 0; height: 0;
+  border-top: 8px solid #FFFFFF;
+  border-right: 8px solid transparent;
+  border-left: 8px solid transparent;
+}
+div:hover.tooltips .campfire-questions {
+  visibility: visible;
+  opacity: 1;
+  /*opacity: 0.8;*/
+  bottom: 70px;
+  left: 50%;
+  margin-left: -105px;
+  margin-bottom: -0px;
+  z-index: 999;
+}
+
+.campfire-asker-profile{
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  	vertical-align: middle;
+
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: 200px;
+  
+  background-image: url('img/donald-glover.jpg');
+}
+
+
+
+.tooltips .campfire-questions{
+  width: 280px;
+  overflow-y: visible;
+  overflow-x: hidden;
+}
+
+#campfire-questions-all {
+	width : 1500px;
+	overflow: hidden;
+	
+	/* animation duration: 16s : 5x ~3s display image + 5x ~0.2s slide */
+	animation: slide 16s infinite;
+	-moz-animation: slide 16s infinite;
+	-webkit-animation: slide 16s infinite;
+	-o-animation: slide 16s infinite;
+}
+
+#campfire-questions-all .campfire-question {
+	float: left;
+	width: 300px;
+}
+
+
+@keyframes slide{
+	0%{margin-left: 0px;}
+	17%{margin-left: 0px;}
+	20%{margin-left: -300px;}
+	37%{margin-left: -300px;}
+	40%{margin-left: -600px;}
+	57%{margin-left: -600px;}
+	60%{margin-left: -900px;}
+	77%{margin-left: -900px;}
+	80%{margin-left: -1200px;}
+	97%{margin-left: -1200px;}
+	100%{margin-left: 0px;}
+}
+
+@-moz-keyframes slide{
+	0%{margin-left: 0px;}
+	17%{margin-left: 0px;}
+	20%{margin-left: -300px;}
+	37%{margin-left: -300px;}
+	40%{margin-left: -600px;}
+	57%{margin-left: -600px;}
+	60%{margin-left: -900px;}
+	77%{margin-left: -900px;}
+	80%{margin-left: -1200px;}
+	100%{margin-left: -1200px;}
+}
+
+@-webkit-keyframes slide{
+	0%{margin-left: 0px;}
+	17%{margin-left: 0px;}
+	20%{margin-left: -300px;}
+	37%{margin-left: -300px;}
+	40%{margin-left: -600px;}
+	57%{margin-left: -600px;}
+	60%{margin-left: -900px;}
+	77%{margin-left: -900px;}
+	80%{margin-left: -1200px;}
+	100%{margin-left: -1200px;}
+}
+
+@-o-keyframes slide{
+	0%{margin-left: 0px;}
+	17%{margin-left: 0px;}
+	20%{margin-left: -300px;}
+	37%{margin-left: -300px;}
+	40%{margin-left: -600px;}
+	57%{margin-left: -600px;}
+	60%{margin-left: -900px;}
+	77%{margin-left: -900px;}
+	80%{margin-left: -1200px;}
+	100%{margin-left: -1200px;}
+}
