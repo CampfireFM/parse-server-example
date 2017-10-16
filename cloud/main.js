@@ -2213,7 +2213,7 @@ function generateAutoQuestionsForInActiveUsers() {
             question.set('isAutoQuestion', true);
             question.set('isAnswered', false);
             question.set('initialTag', autoQuestionTagRef);
-            console.log(count);
+            //console.log(count);
             return question.save(null, {useMasterKey: true});
         }, {useMasterKey: true});
     });
