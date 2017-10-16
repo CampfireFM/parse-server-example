@@ -2173,7 +2173,7 @@ function generateAutoQuestionsForInActiveUsers() {
         const userQuery = new Parse.Query(Parse.User);
         userQuery.notEqualTo('isTestUser', true);
         userQuery.notEqualTo('isShadowUser', true);
-        userQuery.greaterThan('lastActive', date);
+        userQuery.lessThan('lastActive', date);
         userQuery.containedIn('objectId', [
             "zdnCGeyrJy",
             "oEO7y8Cq7H",
