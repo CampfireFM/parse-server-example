@@ -48,7 +48,7 @@ Parse.Cloud.beforeSave(Parse.User, function(request, response) {
     if (!request.object.existed()) {
         request.object.set('emailSubscriptions', ["earnings","unlocks","questions","summary", "likes"]);
         request.object.set('pushSubscriptions', ["likes","questions","unlocks","earnings"]);
-
+        request.object.set('lastActive', new Date());
         // Email login
         if (email) {
             const firstName = request.object.get('firstName');
