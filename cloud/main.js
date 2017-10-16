@@ -2174,32 +2174,32 @@ function generateAutoQuestionsForInActiveUsers() {
         userQuery.notEqualTo('isTestUser', true);
         userQuery.notEqualTo('isShadowUser', true);
         userQuery.lessThan('lastActive', date);
-        userQuery.containedIn('objectId', [
-            "zdnCGeyrJy",
-            "oEO7y8Cq7H",
-            "OibpPXeOsj",
-            "AWxDK7u1Db",
-            "LFaUU9DnNy",
-            "JMN2NJCXFZ",
-            "B4ITpzf2DA",
-            "8alUO4H6Xv",
-            "7mLBj1qsfX",
-            "CxOh8uaHKk",
-            "Zpa2aEMhP2",
-            "WuXvdsBn5b",
-            "eQAbHX5mN0",
-            "SSJQ8mW13x",
-            "I0A8tc18Fs",
-            "wdoJiComO1",
-            "SIKRqtWdEg",
-            "ZKGabquWrP",
-            "QkVDUuHDkN",
-            "azHmsjW2y7",
-            "3mjhBJNSMM",
-            "lTDfprt3Yj",
-            "7l20TGN5b8",
-            "MdOCGrRIzn"
-        ]);
+        //userQuery.containedIn('objectId', [
+        //    "zdnCGeyrJy",
+        //    "oEO7y8Cq7H",
+        //    "OibpPXeOsj",
+        //    "AWxDK7u1Db",
+        //    "LFaUU9DnNy",
+        //    "JMN2NJCXFZ",
+        //    "B4ITpzf2DA",
+        //    "8alUO4H6Xv",
+        //    "7mLBj1qsfX",
+        //    "CxOh8uaHKk",
+        //    "Zpa2aEMhP2",
+        //    "WuXvdsBn5b",
+        //    "eQAbHX5mN0",
+        //    "SSJQ8mW13x",
+        //    "I0A8tc18Fs",
+        //    "wdoJiComO1",
+        //    "SIKRqtWdEg",
+        //    "ZKGabquWrP",
+        //    "QkVDUuHDkN",
+        //    "azHmsjW2y7",
+        //    "3mjhBJNSMM",
+        //    "lTDfprt3Yj",
+        //    "7l20TGN5b8",
+        //    "MdOCGrRIzn"
+        //]);
         userQuery.each(user => {
             const question = new Question();
             const fromUser = featuredPeople[Math.floor(Math.min(Math.random(), 1) * featuredPeople.length)];
