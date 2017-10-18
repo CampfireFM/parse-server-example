@@ -2096,7 +2096,7 @@ Parse.Cloud.define('getFeedDisplayLists', function(request, response) {
     listQuery.lessThanOrEqualTo('liveDate', currentDate);
     listQuery.notContainedIn('name', ['Featured Web', 'Featured']);
     listQuery.include(['questionRef', 'questionRef.toUser','questionRef.fromUser', 'questionRef.charity', 'userRef']);
-
+    listQuery.descending('liveDate');
     //var completed = function(countMap){
     //    if(countMap.length > 0)
     //        countMap.sort(function(a, b){
