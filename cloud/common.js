@@ -4,6 +4,7 @@ const redisClient = require('./redis');
 const Promise = require('promise');
 const request = require('superagent');
 const Mixpanel = require('mixpanel');
+const mustache = require('mustache');
 var algoliasearch = require('./algolia/algoliaSearch.parse.js');
 var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
 const logTexts = {
@@ -63,152 +64,175 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData, additionalId)
         return;
     }
 
-    toUsers.forEach(function(user){
-        //Send push notification to ios devices
-        if(checkPushSubscription(user, type) || (campfireAutoPushTypes.indexOf(type) > -1)) {
-            if (currentUser && (user.id == currentUser.id))
-                return;
-            if (subscriptionTypes.indexOf(type) !== -1) {
-                if (!checkPushSubscription(user, type) && !checkSMSSubscription(user, type))
-                    return console.log(logTexts[type]);
-            } else if(campfireAutoPushTypes.indexOf(type) === -1){
-                return console.log('Unknown push type, no push notification sent');
-            }
-            // Get badge count 
-            const Question = Parse.Object.extend('Question');
-            const questionQuery = new Parse.Query(Question);
-            questionQuery.equalTo('isAnswered', false);
-            questionQuery.notEqualTo('isIgnored', true);
-            questionQuery.equalTo('isExpired', false);
-            questionQuery.equalTo('toUser', user);
-            questionQuery.count({useMasterKey: true}).then(count => {
-                // setup a push to the question Asker
-                var pushQuery = new Parse.Query(Parse.Installation);
-                pushQuery.equalTo('deviceType', 'ios');
-                pushQuery.equalTo('user', user);
-
-                //Compose alert text to be sent
-                var alert = "";
-                var badge = 0;
-                var tag;
-                var objectId;
-                const fullName = currentUser ? currentUser.get('fullName') : '';
-                switch(type) {
-                    case 'questions' :
-                        alert = fullName + ' asked you a new question.';
-                        badge = count;
-                        objectId = additionalId;
-                        tag = 'question';
-                        break;
-                    case 'expiringQuestions' :
-                        if (additionalData > 1)
-                            alert = `You have ${additionalData} questions expiring in the next 24 hours, hurry up!`;
-                        else
-                            alert = `You have a question expiring in the next 24 hours, hurry up!`;
-                        break;
-                    case 'answers' :
-                        alert = fullName + ' answered your question on Campfire!';
-                        badge = count;
-                        tag = 'answer';
-                        objectId = additionalId;
-                        break;
-                    case 'answerToFollowers':
-                        alert = fullName + ' answered ' + additionalData + '\'s question on Campfire!';
-                        //badge = user.get('unansweredQuestionCount') || 0;
-                        tag = 'answer';
-                        objectId = additionalId;
-                        break;
-                    case 'unlocks' :
-                        alert = fullName + ' unlocked your question & answer.';
-                        break;
-                    case 'follows' :
-                        alert = fullName + ' just followed you.';
-                        break;
-                    case 'likes' :
-                        alert = fullName + ' just liked your question & answer.';
-                        break;
-                    case 'earnings' :
-                        alert = 'You earned money!';
-                        break;
-                    case 'friendMatch' :
-                        alert = 'Your friend ' + fullName + ' is syncing you.';
-                        break;
-                    case 'joinCampfire' :
-                        alert = 'Your friend ' + fullName + ' joined campfire! Go ask them a question.';
-                        break;
-                }
-
-                var data = {
-                    alert: alert
-                }
-
-                if (badge > 0)
-                    data.badge = badge
-
-                if (tag)
-                    data.tag = tag;
-
-                if (objectId)
-                    data.objectId = objectId;
-
-                Parse.Push.send({
-                    where: pushQuery,
-                    data: data
-                    // data: {
-                    //     alert: alert,
-                    //     tag: tag,
-                    //     badge: badge
-                    // }
-                }, {
-                    useMasterKey: true,
-                    success: function () {
-                        // Push was successful
-                    },
-                    error: function (error) {
-                        throw "PUSH: Got an error " + error.code + " : " + error.message;
+    // Extract push notification texts
+    const PushNotificationText = Parse.Object.extend('PushNotificationText');
+    const pushNotificationTextQuery = new Parse.Query(PushNotificationText);
+    pushNotificationTextQuery.find({useMasterKey: true})
+        .then(pushNotificationTexts => {
+            toUsers.forEach(function(user){
+                //Send push notification to ios devices
+                if(checkPushSubscription(user, type) || (campfireAutoPushTypes.indexOf(type) > -1)) {
+                    if (currentUser && (user.id == currentUser.id))
+                        return;
+                    if (subscriptionTypes.indexOf(type) !== -1) {
+                        if (!checkPushSubscription(user, type) && !checkSMSSubscription(user, type))
+                            return console.log(logTexts[type]);
+                    } else if(campfireAutoPushTypes.indexOf(type) === -1){
+                        return console.log('Unknown push type, no push notification sent');
                     }
-                });
-            }, err => {
-                console.log(err);
-            })
-        }
-        if(checkSMSSubscription(user, type)) {
-            // Twilio Credentials
-            var accountSid = config.twilio.accountSid;
-            var authToken = config.twilio.authToken;
+                    // Get badge count
+                    const Question = Parse.Object.extend('Question');
+                    const questionQuery = new Parse.Query(Question);
+                    questionQuery.equalTo('isAnswered', false);
+                    questionQuery.notEqualTo('isIgnored', true);
+                    questionQuery.equalTo('isExpired', false);
+                    questionQuery.equalTo('toUser', user);
+                    questionQuery.count({useMasterKey: true}).then(count => {
+                        // setup a push to the question Asker
+                        var pushQuery = new Parse.Query(Parse.Installation);
+                        pushQuery.equalTo('deviceType', 'ios');
+                        pushQuery.equalTo('user', user);
 
-            //require the Twilio module and create a REST client
-            var client = Twilio(config.twilio.accountSid, config.twilio.authToken);
+                        var badge = 0;
+                        var tag;
+                        var objectId;
+                        const fullName = currentUser ? currentUser.get('fullName') : '';
+                        const context = {
+                            fullName,
+                            askerFullName: additionalData
+                        };
+                        const templates = [];
+                        pushNotificationTexts.forEach(pushNotificationText => {
+                            if (pushNotificationText.get('type') === type)
+                                templates.push(pushNotificationText.get('text'));
+                        });
+                        console.log(templates);
+                        if (templates.length === 0)
+                            return;
+                        const randIndex = Math.min(templates.length - 1, Math.floor(Math.random() * templates.length));
+                        let template;
+                        try {
+                            template = templates[randIndex];
+                        } catch(err) {
+                            console.log(err);
+                            template = '';
+                        }
+                        console.log(template);
+                        //Compose alert text to be sent
+                        const alert = mustache.render(template, context);
+                        switch(type) {
+                            case 'questions' :
+                                //alert = fullName + ' asked you a new question.';
+                                badge = count;
+                                objectId = additionalId;
+                                tag = 'question';
+                                break;
+                            case 'answers' :
+                                //alert = fullName + ' answered your question on Campfire!';
+                                badge = count;
+                                tag = 'answer';
+                                objectId = additionalId;
+                                break;
+                            case 'answerToFollowers':
+                                //alert = fullName + ' answered ' + additionalData + '\'s question on Campfire!';
+                                //badge = user.get('unansweredQuestionCount') || 0;
+                                tag = 'answer';
+                                objectId = additionalId;
+                                break;
+                            case 'unlocks' :
+                                //alert = fullName + ' unlocked your question & answer.';
+                                break;
+                            case 'follows' :
+                                //alert = fullName + ' just followed you.';
+                                break;
+                            case 'likes' :
+                                //alert = fullName + ' just liked your question & answer.';
+                                break;
+                            case 'earnings' :
+                                //alert = 'You earned money!';
+                                break;
+                            case 'friendMatch' :
+                                //alert = 'Your friend ' + fullName + ' is syncing you.';
+                                break;
+                            //case 'joinCampfire' :
+                            //    alert = 'Your friend ' + fullName + ' joined campfire! Go ask them a question.';
+                            //    break;
+                        }
 
-            if(user.get('phoneNumber') === undefined){
-                console.log('User has not registerd phone number yet');
-            } else {
-                //Build deep link
-                branch.link.create(config.branchKey, {
-                    channel: '',
-                    feature: '',
-                    data: {
-                        answerId: additionalData
+                        var data = {
+                            alert: alert
+                        }
+
+                        if (badge > 0)
+                            data.badge = badge
+
+                        if (tag)
+                            data.tag = tag;
+
+                        if (objectId)
+                            data.objectId = objectId;
+
+                        Parse.Push.send({
+                            where: pushQuery,
+                            data: data
+                            // data: {
+                            //     alert: alert,
+                            //     tag: tag,
+                            //     badge: badge
+                            // }
+                        }, {
+                            useMasterKey: true,
+                            success: function () {
+                                // Push was successful
+                            },
+                            error: function (error) {
+                                throw "PUSH: Got an error " + error.code + " : " + error.message;
+                            }
+                        });
+                    }, err => {
+                        console.log(err);
+                    })
+                }
+                if(checkSMSSubscription(user, type)) {
+                    // Twilio Credentials
+                    var accountSid = config.twilio.accountSid;
+                    var authToken = config.twilio.authToken;
+
+                    //require the Twilio module and create a REST client
+                    var client = Twilio(config.twilio.accountSid, config.twilio.authToken);
+
+                    if(user.get('phoneNumber') === undefined){
+                        console.log('User has not registerd phone number yet');
+                    } else {
+                        //Build deep link
+                        branch.link.create(config.branchKey, {
+                            channel: '',
+                            feature: '',
+                            data: {
+                                answerId: additionalData
+                            }
+                        }).then(function(link) {
+                            alert += `\n ${link.url}`;
+                            client.messages.create({
+                                to: user.get('phoneNumber'),
+                                from: config.twilio.number,
+                                body: alert
+                            }, function (err, message) {
+                                if (err)
+                                    console.log(err.message);
+                                else
+                                    console.log(message.sid);
+                            });
+                        }).catch(function(err){
+                            console.log('Failed to create deep link for answer : ', err);
+                            throw 'Got an error while looking for withdrawal object ' + err.code + ' : ' + err.message;
+                        })
                     }
-                }).then(function(link) {
-                    alert += `\n ${link.url}`;
-                    client.messages.create({
-                        to: user.get('phoneNumber'),
-                        from: config.twilio.number,
-                        body: alert
-                    }, function (err, message) {
-                        if (err)
-                            console.log(err.message);
-                        else
-                            console.log(message.sid);
-                    });
-                }).catch(function(err){
-                    console.log('Failed to create deep link for answer : ', err);
-                    throw 'Got an error while looking for withdrawal object ' + err.code + ' : ' + err.message;
-                })
-            }
-        }
-    });
+                }
+            });
+        }, err => {
+            console.log(err);
+        });
 }
 
 /**
