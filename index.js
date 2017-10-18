@@ -2,7 +2,6 @@
 // compatible API routes.
 
 // Add risingstack trace
-require('@risingstack/trace');
 
 var throng = require('throng');
 const WORKERS = process.env.WEB_CONCURRENCY || 1;
