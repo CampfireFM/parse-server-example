@@ -18,7 +18,8 @@ const logTexts = {
 };
 const branch = require('node-branch-io');
 const subscriptionTypes = ['questions', 'unlocks', 'answers', 'likes', 'follows', 'earnings'];
-const campfireAutoPushTypes = ['friendMatch', 'joinCampfire', 'expiringQuestions', 'answerToFollowers'];
+//const campfireAutoPushTypes = ['friendMatch', 'joinCampfire', 'expiringQuestions', 'answerToFollowers'];
+const campfireAutoPushTypes = ['friendMatch', 'joinCampfire', 'expiringQuestions'];
 
 const activityTypes = ['follow', 'unlock', 'like', 'answer', 'question'];
 
