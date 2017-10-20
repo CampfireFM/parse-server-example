@@ -27,7 +27,7 @@ Parse.Cloud.define('getPushNotificationTexts', function(req, res){
                             promise = promise.then(function () {
                                 pushNotificationTexts.push({
                                     id: object.id,
-                                    question: object.get('text'),
+                                    text: object.get('text'),
                                     type: object.get('type'),
                                     createdAt: object.get('createdAt'),
                                     updatedAt: object.get('updatedAt')
