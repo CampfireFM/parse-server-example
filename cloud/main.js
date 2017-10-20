@@ -28,7 +28,7 @@ require("./shareImage");
 require("./category");
 require("./tag");
 require("./question");
-require("./pushNotificationText");
+require("./notificationText");
 require("./topic");
 require("./transcript");
 require("./cron");
