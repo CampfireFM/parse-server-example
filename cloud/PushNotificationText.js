@@ -1,5 +1,5 @@
 
-Parse.Cloud.define('getPushNotifcationTexts', function(req, res){
+Parse.Cloud.define('getPushNotificationTexts', function(req, res){
     var pushNotificationTexts = [];
     var sortedBy = req.params.sortedBy || 'createdAt';
     var sortDir = req.params.sortDir || 'desc';
