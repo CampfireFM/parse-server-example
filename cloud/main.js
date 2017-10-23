@@ -1150,7 +1150,7 @@ Parse.Cloud.define('getFriendsMatch', function(request, response){
     usersMatch.find({useMasterKey : true}).then(function(users){
         if(users.length){
             //Send push notification to users
-            sendPushOrSMS(request.user, users, 'friendMatch');
+            //sendPushOrSMS(request.user, users, 'friendMatch');
             response.success(users);
         } else {
             response.success([]);
