@@ -154,14 +154,14 @@ Parse.Cloud.job("Reindex Admin Users", function(request, status){
     // prepare objects to index from contacts
     const objectsToIndex = parseToAlgoliaObjects(users);
      //Add new objects to temp index
-    tempIndex.saveObjects(objectsToIndex, function (err, content) {
+    //tempIndex.saveObjects(objectsToIndex, function (err, content) {
       completedCount += objectsToIndex.length;
       console.log('ProcessCount:', completedCount);
-      if (err) {
-        status.error(err);
-        console.log('-------------------Got error while updating index-------------------------\n', err);
-        throw err;
-      }
-    });
+      //if (err) {
+      //  status.error(err);
+      //  console.log('-------------------Got error while updating index-------------------------\n', err);
+      //  throw err;
+      //}
+    //});
   }, true);
 })
