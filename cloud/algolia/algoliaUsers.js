@@ -2,6 +2,41 @@ var config = require('../../config');
 var algoliasearch = require('./algoliaSearch.parse.js');
 var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
 var { parseToAlgoliaObjects, getAllUsers } = require('../common');
+
+function getAllUsers(callback, fnAddIndex, noFilter) {
+  var result = [];
+  var chunk_size = 100;
+  var processCallback = function(res) {
+    fnAddIndex(res);
+    if (res.length === chunk_size) {
+      process(res[res.length-1].id);
+    } else {
+      callback(null);
+    }
+  };
+  var process = function(skip) {
+    var query = new Parse.Query(Parse.User);
+    if (skip) {
+      query.greaterThan("objectId", skip);
+    }
+    //query.select(['profilePhoto', 'charityRef']);
+    query.include(['charityRef']);
+    if (!noFilter) {
+      query.notEqualTo('isTestUser', true);
+      query.notEqualTo('lastName', 'Test');
+      query.notEqualTo('firstName', 'Test');
+    }
+    query.limit(chunk_size);
+    query.ascending("objectId");
+    query.find({useMasterKey: true}).then(function (res) {
+      processCallback(res);
+    }, function (error) {
+      reject(error);
+    });
+  };
+  process(false);
+}
+
 Parse.Cloud.job("Index Users", function(request, status){
   const index = client.initIndex(config.algolia.userIndex);
 
@@ -93,27 +128,31 @@ var mainAdminUserIndex = config.algolia.adminUserIndex;
 Parse.Cloud.job("Reindex Admin Users", function(request, status){
   const tempIndex = client.initIndex(adminUserTempIndex);
   var completedCount = 0;
-  getAllUsers(true)
-    .then(function(questions, totalCount) {
-      // prepare objects to index from contacts
-      const objectsToIndex = parseToAlgoliaObjects(questions);
-      // Add new objects to temp index
-      tempIndex.saveObjects(objectsToIndex, function (err, content) {
-        if (err) {
-          status.error(err);
-          throw err;
-        }
-        client.moveIndex(adminUserTempIndex, mainAdminUserIndex, function (err, content) {
-          if (err) {
-            status.error(err);
-            throw err;
-          }
-          client.initIndex(mainAdminUserIndex).setSettings({
-            searchableAttributes: ['fullName'],
-            customRanking: ['asc(firstName)']
-          });
-          status.success();
-        });
+  getAllUsers((err) => {
+    if (err) {
+      status.error(err);
+      throw err;
+    }
+    client.moveIndex(adminUserTempIndex, mainAdminUserIndex, function (err, content) {
+      if (err) {
+        status.error(err);
+        throw err;
+      }
+      client.initIndex(mainAdminUserIndex).setSettings({
+        searchableAttributes: ['fullName'],
+        customRanking: ['asc(firstName)']
       });
-    })
-});
+      status.success();
+    });
+  }, function(users) {
+    // prepare objects to index from contacts
+    const objectsToIndex = parseToAlgoliaObjects(users);
+    // Add new objects to temp index
+    tempIndex.saveObjects(objectsToIndex, function (err, content) {
+      if (err) {
+        status.error(err);
+        throw err;
+      }
+    });
+  }, true);
+}
