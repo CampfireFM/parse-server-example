@@ -33,6 +33,7 @@ Parse.Cloud.afterSave("Question", function(request) {
                     }
                     questCount++;
                     user.set("unansweredQuestionCount", questCount);
+                    user.increment('askedQuestionCount', 1);
                     if (request.object.get('isAutoQuestion') === true)
                         user.set('lastActive', new Date());
                     user.save(null, { useMasterKey: true });
