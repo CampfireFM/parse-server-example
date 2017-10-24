@@ -18,6 +18,8 @@ function getAllUsers(callback, fnAddIndex, noFilter) {
     var query = new Parse.Query(Parse.User);
     if (skip) {
       query.greaterThan("objectId", skip);
+    } else {
+      query.greaterThan('objectId', 'yWS5iEz06K');
     }
     //query.select(['profilePhoto', 'charityRef']);
     query.include(['charityRef']);
@@ -129,30 +131,34 @@ Parse.Cloud.job("Reindex Admin Users", function(request, status){
   const tempIndex = client.initIndex(adminUserTempIndex);
   var completedCount = 0;
   getAllUsers((err) => {
-    if (err) {
-      status.error(err);
-      throw err;
-    }
-    client.moveIndex(adminUserTempIndex, mainAdminUserIndex, function (err, content) {
+    console.log('--------------Callback called----------------');
+    try {
       if (err) {
         status.error(err);
         throw err;
       }
-      client.initIndex(mainAdminUserIndex).setSettings({
-        searchableAttributes: ['fullName'],
-        customRanking: ['asc(firstName)']
+      client.moveIndex(adminUserTempIndex, mainAdminUserIndex, function (err, content) {
+        if (err) {
+          status.error(err);
+          throw err;
+        }
+        client.initIndex(mainAdminUserIndex).setSettings({
+          searchableAttributes: ['fullName'],
+          customRanking: ['asc(firstName)']
+        });
+        status.success();
       });
-      status.success();
-    });
+    }
   }, function(users) {
     // prepare objects to index from contacts
     const objectsToIndex = parseToAlgoliaObjects(users);
-    // Add new objects to temp index
+     //Add new objects to temp index
     tempIndex.saveObjects(objectsToIndex, function (err, content) {
       completedCount += objectsToIndex.length;
       console.log('ProcessCount:', completedCount);
       if (err) {
         status.error(err);
+        console.log('-------------------Got error while updating index-------------------------\n', err);
         throw err;
       }
     });
