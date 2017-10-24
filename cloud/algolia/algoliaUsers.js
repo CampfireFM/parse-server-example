@@ -148,6 +148,9 @@ Parse.Cloud.job("Reindex Admin Users", function(request, status){
         });
         status.success();
       });
+    } catch(err) {
+      console.log('--------------Error called----------------');
+      console.log(err);
     }
   }, function(users) {
     // prepare objects to index from contacts
