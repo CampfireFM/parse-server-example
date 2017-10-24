@@ -18,8 +18,6 @@ function getAllUsers(callback, fnAddIndex, noFilter) {
     var query = new Parse.Query(Parse.User);
     if (skip) {
       query.greaterThan("objectId", skip);
-    } else {
-      query.greaterThan('objectId', 'yWS5iEz06K');
     }
     //query.select(['profilePhoto', 'charityRef']);
     query.include(['charityRef']);
