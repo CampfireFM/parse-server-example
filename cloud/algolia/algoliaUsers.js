@@ -149,6 +149,8 @@ Parse.Cloud.job("Reindex Admin Users", function(request, status){
     const objectsToIndex = parseToAlgoliaObjects(users);
     // Add new objects to temp index
     tempIndex.saveObjects(objectsToIndex, function (err, content) {
+      completedCount += objectsToIndex.length;
+      console.log('ProcessCount:', completedCount);
       if (err) {
         status.error(err);
         throw err;
