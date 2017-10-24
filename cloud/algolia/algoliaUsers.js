@@ -1,7 +1,7 @@
 var config = require('../../config');
 var algoliasearch = require('./algoliaSearch.parse.js');
 var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
-var { parseToAlgoliaObjects, getAllUsers } = require('../common');
+var { parseToAlgoliaObjects } = require('../common');
 
 function getAllUsers(callback, fnAddIndex, noFilter) {
   var result = [];
@@ -155,4 +155,4 @@ Parse.Cloud.job("Reindex Admin Users", function(request, status){
       }
     });
   }, true);
-}
+})
