@@ -3,7 +3,7 @@ const config = require('../config.js');
 const stripe = require('stripe')(config.stripe_live_key);
 // var paypal = require('paypal-rest-sdk');
 var Paypal = require('paypal-nvp-api');
-const ipa = require('in-app-purchase');
+const iap = require('in-app-purchase');
 const wrapper = require('co-express');
 const Promise = require('promise');
 var algoliasearch = require('./algolia/algoliaSearch.parse.js');
@@ -2226,10 +2226,10 @@ Parse.Cloud.define('resetFeaturedAnswers', (req, res) => {
     res.success({});
 })
 
-Parse.Cloud.define('validateReceipt', (reqquest, response) => {
-    const {receipt} = req.params;
+Parse.Cloud.define('validateReceipt', (request, response) => {
+    const {receipt} = request.params;
+    const {product} = request.params;
     const secretKey = config.appleSecretKey;
-    var iap = require('in-app-purchase');
     iap.config({
         applePassword: secretKey
     });
