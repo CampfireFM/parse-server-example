@@ -3,6 +3,7 @@ const config = require('../config.js');
 const stripe = require('stripe')(config.stripe_live_key);
 // var paypal = require('paypal-rest-sdk');
 var Paypal = require('paypal-nvp-api');
+const ipa = require('in-app-purchase');
 const wrapper = require('co-express');
 const Promise = require('promise');
 var algoliasearch = require('./algolia/algoliaSearch.parse.js');
@@ -2223,4 +2224,29 @@ function generateAutoQuestionsForInActiveUsers() {
 Parse.Cloud.define('resetFeaturedAnswers', (req, res) => {
     resetFeaturedAnswers().then();
     res.success({});
+})
+
+Parse.Cloud.define('validateReceipt', (reqquest, response) => {
+    const {receipt} = req.params;
+    const secretKey = config.appleSecretKey;
+    var iap = require('in-app-purchase');
+    iap.config({
+        applePassword: secretKey
+    });
+    iap.setup(function (error) {
+        if (error) {
+            return console.error('something went wrong...');
+        }
+        // iap is ready
+        iap.validate(iap.APPLE, receipt, function (err, appleRes) {
+            if (err) {
+                console.error(err);
+                response.error(err);
+            }
+            if (iap.isValidated(appleRes)) {
+                // yay good!
+                response.success({status: 'verified'});
+            }
+        });
+    });
 })

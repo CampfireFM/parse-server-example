@@ -1,23 +1,23 @@
-var https = require("https");
-var request = require('request');
-var fs = require('fs');
-const ffmpeg = require('fluent-ffmpeg');
-
-var speech = require('@google-cloud/speech')({
-  projectId: 'campfire-speech',
-  credentials: JSON.parse(process.env.GOOGLE_AUTH)
-});
-
-var googleStorage = require('@google-cloud/storage')({
-  projectId: 'campfire-speech',
-  credentials: JSON.parse(process.env.GOOGLE_AUTH)
-});
-
-var bucketName = 'campfires'
-var bucket = googleStorage.bucket(bucketName);
-
-var Answer = Parse.Object.extend('Answer');
-var query = new Parse.Query(Answer);
+//var https = require("https");
+//var request = require('request');
+//var fs = require('fs');
+//const ffmpeg = require('fluent-ffmpeg');
+//
+//var speech = require('@google-cloud/speech')({
+//  projectId: 'campfire-speech',
+//  credentials: JSON.parse(process.env.GOOGLE_AUTH)
+//});
+//
+//var googleStorage = require('@google-cloud/storage')({
+//  projectId: 'campfire-speech',
+//  credentials: JSON.parse(process.env.GOOGLE_AUTH)
+//});
+//
+//var bucketName = 'campfires'
+//var bucket = googleStorage.bucket(bucketName);
+//
+//var Answer = Parse.Object.extend('Answer');
+//var query = new Parse.Query(Answer);
 
 Parse.Cloud.define('transcribeAudio', function(req, res){
     res.success({});
