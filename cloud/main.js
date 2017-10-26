@@ -2235,7 +2235,8 @@ Parse.Cloud.define('validateReceipt', (request, response) => {
     });
     iap.setup(function (error) {
         if (error) {
-            return console.error('something went wrong...');
+            console.error('something went wrong...');
+            return response.error(error);
         }
         // iap is ready
         iap.validate(iap.APPLE, receipt, function (err, appleRes) {
