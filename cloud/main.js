@@ -2228,7 +2228,7 @@ Parse.Cloud.define('resetFeaturedAnswers', (req, res) => {
 
 Parse.Cloud.define('validateReceipt', (request, response) => {
     const {receipt} = request.params;
-    const {product} = request.params;
+    const {productId} = request.params;
     const secretKey = config.appleSecretKey;
     iap.config({
         applePassword: secretKey
