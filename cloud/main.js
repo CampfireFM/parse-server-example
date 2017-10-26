@@ -2245,7 +2245,9 @@ Parse.Cloud.define('validateReceipt', (request, response) => {
             }
             if (iap.isValidated(appleRes)) {
                 // yay good!
-                response.success({status: 'verified'});
+                response.success({verified: true});
+            } else {
+                response.success({verified: false})
             }
         });
     });
