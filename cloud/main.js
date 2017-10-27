@@ -1166,12 +1166,12 @@ Parse.Cloud.define('getFriendsMatch', function(request, response){
 Parse.Cloud.define('requestCashout', function(request, response){
     var currentUser = request.user;
     var paypalEmail = request.params.paypalEmail;
-    var cashOutAmount = request.params.cashOutAmount;
+    var cashoutAmount = request.params.cashoutAmount;
     
     const cashout = new Parse.Object('Cashout');
     cashout.set('userRef', currentUser);
     cashout.set('paypalEmail', paypalEmail);
-    cashout.set('cashOutAmount', cashOutAmount);
+    cashout.set('cashOutAmount', cashoutAmount);
     cashout.set('isConfirmed', false);
     cashout.set('isPaid', false);
     cashout.set('status', 'Pending');
