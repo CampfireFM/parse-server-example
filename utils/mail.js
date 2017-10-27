@@ -264,4 +264,17 @@ function sendWarningEmail(recipient, data) {
         variables: data
     });
 }
-module.exports = {sendWarningEmail, sendWelcomeMail, updateMailingList, sendSummaryEmail, sendFollowEmail, sendQuestionEmail, sendAnswerEmail, sendAdminSummaryEmail, sendTransactionFailureEmail};
+
+function sendCashoutEmail(recipient, data) {
+    const { AppCache } = require('parse-server/lib/cache');
+    // Get a reference to the MailgunAdapter
+    // NOTE: It's best to do this inside the Parse.Cloud.define(...) method body and not at the top of your file with your other imports. This gives Parse Server time to boot, setup cloud code and the email adapter.
+    const MailgunAdapter = AppCache.get(config.appId)['userController']['adapter'];
+    // Invoke the send method with an options object
+    MailgunAdapter.send({
+        templateName: 'cashoutEmail',
+        recipient: recipient,
+        variables: data
+    });
+}
+module.exports = {sendCashoutEmail, sendWarningEmail, sendWelcomeMail, updateMailingList, sendSummaryEmail, sendFollowEmail, sendQuestionEmail, sendAnswerEmail, sendAdminSummaryEmail, sendTransactionFailureEmail};

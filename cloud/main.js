@@ -9,7 +9,7 @@ const Promise = require('promise');
 var algoliasearch = require('./algolia/algoliaSearch.parse.js');
 var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
 const redisClient = require('./redis');
-const { sendTransactionFailureEmail } = require('../utils/mail');
+const { sendTransactionFailureEmail, sendCashoutEmail } = require('../utils/mail');
 //include the JS files which represent each classes (models), and contains their operations
 require("./models/Answer.js");
 require("./models/CampfireUnlock.js");
@@ -34,6 +34,7 @@ require("./topic");
 require("./transcript");
 require("./cron");
 require("./campaigns/university");
+require("./cashout");
 transactionPercentage = 2.9;
 transactionFee = 0.3;
 answerPercentageToCampfire = 0.2;
@@ -1162,97 +1163,162 @@ Parse.Cloud.define('getFriendsMatch', function(request, response){
     });
 });
 
-Parse.Cloud.define('withdraw', function(request, response){
+Parse.Cloud.define('requestCashout', function(request, response){
     var currentUser = request.user;
     var paypalEmail = request.params.paypalEmail;
-    var earningsBalance = currentUser.get('earningsBalance');
-    var email = currentUser.get('email');
-    var paypalConfig = config.paypal;
-    var paypal = Paypal(paypalConfig);
 
-    // response.success("OK");
-    // var create_payout_json = {
-    //     'RECEIVER_TYPE' : 'EmailAddress',
-    //     'L_EMAIL0' : 'krittylor@gmaiasdfafsl.xom',
-    //     'L_AMT0' : 0.1,
-    //     'CURRENCYCODE' : 'USD'
-    // };
-    // if(process.env.NODE_ENV !== 'production')
-    //   paypalEmail = 'krittylor@gmail.xom';
-    // Round earningsBalance
-    let roundedEarningsBalance = Math.floor( earningsBalance * Math.pow(10, 2) ) / Math.pow(10, 2) ;
-    var create_payout_json = {
-        'RECEIVERTYPE' : 'Email',
-        'L_EMAIL0': paypalEmail,
-        'L_AMT0' : roundedEarningsBalance,
-        'CURRENCYCODE' : 'USD'
-    };
-
-    console.log('Payout_Request_Json', create_payout_json);
-    paypal.request('MassPay', create_payout_json).then(function(payout) {
-        const transaction = new Parse.Object('Transaction');
-        transaction.set('userRef', request.user);
-        transaction.set('amount', roundedEarningsBalance);
-        transaction.set('paypalEmail', paypalEmail);
-
-        transaction.set('CORRELATIONID', payout.CORRELATIONID);
-        transaction.set('ACK', payout.ACK);
-        transaction.set('L_ERRORCODE0', payout.L_ERRORCODE0);
-        transaction.set('L_SHORTMESSAGE0', payout.L_SHORTMESSAGE0);
-        transaction.set('L_LONGMESSAGE0', payout.L_LONGMESSAGE0);
-        transaction.set('L_SEVERITYCODE0', payout.L_SEVERITYCODE0);
-        transaction.set('TIMESTAMP', payout.TIMESTAMP);
-
-        transaction.save(null, {useMasterKey: true}).then();
-
-        //Get Payout Item
-
-        console.log("Created Single Payout");
-        console.log(payout);
-        if(payout.ACK == 'Success'){
-            currentUser.set('earningsBalance', earningsBalance - roundedEarningsBalance);
-            currentUser.save(null, {useMasterKey : true}).then(function(user){
-                console.log(`Updated balance of ${user.get('earningsBalance')}`);
-                response.success(payout);
-            }, function(error){
-                console.log(`Paid ${earningsBalance} to ${paypalEmail} but failed to update earningsBalance to 0`);
-                console.log(error);
-                response.success(payout);
-            });
-        } else {
-            response.error(payout);
-            sendTransactionFailureEmail('eric@campfire.fm', {
-                userId: request.user.id,
-                fullName: request.user.get('fullName'),
-                amount: roundedEarningsBalance,
-                paypalEmail: paypalEmail,
-                shortMessage: payout.L_SHORTMESSAGE0,
-                longMessage: payout.L_LONGMESSAGE0,
-                timestamp: payout.TIMESTAMP
-            });
-            var errorCode = payout.L_ERRORCODE0;
-            console.log(`Something went wrong with payout`);
-            console.log(`ErrorCode : ${payout.L_ERRORCODE0}, ${payout.L_SHORTMESSAGE0}`)
-        }
-    }).catch(function(err){
-        console.log(err.response);
-        const transaction = new Parse.Object('Transaction');
-        transaction.set('userRef', request.user);
-        transaction.set('amount', roundedEarningsBalance);
-        transaction.set('paypalEmail', paypalEmail);
-        transaction.save(null, {useMasterKey: true}).then();
-        sendTransactionFailureEmail('eric@campfire.fm', {
-            userId: request.user.id,
-            fullName: request.user.get('fullName'),
-            amount: roundedEarningsBalance,
-            paypalEmail: paypalEmail,
-            shortMessage: 'Masspayout api call failed',
-            longMessage: 'Masspayout api call failed',
-            timestamp: new Date().toISOString()
-        });
+    const cashout = new Parse.Object('Cashout');
+    cashout.set('userRef', currentUser);
+    cashout.set('paypalEmail', paypalEmail);
+    cashout.set('isConfirmed', false);
+    cashout.set('isPaid', false);
+    cashout.set('status', 'Pending');
+    cashout.save(null).then((res) => {
+        // Send notification email to paypal address
+        sendCashoutEmail(paypalEmail, {});
+        response.success({});
+    }, function(err) {
+        console.log(err);
         response.error(err);
-        throw 'Got an error ' + err.code + ' : ' + err.message;
     });
+});
+
+
+Parse.Cloud.define('withdraw', function(request, response){
+    const cashoutId = request.params.cashoutId;
+    const Cashout = Parse.Object.extend('Cashout');
+    const query = new Parse.Query(Cashout);
+    query.include('userRef.paypalEmail');
+    try {
+        query.get(cashoutId, {useMasterKey: true}).then(cashout => {
+            var userId = cashout.get('userRef').id;
+            var paypalEmail = cashout.get('userRef').get('paypalEmail');
+            var user = cashout.get('userRef');
+            var earningsBalance = user.get('earningsBalance');
+            var email = user.get('email');
+            var paypalConfig = config.paypal;
+            var paypal = Paypal(paypalConfig);
+            // response.success("OK");
+            // var create_payout_json = {
+            //     'RECEIVER_TYPE' : 'EmailAddress',
+            //     'L_EMAIL0' : 'krittylor@gmaiasdfafsl.xom',
+            //     'L_AMT0' : 0.1,
+            //     'CURRENCYCODE' : 'USD'
+            // };
+            // if(process.env.NODE_ENV !== 'production')
+            //   paypalEmail = 'krittylor@gmail.xom';
+            // Round earningsBalance
+            let roundedEarningsBalance = Math.floor(earningsBalance * Math.pow(10, 2)) / Math.pow(10, 2);
+            var create_payout_json = {
+                'RECEIVERTYPE': 'Email',
+                'L_EMAIL0': paypalEmail,
+                'L_AMT0': roundedEarningsBalance,
+                'CURRENCYCODE': 'USD'
+            };
+
+            console.log('Payout_Request_Json', create_payout_json);
+            paypal.request('MassPay', create_payout_json).then(function (payout) {
+                const transaction = new Parse.Object('Transaction');
+                transaction.set('userRef', request.user);
+                transaction.set('amount', roundedEarningsBalance);
+                transaction.set('paypalEmail', paypalEmail);
+
+                transaction.set('CORRELATIONID', payout.CORRELATIONID);
+                transaction.set('ACK', payout.ACK);
+                transaction.set('L_ERRORCODE0', payout.L_ERRORCODE0);
+                transaction.set('L_SHORTMESSAGE0', payout.L_SHORTMESSAGE0);
+                transaction.set('L_LONGMESSAGE0', payout.L_LONGMESSAGE0);
+                transaction.set('L_SEVERITYCODE0', payout.L_SEVERITYCODE0);
+                transaction.set('TIMESTAMP', payout.TIMESTAMP);
+
+                transaction.save(null, {useMasterKey: true}).then();
+
+                //Get Payout Item
+
+                console.log("Created Single Payout");
+                console.log(payout);
+                if (payout.ACK == 'Success') {
+                    const date = new Date();
+                    user.set('earningsBalance', earningsBalance - roundedEarningsBalance);
+                    user.save(null, {useMasterKey: true}).then(function (user) {
+                        console.log(`Updated balance of ${user.get('earningsBalance')}`);
+                        response.success(payout);
+                    }, function (error) {
+                        console.log(`Paid ${earningsBalance} to ${paypalEmail} but failed to update earningsBalance to 0`);
+                        console.log(error);
+                        response.success(payout);
+                    });
+
+                    // Update payouts to isPaid=true and transactionRef
+                    const pastCashoutQuery = new Parse.Query(Cashout);
+                    pastCashoutQuery.descending('paidDate');
+                    pastCashoutQuery.equalTo('userRef', user);
+                    pastCashoutQuery.notEqualTo('objectId', cashout.id);
+                    pastCashoutQuery.first({useMasterKey: true}).then(pastCashout => {
+                        let pastDate = new Date('2000-01-01');
+                        // Update paidDate of cashout
+
+                        cashout.set('paidDate', date);
+                        cashout.set('isPaid', true);
+                        cashout.set('isConfirmed', true);
+                        cashout.set('status', 'Confirmed');
+
+                        cashout.save(null, {useMasterKey: true}).then(() => response.success({}), err => response.error(err));
+                        if (pastCashout)
+                            pastDate = pastCashout.get('paidDate');
+                        const Payout = Parse.Object.extend('Payout');
+                        const payoutQuery = new Parse.Query(Payout);
+                        payoutQuery.equalTo('userRef', user);
+                        console.log(pastDate);
+                        payoutQuery.greaterThan('createdAt', pastDate);
+                        payoutQuery.each(payout => {
+                            payout.set('isPaid', true);
+                            payout.set('cashoutRef', cashout);
+                            return payout.save(null, {useMasterKey: true});
+                        })
+                    })
+                } else {
+                    response.error(payout);
+                    sendTransactionFailureEmail('krittylor@gmail.com', {
+                        userId: request.user.id,
+                        fullName: request.user.get('fullName'),
+                        amount: roundedEarningsBalance,
+                        paypalEmail: paypalEmail,
+                        shortMessage: payout.L_SHORTMESSAGE0,
+                        longMessage: payout.L_LONGMESSAGE0,
+                        timestamp: payout.TIMESTAMP
+                    });
+                    var errorCode = payout.L_ERRORCODE0;
+                    console.log(`Something went wrong with payout`);
+                    console.log(`ErrorCode : ${payout.L_ERRORCODE0}, ${payout.L_SHORTMESSAGE0}`)
+                }
+            }).catch(function (err) {
+                console.log(err.response);
+                const transaction = new Parse.Object('Transaction');
+                transaction.set('userRef', user);
+                transaction.set('amount', roundedEarningsBalance);
+                transaction.set('paypalEmail', paypalEmail);
+                transaction.save(null, {useMasterKey: true}).then();
+                sendTransactionFailureEmail('krittylor@gmail.com', {
+                    userId: userId,
+                    fullName: user.get('fullName'),
+                    amount: roundedEarningsBalance,
+                    paypalEmail: paypalEmail,
+                    shortMessage: 'Masspayout api call failed',
+                    longMessage: 'Masspayout api call failed',
+                    timestamp: new Date().toISOString()
+                });
+                response.error(err);
+                throw 'Got an error ' + err.code + ' : ' + err.message;
+            });
+        }, function (err) {
+            console.log(err);
+            response.error(err);
+        });
+    } catch(err) {
+        console.log(err);
+        response.error(err);
+    }
 });
 
 Parse.Cloud.define('getHottestCamps', function(request, response){

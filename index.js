@@ -55,7 +55,7 @@ throng({
 
 function start() {
   var api = new ParseServer({
-    verbose: true,
+    //verbose: true,
     databaseURI: config['databaseURI'],
     cloud: process.env.CLOUD_CODE_MAIN || __dirname + '/cloud/main.js',
     appId: config['appId'],
@@ -144,6 +144,11 @@ function start() {
             subject: 'Warning',
             pathPlainText: resolve(__dirname, './templates/warning.txt'),
             pathHtml: resolve(__dirname, './templates/warning.html'),
+          },
+          cashoutEmail: {
+            subject: 'Your request is on the way',
+            pathPlainText: resolve(__dirname, './templates/cashout.txt'),
+            pathHtml: resolve(__dirname, './templates/cashout.html')
           }
         }
       }
