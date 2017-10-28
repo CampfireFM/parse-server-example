@@ -14,12 +14,11 @@ function pointerTo(objectId, klass) {
 }
 Parse.Cloud.beforeSave("Answer", function(request, response) {
     if (request.object.existed()) {
-        const listenCount = request.object.get('listenCount') || 0;
         const likeCount = request.object.get('likeCount') || 0;
         const unlockCount = request.object.get('unlockCount') || 0;
         const cloutDeductions = request.object.get('cloutDeductions') || 0;
         const cloutFromDate = request.object.get('cloutFromDate') || 0;
-        const cloutEarned = listenCount * pointsForListen + likeCount * pointsForLike + unlockCount * pointsForUnlock;
+        const cloutEarned = likeCount * pointsForLike + unlockCount * pointsForUnlock;
         const cloutFromAdmin = request.object.get('cloutFromAdmin') || 0;
         const cloutPoints = cloutFromDate + cloutEarned + cloutFromAdmin - cloutDeductions;
         request.object.set('cloutEarned', cloutEarned);
