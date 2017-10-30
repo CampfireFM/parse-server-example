@@ -151,12 +151,12 @@ function start() {
             pathHtml: resolve(__dirname, './templates/cashout.html')
           },
           cashoutSuccess: {
-            subject: 'Your request is on the way',
+            subject: 'Withdraw from Campfire',
             pathPlainText: resolve(__dirname, './templates/cashout-success.txt'),
             pathHtml: resolve(__dirname, './templates/cashout-success.html')
           },
           cashoutReject: {
-            subject: 'Your request is on the way',
+            subject: 'Your request rejected',
             pathPlainText: resolve(__dirname, './templates/cashout-reject.txt'),
             pathHtml: resolve(__dirname, './templates/cashout-reject.html')
           }
