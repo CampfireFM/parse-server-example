@@ -9,7 +9,7 @@ const Promise = require('promise');
 var algoliasearch = require('./algolia/algoliaSearch.parse.js');
 var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
 const redisClient = require('./redis');
-const { sendTransactionFailureEmail, sendCashoutEmail } = require('../utils/mail');
+const { sendTransactionFailureEmail, sendCashoutEmail, sendCashoutSuccessEmail, sendCashoutRejectEmail } = require('../utils/mail');
 //include the JS files which represent each classes (models), and contains their operations
 require("./models/Answer.js");
 require("./models/CampfireUnlock.js");
@@ -1196,10 +1196,14 @@ Parse.Cloud.define('rejectCashOut', function(request, response){
         cashOut.set('isConfirmed', false);
         cashOut.set('isPaid', false);
         cashOut.save(null, {useMasterKey: true}).then(() => {
+            sendCashoutRejectEmail(cashOut.get('userRef').get('email'), {});
             response.success({});
         }, function(err) {
             response.error(err);
         })
+    }, function(err) {
+        console.log(err);
+        response.error(err);
     });
 });
 
@@ -1284,6 +1288,11 @@ Parse.Cloud.define('withdraw', function(request, response){
                         cashout.set('status', 'Confirmed');
 
                         cashout.save(null, {useMasterKey: true}).then(() => response.success({}), err => response.error(err));
+                        
+                        // Send cashout success email
+                        sendCashoutSuccessEmail(cashout.get('userRef').get('email'), {
+                            cashOutAmount: roundedEarningsBalance
+                        });
                         if (pastCashout)
                             pastDate = pastCashout.get('paidDate');
                         const Payout = Parse.Object.extend('Payout');
