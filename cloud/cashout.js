@@ -32,7 +32,8 @@ Parse.Cloud.define('getCashouts', function(req, res){
             userFullName: object.get('userRef').get('fullName'),
             cashOutAmount: object.get('cashOutAmount') || object.get('userRef').get('earningsBalance'),
             userId: object.get('userRef').id,
-            paypalEmail: object.get('paypalEmail')
+            paypalEmail: object.get('paypalEmail'),
+            paidDate: object.get('paidDate')
           });
         }
       }
