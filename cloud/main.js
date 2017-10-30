@@ -1199,6 +1199,7 @@ Parse.Cloud.define('rejectCashOut', function(request, response){
             sendCashoutRejectEmail(cashOut.get('userRef').get('email'), {});
             response.success({});
         }, function(err) {
+            console.log(err);
             response.error(err);
         })
     }, function(err) {

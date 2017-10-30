@@ -149,6 +149,16 @@ function start() {
             subject: 'Your request is on the way',
             pathPlainText: resolve(__dirname, './templates/cashout.txt'),
             pathHtml: resolve(__dirname, './templates/cashout.html')
+          },
+          cashoutSuccess: {
+            subject: 'Your request is on the way',
+            pathPlainText: resolve(__dirname, './templates/cashout-success.txt'),
+            pathHtml: resolve(__dirname, './templates/cashout-success.html')
+          },
+          cashoutReject: {
+            subject: 'Your request is on the way',
+            pathPlainText: resolve(__dirname, './templates/cashout-reject.txt'),
+            pathHtml: resolve(__dirname, './templates/cashout-reject.html')
           }
         }
       }
