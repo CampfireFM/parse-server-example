@@ -1186,6 +1186,23 @@ Parse.Cloud.define('requestCashout', function(request, response){
 });
 
 
+Parse.Cloud.define('rejectCashOut', function(request, response){
+    const CashOut = Parse.Object.extend('Cashout');
+    const cashOutQuery = new Parse.Query(CashOut);
+    cashOutQuery.include(['userRef']);
+    cashOutQuery.get(request.params.cashOutId).then(cashOut => {
+        cashOut.set('status', 'Rejected');
+        cashOut.set('cashOutAmount', cashOut.get('userRef').get('earningsBalance'));
+        cashOut.set('isConfirmed', false);
+        cashOut.set('isPaid', false);
+        cashOut.save(null, {useMasterKey: true}).then(() => {
+            response.success({});
+        }, function(err) {
+            response.error(err);
+        })
+    });
+});
+
 Parse.Cloud.define('withdraw', function(request, response){
     const cashoutId = request.params.cashoutId;
     const Cashout = Parse.Object.extend('Cashout');
