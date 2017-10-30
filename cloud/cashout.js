@@ -4,7 +4,7 @@ Parse.Cloud.define('getCashouts', function(req, res){
   var query = new Parse.Query(Tag);
 
   //var sortedBy = req.params.sortedBy || 'createdAt';
-  var sortedBy = 'status';
+  var sortedBy = 'createdAt';
   var sortDir = 'desc';
   var page = req.params.currentPage || 1;
   var limit = req.params.perPage || 6;
@@ -30,7 +30,7 @@ Parse.Cloud.define('getCashouts', function(req, res){
             id: object.id,
             status: object.get('status'),
             userFullName: object.get('userRef').get('fullName'),
-            cashOutAmount: object.get('cashOutAmount'),
+            cashOutAmount: object.get('cashOutAmount') || object.get('userRef').get('earningsBalance'),
             userId: object.get('userRef').id,
             paypalEmail: object.get('paypalEmail')
           });

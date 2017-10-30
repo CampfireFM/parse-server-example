@@ -1261,6 +1261,7 @@ Parse.Cloud.define('withdraw', function(request, response){
                         // Update paidDate of cashout
 
                         cashout.set('paidDate', date);
+                        cashout.set('cashOutAmount', roundedEarningsBalance);
                         cashout.set('isPaid', true);
                         cashout.set('isConfirmed', true);
                         cashout.set('status', 'Confirmed');
