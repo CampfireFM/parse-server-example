@@ -2,6 +2,7 @@ Parse.Cloud.define('getTopics', function(req, res){
   var topics = [];
   var List = Parse.Object.extend('List');
   var query = new Parse.Query(List);
+  query.limit(1000);
   query.include(['questionRef', 'questionRef.toUser','questionRef.fromUser', 'questionRef.charity', 'userRef']);
   query.find({
     success: function(objects) {
