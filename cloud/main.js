@@ -1190,7 +1190,7 @@ Parse.Cloud.define('rejectCashOut', function(request, response){
     const CashOut = Parse.Object.extend('Cashout');
     const cashOutQuery = new Parse.Query(CashOut);
     cashOutQuery.include(['userRef']);
-    cashOutQuery.get(request.params.cashOutId).then(cashOut => {
+    cashOutQuery.get(request.params.cashOutId, {useMasterKey: true}).then(cashOut => {
         cashOut.set('status', 'Rejected');
         cashOut.set('cashOutAmount', cashOut.get('userRef').get('earningsBalance'));
         cashOut.set('isConfirmed', false);
