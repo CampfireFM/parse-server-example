@@ -12,6 +12,7 @@ Parse.Cloud.define('collectMatchesReward', (request, response) => {
         matchesReward.set('status', 'Collected');
         matchesReward.save(null, {useMasterKey: true});
         user.increment('matchCount', matchesReward.get('matchesCount'));
+        user.set('matchesRewardStatus', 'Collected');
         return user.save(null, {useMasterKey: true});
       })
       .then((updatedUser) => {

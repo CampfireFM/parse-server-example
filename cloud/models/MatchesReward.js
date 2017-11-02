@@ -5,6 +5,8 @@ Parse.Cloud.afterSave("MatchesReward", function(request) {
   const userRef = request.object.get('userRef');
   const userQuery = new Parse.Query(Parse.User);
   userQuery.get(userRef.id, {useMasterKey: true}).then((user) => {
+    user.set('matchesRewardStatus', 'Notified');
+    user.save(null, {useMasterKey: true});
     sendPushOrSMS(request.user, user, 'matchesReward');
   }, err => {
     console.log(err);
