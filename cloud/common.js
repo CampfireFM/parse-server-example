@@ -19,7 +19,7 @@ const logTexts = {
 const branch = require('node-branch-io');
 const subscriptionTypes = ['questions', 'unlocks', 'answers', 'likes', 'follows', 'earnings'];
 //const campfireAutoPushTypes = ['friendMatch', 'joinCampfire', 'expiringQuestions', 'answerToFollowers'];
-const campfireAutoPushTypes = ['friendMatch', 'joinCampfire', 'expiringQuestions'];
+const campfireAutoPushTypes = ['friendMatch', 'joinCampfire', 'expiringQuestions', 'matchesReward'];
 
 const activityTypes = ['follow', 'unlock', 'like', 'answer', 'question'];
 
@@ -154,6 +154,9 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData, additionalId)
                                 break;
                             case 'friendMatch' :
                                 //alert = 'Your friend ' + fullName + ' is syncing you.';
+                                break;
+                            case 'matchesReward':
+                                tag = 'matchesReward';
                                 break;
                             //case 'joinCampfire' :
                             //    alert = 'Your friend ' + fullName + ' joined campfire! Go ask them a question.';
