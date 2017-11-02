@@ -73,7 +73,8 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData, additionalId)
             toUsers.forEach(function(user){
                 //Send push notification to ios devices
                 if(checkPushSubscription(user, type) || (campfireAutoPushTypes.indexOf(type) > -1)) {
-                    if (currentUser && (user.id == currentUser.id))
+                    // Self exception
+                    if (currentUser && (user.id == currentUser.id) && ['matchesReward'].indexOf(type) === -1)
                         return;
                     if (subscriptionTypes.indexOf(type) !== -1) {
                         if (!checkPushSubscription(user, type) && !checkSMSSubscription(user, type))
