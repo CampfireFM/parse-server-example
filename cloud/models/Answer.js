@@ -558,7 +558,7 @@ Parse.Cloud.define('buryAnswer', (request, response) => {
     const answerQuery = new Parse.Query(Answer);
     const buryFloorQuery = new Parse.Query(Answer);
     buryFloorQuery.descending('cloutPoints');
-    buryFloorQuery.skip(1000);
+    buryFloorQuery.skip(5000);
     const p1 = answerQuery.get(answerId, {useMasterKey: true});
     const p2 = buryFloorQuery.first({useMasterKey: true});
 
