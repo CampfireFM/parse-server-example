@@ -535,6 +535,7 @@ const resetTop20CloutPoints = () => {
         query.notEqualTo('isTest', true);
         query.notEqualTo('isDummyData', true);
         query.lessThanOrEqualTo('liveDate', new Date());
+        query.greaterThanOrEqualTo('createdAt', new Date(new Date().getTime() - 7 * 24 * 3600 * 1000));
         query.descending('cloutPoints');
         query.limit(20);
         query.select(['objectId', 'cloutPoints'])
@@ -571,81 +572,180 @@ const resetTop20CloutPoints = () => {
 }
 
 
-function resetFeaturedAnswers() {
+//function resetFeaturedAnswers() {
+//    return new Promise((resolve, reject) => {
+//        const Answer = Parse.Object.extend('Answer');
+//
+//        const answerQuery = new Parse.Query(Answer);
+//        const date = new Date();
+//        answerQuery.lessThanOrEqualTo('liveDate', date);
+//        answerQuery.select(['objectId', 'cloutPoints', 'questionAsker']);
+//        answerQuery.descending('cloutPoints');
+//        answerQuery.limit(6);
+//        let featuredAnswers = [];
+//        let featuredAnswerUserLastPositions = {};
+//        let featuredAnswerPositions = [];
+//
+//        const minimumStep = 5;
+//        let currentPosition = 0;
+//        let answerIndex;
+//        const start = new Date();
+//        console.log('starting');
+//        const indexName = config.algolia.answerIndex;
+//        const index = client.initIndex(indexName);
+//        const start2 = new Date();
+//        index.search({
+//            offset : 0,
+//            length : 1000,
+//            attributesToRetrieve: [
+//                "cloutPoints",
+//                "userRef.objectId"
+//            ]
+//        }, function(err, results){
+//            if(err){
+//                console.log(err);
+//            }
+//            let answers = results.hits;
+//            const start1 = new Date();
+//            try {
+//                for (let i = 0; i < answers.length; i++) {
+//                    featuredAnswerPositions.push(false);
+//                }
+//                for (let i = 0; i < answers.length; i++) {
+//                    let answerIndex = -1;
+//                    // Get first answer which is not added to featured
+//                    for (let j = 0; j < featuredAnswerPositions.length; j++) {
+//                        if (!featuredAnswerPositions[j]) {
+//                            let lastPosition = -minimumStep;
+//                            if (!answers[j].userRef)
+//                                lastPosition = -minimumStep;
+//                            else
+//                                lastPosition = featuredAnswerUserLastPositions[answers[j].userRef.objectId] || -minimumStep;
+//                            if (currentPosition - lastPosition >= minimumStep) {
+//                                answerIndex = j;
+//                                break;
+//                            }
+//                        }
+//                    }
+//                    if (answerIndex == -1) {
+//                        for (let j = 0; j < featuredAnswerPositions.length; j++) {
+//                            if (!featuredAnswerPositions[j]) {
+//                                answerIndex = j;
+//                                break;
+//                            }
+//                        }
+//                    }
+//                    // Add answer to featured
+//                    featuredAnswers.push(answers[answerIndex].objectID);
+//                    if (answers[answerIndex].userRef && answers[answerIndex].userRef.objectId)
+//                        featuredAnswerUserLastPositions[answers[answerIndex].userRef.objectId] = currentPosition;
+//                    featuredAnswerPositions[answerIndex] = true;
+//                    currentPosition++;
+//                    if (currentPosition === answers.length) {
+//                        // Finalize answers
+//                        console.log(featuredAnswers);
+//                        const multi = redisClient.multi();
+//                        multi.del('featuredAnswers');
+//                        featuredAnswers.forEach(answer => {
+//                            multi.rpush('featuredAnswers', answer);
+//                        });
+//                        multi.exec((err, res) => {
+//                            if (err) {
+//                                console.log(err);
+//                                reject(err);
+//                            }
+//                            console.log(res);
+//                            resolve(res);
+//                        });
+//                    }
+//                }
+//            } catch(err) {
+//                console.log(err);
+//                reject(err);
+//            }
+//            const end = new Date();
+//            console.log('Duration: ', end.getTime() - start2.getTime(), "Sort Duration: ", end.getTime() - start1.getTime());
+//        });
+//    });
+//
+//    //answerQuery.find({useMasterKey: true}).then(answers => {
+//    //    const start1 = new Date();
+//    //    try {
+//    //        for (let i = 0; i < answers.length; i++) {
+//    //            featuredAnswerPositions.push(false);
+//    //        }
+//    //        for (let i = 0; i < answers.length; i++) {
+//    //            let answerIndex = -1;
+//    //            // Get first answer which is not added to featured
+//    //            for (let j = 0; j < featuredAnswerPositions.length; j++) {
+//    //                if (!featuredAnswerPositions[j]) {
+//    //                    let lastPosition = -minimumStep;
+//    //                    if (!answers[j].get('questionAsker'))
+//    //                        lastPosition = -minimumStep;
+//    //                    else
+//    //                        lastPosition = featuredAnswerUserLastPositions[answers[j].get('questionAsker').id] || -minimumStep;
+//    //                    if (currentPosition - lastPosition >= minimumStep) {
+//    //                        answerIndex = j;
+//    //                        break;
+//    //                    }
+//    //                }
+//    //            }
+//    //            if (answerIndex == -1) {
+//    //                for (let j = 0; j < featuredAnswerPositions.length; j++) {
+//    //                    if (!featuredAnswerPositions[j]) {
+//    //                        answerIndex = j;
+//    //                        break;
+//    //                    }
+//    //                }
+//    //            }
+//    //            // Add answer to featured
+//    //            featuredAnswers.push(answers[answerIndex].id);
+//    //            if (answers[answerIndex].get('questionAsker') && answers[answerIndex].get('questionAsker').id)
+//    //                featuredAnswerUserLastPositions[answers[answerIndex].get('questionAsker').id] = currentPosition;
+//    //            featuredAnswerPositions[answerIndex] = true;
+//    //            currentPosition++;
+//    //            if (currentPosition === answers.length) {
+//    //                // Finalize answers
+//    //                console.log(featuredAnswers);
+//    //            }
+//    //        }
+//    //    } catch(err) {
+//    //        console.log(err);
+//    //    }
+//    //    const end = new Date();
+//    //    console.log('Duration: ', end.getTime() - start.getTime(), "Sort Duration: ", end.getTime() - start1.getTime());
+//    //})
+//}
+
+// New resetFeaturedAnswers - by top20 and featuredAnswerIds
+const resetFeaturedAnswers = () => {
     return new Promise((resolve, reject) => {
-        const Answer = Parse.Object.extend('Answer');
+        const Defaults = Parse.Object.extend('Defaults');
+        const query = new Parse.Query(Defaults);
+        query.first({useMasterKey: true})
+            .then(defaultSettings => {
+                const featuredAnswerIds = defaultSettings.get('featuredAnswers');
+                redisClient.lrange('top20AnswerIds', 0, -1, (err, replies) => {
+                    if (err) {
+                        console.log(err);
+                        reject(err);
+                    } else {
+                        console.log(replies);
+                        let top20AnswerIds = replies;
+                        top20AnswerIds = top20AnswerIds.filter(id => featuredAnswerIds.indexOf(id) == -1);
+                        // Let's sort featured answers
+                        let newFeaturedAnswerIds = [];
+                        let index = 0;
 
-        const answerQuery = new Parse.Query(Answer);
-        const date = new Date();
-        answerQuery.lessThanOrEqualTo('liveDate', date);
-        answerQuery.select(['objectId', 'cloutPoints', 'questionAsker']);
-        answerQuery.descending('cloutPoints');
-        answerQuery.limit(6);
-        let featuredAnswers = [];
-        let featuredAnswerUserLastPositions = {};
-        let featuredAnswerPositions = [];
+                        featuredAnswerIds.forEach(featuredAnswerId => {
+                            newFeaturedAnswerIds.push(featuredAnswerId);
+                            newFeaturedAnswerIds.push(top20AnswerIds[index]);
+                            index++;
+                        });
 
-        const minimumStep = 5;
-        let currentPosition = 0;
-        let answerIndex;
-        const start = new Date();
-        console.log('starting');
-        const indexName = config.algolia.answerIndex;
-        const index = client.initIndex(indexName);
-        const start2 = new Date();
-        index.search({
-            offset : 0,
-            length : 1000,
-            attributesToRetrieve: [
-                "cloutPoints",
-                "userRef.objectId"
-            ]
-        }, function(err, results){
-            if(err){
-                console.log(err);
-            }
-            let answers = results.hits;
-            const start1 = new Date();
-            try {
-                for (let i = 0; i < answers.length; i++) {
-                    featuredAnswerPositions.push(false);
-                }
-                for (let i = 0; i < answers.length; i++) {
-                    let answerIndex = -1;
-                    // Get first answer which is not added to featured
-                    for (let j = 0; j < featuredAnswerPositions.length; j++) {
-                        if (!featuredAnswerPositions[j]) {
-                            let lastPosition = -minimumStep;
-                            if (!answers[j].userRef)
-                                lastPosition = -minimumStep;
-                            else
-                                lastPosition = featuredAnswerUserLastPositions[answers[j].userRef.objectId] || -minimumStep;
-                            if (currentPosition - lastPosition >= minimumStep) {
-                                answerIndex = j;
-                                break;
-                            }
-                        }
-                    }
-                    if (answerIndex == -1) {
-                        for (let j = 0; j < featuredAnswerPositions.length; j++) {
-                            if (!featuredAnswerPositions[j]) {
-                                answerIndex = j;
-                                break;
-                            }
-                        }
-                    }
-                    // Add answer to featured
-                    featuredAnswers.push(answers[answerIndex].objectID);
-                    if (answers[answerIndex].userRef && answers[answerIndex].userRef.objectId)
-                        featuredAnswerUserLastPositions[answers[answerIndex].userRef.objectId] = currentPosition;
-                    featuredAnswerPositions[answerIndex] = true;
-                    currentPosition++;
-                    if (currentPosition === answers.length) {
-                        // Finalize answers
-                        console.log(featuredAnswers);
                         const multi = redisClient.multi();
                         multi.del('featuredAnswers');
-                        featuredAnswers.forEach(answer => {
+                        newFeaturedAnswerIds.forEach(answer => {
                             multi.rpush('featuredAnswers', answer);
                         });
                         multi.exec((err, res) => {
@@ -657,62 +757,11 @@ function resetFeaturedAnswers() {
                             resolve(res);
                         });
                     }
-                }
-            } catch(err) {
-                console.log(err);
+                });
+            }, err => {
                 reject(err);
-            }
-            const end = new Date();
-            console.log('Duration: ', end.getTime() - start2.getTime(), "Sort Duration: ", end.getTime() - start1.getTime());
-        });
-    });
+            })
+    })
 
-    //answerQuery.find({useMasterKey: true}).then(answers => {
-    //    const start1 = new Date();
-    //    try {
-    //        for (let i = 0; i < answers.length; i++) {
-    //            featuredAnswerPositions.push(false);
-    //        }
-    //        for (let i = 0; i < answers.length; i++) {
-    //            let answerIndex = -1;
-    //            // Get first answer which is not added to featured
-    //            for (let j = 0; j < featuredAnswerPositions.length; j++) {
-    //                if (!featuredAnswerPositions[j]) {
-    //                    let lastPosition = -minimumStep;
-    //                    if (!answers[j].get('questionAsker'))
-    //                        lastPosition = -minimumStep;
-    //                    else
-    //                        lastPosition = featuredAnswerUserLastPositions[answers[j].get('questionAsker').id] || -minimumStep;
-    //                    if (currentPosition - lastPosition >= minimumStep) {
-    //                        answerIndex = j;
-    //                        break;
-    //                    }
-    //                }
-    //            }
-    //            if (answerIndex == -1) {
-    //                for (let j = 0; j < featuredAnswerPositions.length; j++) {
-    //                    if (!featuredAnswerPositions[j]) {
-    //                        answerIndex = j;
-    //                        break;
-    //                    }
-    //                }
-    //            }
-    //            // Add answer to featured
-    //            featuredAnswers.push(answers[answerIndex].id);
-    //            if (answers[answerIndex].get('questionAsker') && answers[answerIndex].get('questionAsker').id)
-    //                featuredAnswerUserLastPositions[answers[answerIndex].get('questionAsker').id] = currentPosition;
-    //            featuredAnswerPositions[answerIndex] = true;
-    //            currentPosition++;
-    //            if (currentPosition === answers.length) {
-    //                // Finalize answers
-    //                console.log(featuredAnswers);
-    //            }
-    //        }
-    //    } catch(err) {
-    //        console.log(err);
-    //    }
-    //    const end = new Date();
-    //    console.log('Duration: ', end.getTime() - start.getTime(), "Sort Duration: ", end.getTime() - start1.getTime());
-    //})
 }
 module.exports = {resetFeaturedAnswers, resetTop20CloutPoints, trackEvent, getFollowers, getFollows, checkPushSubscription, checkEmailSubscription, sendPushOrSMS, addActivity, parseToAlgoliaObjects, generateShareImage, getShareImageAndExistence, getAllUsers, generateAnswerShareImage, getAllAnswers};

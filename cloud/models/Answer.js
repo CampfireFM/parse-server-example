@@ -209,6 +209,10 @@ Parse.Cloud.afterSave("Answer", function(request) {
         
         return;
     }
+
+    const offset = new Date().getTime() - request.object.get('createdAt').getTime();
+    if (offset > 7 * 24 * 3600 * 1000)
+      return;
     const cloutPoints = request.object.get('cloutPoints');
     const multi = redisClient.multi();
     multi.lrange('top20CloutPoints', 0, -1);
