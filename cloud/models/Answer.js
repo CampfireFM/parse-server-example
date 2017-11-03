@@ -569,7 +569,7 @@ Parse.Cloud.define('buryAnswer', (request, response) => {
           return answer.save(null, {useMasterKey: true});
       })
       .then(answer => {
-          response.success({});
+          response.success(answer);
       })
       .catch(err => {
           console.log(err);
