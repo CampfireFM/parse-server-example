@@ -556,36 +556,55 @@ Parse.Cloud.define('buryAnswer', (request, response) => {
     const answerId = request.params.answerId;
     const Answer = Parse.Object.extend('Answer');
     const answerQuery = new Parse.Query(Answer);
-    answerQuery.get(answerId, {useMasterKey: true}).then(answer => {
-        redisClient.lrange('featuredAnswers', 300, 300, (err, reply) => {
-            if (err) {
-                response.error(err);
-            } else {
-                const borderAnswerId = reply[0];
-                const borderAnswerQuery = new Parse.Query(Answer);
-                borderAnswerQuery.get(borderAnswerId, {useMasterKey: true})
-                    .then(borderAnswer => {
-                        const diff = borderAnswer.get('cloutPoints') - answer.get('cloutPoints');
-                        answer.increment('cloutFromAdmin', diff);
-                        answer.save(null, {useMasterKey: true})
-                            .then(answer => {
-                                setTimeout(() => {
-                                    resetFeaturedAnswers().then();
-                                }, 10000);
-                                response.success({});
-                            }, err => {
-                                console.log(err);
-                                response.error(err);
-                            })
-                    }, err => {
-                        console.log(err);
-                        response.error(err);
-                    });
-            }
-        })
-    }, err => {
-        response.error(err);
-    })
+    const buryFloorQuery = new Parse.Query(Answer);
+    buryFloorQuery.descending('cloutPoints');
+    buryFloorQuery.skip(300);
+    const p1 = answerQuery.get(answerId, {useMasterKey: true});
+    const p2 = buryFloorQuery.first({useMasterKey: true});
+
+    Parse.Promise.when(p1, p2)
+      .then((answer, borderAnswer) => {
+          const diff = borderAnswer.get('cloutPoints') - answer.get('cloutPoints');
+          answer.increment('cloutFromAdmin', diff);
+          return answer.save(null, {useMasterKey: true});
+      })
+      .then(answer => {
+          response.success({});
+      })
+      .catch(err => {
+          console.log(err);
+          response.error(err);
+      });
+    //answerQuery.get(answerId, {useMasterKey: true}).then(answer => {
+    //    redisClient.lrange('featuredAnswers', 300, 300, (err, reply) => {
+    //        if (err) {
+    //            response.error(err);
+    //        } else {
+    //            const borderAnswerId = reply[0];
+    //            const borderAnswerQuery = new Parse.Query(Answer);
+    //            borderAnswerQuery.get(borderAnswerId, {useMasterKey: true})
+    //                .then(borderAnswer => {
+    //                    const diff = borderAnswer.get('cloutPoints') - answer.get('cloutPoints');
+    //                    answer.increment('cloutFromAdmin', diff);
+    //                    answer.save(null, {useMasterKey: true})
+    //                        .then(answer => {
+    //                            setTimeout(() => {
+    //                                resetFeaturedAnswers().then();
+    //                            }, 10000);
+    //                            response.success({});
+    //                        }, err => {
+    //                            console.log(err);
+    //                            response.error(err);
+    //                        })
+    //                }, err => {
+    //                    console.log(err);
+    //                    response.error(err);
+    //                });
+    //        }
+    //    })
+    //}, err => {
+    //    response.error(err);
+    //})
 })
 
 Parse.Cloud.job("Reset Top 20 Answers", function(request, status) {
