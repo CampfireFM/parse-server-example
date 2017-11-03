@@ -17,7 +17,7 @@ Parse.Cloud.define('collectMatchesReward', (request, response) => {
       })
       .then((updatedUser) => {
         console.log(updatedUser.get('matchCount'));
-        response.success({matchesCount: updatedUser.get('matchCount')});
+        response.success({matchesCount: 1});
       })
       .fail((err) => {
         console.log(err);
