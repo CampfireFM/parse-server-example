@@ -2357,8 +2357,8 @@ Parse.Cloud.define('notifyCommunity', (request, response) => {
     query.first({useMasterKey: true})
         .then(defaults => {
             const lastCommunityNotifiedAt = defaults.get('lastCommunityNotifiedAt');
-            if (lastCommunityNotifiedAt && lastCommunityNotifiedAt.getTime() >= new Date(new Date() - 24 * 3600 * 1000)) {
-                throw new Error(`Commnity can be notified once a day`);
+            if (lastCommunityNotifiedAt && lastCommunityNotifiedAt.getTime() >= new Date(new Date().getTime() - 24 * 3600 * 1000).getTime()) {
+                throw new Error(`Community can be notified once a day`);
             } else {
                 const {title, text, target, type, listId, profileId} = request.params;
                 var pushQuery = new Parse.Query(Parse.Installation);
