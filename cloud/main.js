@@ -2360,12 +2360,16 @@ Parse.Cloud.define('notifyCommunity', (request, response) => {
             if (lastCommunityNotifiedAt && lastCommunityNotifiedAt.getTime() >= new Date(new Date() - 24 * 3600 * 1000)) {
                 throw new Error(`Commnity can be notified once a day`);
             } else {
-                const {title, text, target} = request.params;
+                const {title, text, target, type, listId, profileId} = request.params;
                 var pushQuery = new Parse.Query(Parse.Installation);
                 pushQuery.equalTo('deviceType', 'ios');
                 const data = {
                     alert: text,
-                    title
+                    title,
+                    tag: 'NotifyCommunity',
+                    notifyType: type,
+                    listId: listId,
+                    profileId: profileId
                 };
                 if (target === 'Inactive') {
                     const userQuery = new Parse.Query(Parse.User);
