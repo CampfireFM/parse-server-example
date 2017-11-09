@@ -2350,3 +2350,47 @@ Parse.Cloud.define('validateReceipt', (request, response) => {
         });
     });
 })
+
+Parse.Cloud.define('notifyCommunity', (request, response) => {
+    const Defaults = Parse.Object.extend('Defaults');
+    const query = new Parse.Query(Defaults);
+    query.first({useMasterKey: true})
+        .then(defaults => {
+            const lastCommunityNotifiedAt = defaults.get('lastCommunityNotifiedAt');
+            if (lastCommunityNotifiedAt && lastCommunityNotifiedAt.getTime() >= new Date(new Date() - 24 * 3600 * 1000)) {
+                throw new Error(`Commnity can be notified once a day`);
+            } else {
+                const {title, text, target} = request.params;
+                var pushQuery = new Parse.Query(Parse.Installation);
+                pushQuery.equalTo('deviceType', 'ios');
+                const data = {
+                    alert: text,
+                    title
+                };
+                if (target === 'Inactive') {
+                    const userQuery = new Parse.Query(Parse.User);
+                    userQuery.lessThan('lastActive', new Date(new Date().getTime() - 24 * 3600 * 1000));
+                    pushQuery.matchesQuery('user', userQuery);
+                }
+                Parse.Push.send({
+                    where: pushQuery,
+                    data: data
+                }, {
+                    useMasterKey: true,
+                    success: function () {
+                        // Push was successful
+                        defaults.set('lastCommunityNotifiedAt', new Date());
+                        defaults.save(null, {useMasterKey: true});
+                        response.success({});
+                    },
+                    error: function (error) {
+                        throw "PUSH: Got an error " + error.code + " : " + error.message;
+                    }
+                });
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            response.error(err);
+        })
+});
