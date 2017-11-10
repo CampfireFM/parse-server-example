@@ -158,6 +158,13 @@ function sendPushOrSMS(currentUser, toUsers, type, additionalData, additionalId)
                                 break;
                             case 'matchesReward':
                                 tag = 'matchesReward';
+                                var mixpanel = Mixpanel.init(config.mixpanelToken);
+                                mixpanel.track('Admin Notification Sent*', {
+                                    'Receivers ID': user.id,
+                                    'Receivers Name': user.get('fullName'),
+                                    'Notification Type': 'Admin Reward',
+                                    'Notification Text': alert
+                                });
                                 break;
                             //case 'joinCampfire' :
                             //    alert = 'Your friend ' + fullName + ' joined campfire! Go ask them a question.';
