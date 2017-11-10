@@ -6,6 +6,8 @@ const iap = require('in-app-purchase');
 const wrapper = require('co-express');
 const Promise = require('promise');
 var algoliasearch = require('./algolia/algoliaSearch.parse.js');
+const Mixpanel = require('mixpanel');
+var mixpanel = Mixpanel.init(config.mixpanelToken);
 var client = algoliasearch(config.algolia.app_id, config.algolia.api_key);
 const redisClient = require('./redis');
 const { sendTransactionFailureEmail, sendCashoutEmail, sendCashoutSuccessEmail, sendCashoutRejectEmail } = require('../utils/mail');
@@ -2246,6 +2248,10 @@ Parse.Cloud.job('GenerateAutoQuestionsForInActiveUsers', (request, status) => {
     status.success();
 });
 
+Parse.Cloud.define('sendAutoQuestionsToGroup', (req, res) => {
+    sendAutoQuestionsToGroup(req.params.from, req.params.to);
+    res.success({});
+});
 function generateAutoQuestionsForInActiveUsers() {
     const Question = Parse.Object.extend('Question');
     const Defaults = Parse.Object.extend('Defaults');
@@ -2318,6 +2324,69 @@ function generateAutoQuestionsForInActiveUsers() {
     });
 }
 
+function sendAutoQuestionsToGroup(fromUserIds, toUserIds) {
+    const Question = Parse.Object.extend('Question');
+    const Defaults = Parse.Object.extend('Defaults');
+    const AutoQuestion = Parse.Object.extend('AutoQuestions');
+    const autoQuestionQuery = new Parse.Query(AutoQuestion);
+    autoQuestionQuery.equalTo('isLive', true);
+    const defaultQuery = new Parse.Query(Defaults);
+
+    let fromUsers = [], toUsers = [], autoQuestions;
+    let autoQuestionTagRef;
+    defaultQuery.find({useMasterKey: true})
+        .then(defaultSettings => {
+            autoQuestionTagRef = defaultSettings[0].get('autoQuestionTagRef');
+            return autoQuestionQuery.find({useMasterKey: true});
+        })
+        .then(res => {
+            autoQuestions = res;
+            let fromUsersQuery = new Parse.Query(Parse.User);
+            return fromUsersQuery.containedIn('objectId', fromUserIds);
+        })
+        .then(res => {
+            fromUsers = res;
+            let toUsersQuery = new Parse.Query(Parse.User);
+            return toUsersQuery.containedIn('objectId', toUserIds);
+        })
+        .then(res => {
+            toUsers = res;
+            toUsers.forEach(toUser => {
+                const question = new Question();
+                const fromUser = fromUsers[Math.min(Math.floor(Math.random() * fromUsers.length), fromUsers.length - 1)];
+                question.set('fromUser', fromUser);
+                question.set('toUser', toUser);
+                question.set('text', autoQuestions[Math.min(Math.floor(Math.random() * autoQuestions.length), autoQuestions.length - 1)].get('text'));
+                question.set('price', 0);
+                question.set('charityPercentage', 0);
+                question.set('isExpired', false);
+                question.set('isTest', false);
+                question.set('isAutoQuestion', true);
+                question.set('isAnswered', false);
+                question.set('initialTag', autoQuestionTagRef);
+                //console.log(count);
+                question.save(null, {useMasterKey: true})
+                    .then(savedQuestion => {
+                        mixpanel.track('Admin Targeted Question Asked', {
+                            'Answerer ID': toUser.id,
+                            'Answerer Name': toUser.get('fullName'),
+                            'Asker ID': fromUser.id,
+                            'Asker Name': fromUser.get('fullName'),
+                            'Question Text': savedQuestion.get('text'),
+                            'Question ID': savedQuestion.id
+                        });
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    })
+            }, {useMasterKey: true});
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+sendAutoQuestionsToGroup(['zdnCGeyrJy'], ['SSJQ8mW13x']);
 Parse.Cloud.define('resetFeaturedAnswers', (req, res) => {
     resetFeaturedAnswers().then();
     res.success({});
