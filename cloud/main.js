@@ -2342,12 +2342,14 @@ function sendAutoQuestionsToGroup(fromUserIds, toUserIds) {
         .then(res => {
             autoQuestions = res;
             let fromUsersQuery = new Parse.Query(Parse.User);
-            return fromUsersQuery.containedIn('objectId', fromUserIds);
+            fromUsersQuery.containedIn('objectId', fromUserIds);
+            return fromUsersQuery.find({useMasterKey: true});
         })
         .then(res => {
             fromUsers = res;
             let toUsersQuery = new Parse.Query(Parse.User);
-            return toUsersQuery.containedIn('objectId', toUserIds);
+            toUsersQuery.containedIn('objectId', toUserIds);
+            return toUsersQuery.find({useMasterKey: true});
         })
         .then(res => {
             toUsers = res;
