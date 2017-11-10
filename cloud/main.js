@@ -2388,7 +2388,7 @@ function sendAutoQuestionsToGroup(fromUserIds, toUserIds) {
         });
 }
 
-sendAutoQuestionsToGroup(['zdnCGeyrJy'], ['SSJQ8mW13x']);
+//sendAutoQuestionsToGroup(['zdnCGeyrJy'], ['SSJQ8mW13x']);
 Parse.Cloud.define('resetFeaturedAnswers', (req, res) => {
     resetFeaturedAnswers().then();
     res.success({});
