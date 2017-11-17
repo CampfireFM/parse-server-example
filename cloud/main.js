@@ -22,6 +22,7 @@ require("./models/List.js");
 require("./models/Activity");
 require("./models/AutoQuestion");
 require("./models/MatchesReward");
+require("./models/TestGroup");
 require("./algolia/algoliaQuestions.js");
 require("./algolia/algoliaUsers.js");
 require("./algolia/algoliaAnswers");
