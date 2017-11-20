@@ -39,6 +39,7 @@ require("./cron");
 require("./campaigns/university");
 require("./cashout");
 require("./matchesReward");
+require("./testGroup");
 transactionPercentage = 2.9;
 transactionFee = 0.3;
 answerPercentageToCampfire = 0.2;
