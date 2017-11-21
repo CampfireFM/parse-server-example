@@ -2413,17 +2413,103 @@ Parse.Cloud.define('validateReceipt', (request, response) => {
             if (err) {
                 console.error(err);
                 response.error(err);
-            }
-            if (iap.isValidated(appleRes)) {
+            } else if (iap.isValidated(appleRes)) {
                 // yay good!
+                // Get subscription
+                console.log('Latest receipt info', appleRes.latest_receipt_info);
+                // appleRes = appleRes.receipt;
+                if (appleRes.latest_receipt_info) {
+                    console.log('Latest receipt info exists');
+                    try {
+                        const receiptObj = new Parse.Object('Receipt');
+                        receiptObj.set('userRef', request.user);
+                        receiptObj.set('receipt', receipt);
+                        receiptObj.save(null, {useMasterKey: true}).then(res => console.log('Successfully added receipt to database', res), err => console.log('An error occured while adding receipt', err));
+                        const latestItem = appleRes.latest_receipt_info[appleRes.latest_receipt_info.length - 1];
+                        const subscriptionExpirationDate = new Date(parseInt(latestItem.expires_date_ms));
+                        request.user.set('subscriptionExpirationDate', subscriptionExpirationDate);
+                        request.user.save(null, {useMasterKey: true})
+                          .then(() => {
+                              console.log('Successfully updated subscription expiration date');
+                          })
+                          .catch(err => {
+                              console.log(err);
+                          })
+                    }
+                    catch(err) {
+                        console.log(err);
+                    }
+
+                }
                 response.success({verified: true});
             } else {
                 response.success({verified: false})
             }
         });
     });
-})
+});
 
+Parse.Cloud.define('checkSubscriptionExpiration', (request, response) => {
+    const user = request.user;
+    const Receipt = Parse.Object.extend('Receipt');
+    const receiptQuery = new Parse.Query(Receipt);
+    receiptQuery.equalTo('userRef', user);
+    receiptQuery.descending('createdAt');
+    receiptQuery.first({useMasterKey: true})
+      .then(receiptObj => {
+          if (!receiptObj) 
+            return response.success(new Error('No subscription for you yet'));
+          const receipt = receiptObj.get('receipt');
+          const secretKey = config.appleSecretKey;
+          iap.config({
+              applePassword: secretKey
+          });
+          iap.setup(function (error) {
+              if (error) {
+                  console.error('something went wrong...');
+                  return response.error(error);
+              }
+              // iap is ready
+              iap.validate(iap.APPLE, receipt, function (err, appleRes) {
+                  if (err) {
+                      console.error(err);
+                      response.error(err);
+                  } else if (iap.isValidated(appleRes)) {
+                      // yay good!
+                      // Get subscription
+                      if (appleRes.latest_receipt_info) {
+                          const latestItem = appleRes.latest_receipt_info[appleRes.latest_receipt_info.length - 1];
+                          const subscriptionExpirationDate = new Date(parseInt(latestItem.expires_date_ms));
+                          request.user.set('subscriptionExpirationDate', subscriptionExpirationDate);
+                          request.user.save(null, {useMasterKey: true})
+                            .then(() => {
+                                console.log('Successfully updated subscription expiration date');
+                            })
+                            .catch(err => {
+                                console.log(err);
+                            });
+
+                          if (parseInt(latestItem.expires_date_ms) > new Date().getTime()) {
+                              return response.success({expired: false});
+                          }
+                      }
+                      if (appleRes.pending_renewal_info && appleRes.pending_renewal_info[0]) {
+                          console.log(appleRes.pending_renewal_info[0]);
+                          if (appleRes.pending_renewal_info[0].auto_renew_status === '0') {
+                              response.success({expired: true});
+                          } else {
+                              response.success({expired: false});
+                          }
+                      } else {
+                          response.error(new Error('Can not detect'));
+                      }
+                  } else {
+                      response.success(new Error('Your receipt is invalid'));
+                  }
+              });
+          });
+      })
+});
 Parse.Cloud.define('notifyCommunity', (request, response) => {
     const Defaults = Parse.Object.extend('Defaults');
     const query = new Parse.Query(Defaults);
