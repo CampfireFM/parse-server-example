@@ -39,7 +39,7 @@ Parse.Cloud.define('generateTestGroupQuestion', (request, response) => {
 
               // Send push notification
               userIds.forEach(userId => {
-                const toUserQuery = Parse.Query(Parse.User);
+                const toUserQuery = new Parse.Query(Parse.User);
                 toUserQuery.get(userId, {useMasterKey: true})
                   .then(toUser => {
                     var pushQuery = new Parse.Query(Parse.Installation);
