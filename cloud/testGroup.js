@@ -2,7 +2,7 @@ const Mixpanel = require('mixpanel');
 const config = require('../config');
 const mixpanel = Mixpanel.init(config.mixpanelToken);
 Parse.Cloud.define('generateTestGroupQuestion', (request, response) => {
-  const {fromUserId, groupId, questionText, notificationText} = request.params;
+  let {fromUserId, groupId, questionText, notificationText} = request.params;
   const TestGroup = Parse.Object.extend('TestGroup');
   const query = new Parse.Query(TestGroup);
   const fromUserQuery = new Parse.Query(Parse.User);
@@ -30,18 +30,20 @@ Parse.Cloud.define('generateTestGroupQuestion', (request, response) => {
             .then(() => {
               response.success({});
 
-              let data = {
-                alert: notificationText,
-                tag: 'testGroup',
-                objectId: groupId,
-                groupName: group.get('name')
-              };
+
 
               // Send push notification
               userIds.forEach(userId => {
                 const toUserQuery = new Parse.Query(Parse.User);
                 toUserQuery.get(userId, {useMasterKey: true})
                   .then(toUser => {
+                    const alert = notificationText.replace(/\{\{receiverFirstName\}\}/ig, toUser.get('firstName'));
+                    let data = {
+                      alert: alert,
+                      tag: 'testGroup',
+                      objectId: groupId,
+                      groupName: group.get('name')
+                    };
                     var pushQuery = new Parse.Query(Parse.Installation);
                     pushQuery.equalTo('deviceType', 'ios');
                     pushQuery.equalTo('user', toUser);
