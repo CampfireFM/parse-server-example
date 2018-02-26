@@ -28,6 +28,7 @@ Parse.Cloud.beforeSave("Answer", function(request, response) {
         return response.success();
     }
     else {
+        request.object.set('isFreeToListen', true);
         request.object.set('liveDate', new Date());
         request.object.set('cloutFromDate', 100);
         request.object.set('cloutFromAdmin', 0);
